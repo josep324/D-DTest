@@ -37,6 +37,10 @@ export type Check = {
   flag?: string;
   xp?: number;
   onFail?: "fight";
+  /** Hearts lost by whoever fails it (a fall, a cold river). */
+  hurt?: number;
+  /** On an exit: passing the roll also walks the company through. */
+  go?: boolean;
   /** Other ways to do it ("force the door" vs "pick the lock"), picked by what the player says. */
   alts?: { keywords: string[]; ability: Ability; dc: number; reason: string }[];
 };
@@ -96,6 +100,8 @@ export type Scene = {
   ambient: string;
   hotspots: Hotspot[];
   opening: string;
+  /** Said instead of the opening when the company comes back (module tales). */
+  back?: string;
   quest: { title: string; detail: string };
   choices: Choice[];
   chronicleTitle: string;

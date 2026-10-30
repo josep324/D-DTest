@@ -1,3 +1,4 @@
+import { AIGUAQUIETA } from "@/lib/game/module-aiguaquieta";
 import { TUTORIAL } from "@/lib/game/module-tutorial";
 import type { Campaign, Character, Choice, Item } from "@/lib/game/types";
 
@@ -182,79 +183,7 @@ export const CAMPAIGNS: Campaign[] = [
       },
     ],
   },
-  {
-    id: "stillwater",
-    name: "La Campana d'Aiguaquieta",
-    blurb: "Un misteri de riu amb noms perduts, jurament i una campana que encara respon.",
-    chapters: "Dos capítols",
-    levels: "Nivells 1–3",
-    span: "Fins al vespre",
-    canon:
-      "El Pas d'Aiguaquieta és un poble de riba de riu. La hostalera compta bols de coure quan el pas queda en silenci. Un picapedrer fregueja un rètol en blanc. Una campana és enfonsada sota un arc en ruïnes i encara sona al gual. La companyia és Calder, Bramble, Vesper i Holt. El segon lloc és l'antic fortí del peatge riu amunt, on s'ancora la cadena de la campana. El misteri es resol retornant un nom al rètol i deixant reposar la campana. Sense sang, sense morts. La figura de gris és un barquer retirat que no sap com marxar.",
-    scenes: [
-      {
-        id: "reed-crossing",
-        name: "Pas d'Aiguaquieta",
-        image: "/art/crossing.jpg",
-        daypart: "Posta de sol",
-        clock: "17:30",
-        weather: "Pluja",
-        sky: "POSTA DE SOL · PLUJA",
-        ambient: "Pluja sobre el riu. Els fanals s'agrupen al gual entre les pedres.",
-        chronicleTitle: "Joncs a Aiguaquieta",
-        opening:
-          "La hostalera compta bols de coure ara que el pas ha quedat en silenci. Un bol li resta a la mà. Pel camí, el picapedrer fregueja un rètol en blanc com si un nom perdut pogués tornar sota el polze.\n\nEls reflexos dels fanals s'ajunten als clots entre les pedres. Un home amb un abric gris de mortalla és on comencen els joncs, i assenyala — no cap a tu — l'aigua.",
-        quest: {
-          title: "Una campana sota l'aigua",
-          detail: "Parla amb l'estrany, llegeix el rètol en blanc o escolta al pont.",
-        },
-        choices: [
-          speak("speak-grey", "Parla amb la figura de gris"),
-          speak("blank-sign", "Llegeix el rètol en blanc"),
-          speak("shelter", "Aixopluga't a l'hostal"),
-          speak("listen-arch", "Escolta sota l'arc"),
-        ],
-        hotspots: [
-          { id: "inn", name: "L'hostal", x: 36, y: 34, examine: "Bols en fila. La hostalera diu que el riu es va endur un nom i va deixar el deute." },
-          { id: "gardens", name: "Els horts", x: 20, y: 50, examine: "Les herbes s'inclinen cap a l'aigua. Fins i tot el romaní." },
-          { id: "bridge", name: "El pont", x: 56, y: 52, examine: "La clau de volta és tèbia. Si t'hi acostes, alguna cosa respon amb una nota suau." },
-          { id: "arch", name: "Arc en ruïnes", x: 80, y: 28, examine: "Heura, i una cadena que entra al riu i no en torna.", threat: true },
-          { id: "reeds", name: "Els joncs", x: 28, y: 74, examine: "L'abric gris és d'un barquer. Té les botes seques. Fa anys que les té seques." },
-          { id: "hut", name: "Cabana rodona", x: 70, y: 76, examine: "Els cisells del picapedrer, i una dotzena de rètols de prova, tots en blanc." },
-        ],
-      },
-      {
-        id: "toll-fort",
-        name: "Fortí del Peatge",
-        image: "/art/fort.jpg",
-        daypart: "Matí",
-        clock: "09:20",
-        weather: "Serè",
-        sky: "MATÍ · SERÈ",
-        ambient: "Riu amunt, el fortí té l'altre cap d'una cadena que ja ningú no estira.",
-        chronicleTitle: "La cadena del peatge",
-        opening:
-          "El fortí del peatge no ha cobrat cap moneda des que va caure l'arc. Al pati, la cadena surt d'una tapa de pou i corre cap al sud, vers el poble, sota la imaginació de les llosetes.\n\nTallat a la torre rodona, a l'alçada dels ulls, hi ha un nom que va ser gravat, després omplert i gairebé oblidat: MAREN VOSS. El barquer el diu com qui recorda les seves pròpies mans.",
-        quest: {
-          title: "Retorna el nom",
-          detail: "Porta la Maren Voss fins al rètol en blanc, o toca la cadena una vegada i deixa dormir la campana.",
-        },
-        choices: [
-          speak("copy-name", "Copia el nom amb guix de camí"),
-          speak("ask-maren", "Pregunta si el barquer és la Maren"),
-          speak("ring-once", "Toca la cadena, una vegada, suaument"),
-          speak("close-book", "Porta el nom a casa, al rètol"),
-        ],
-        hotspots: [
-          { id: "tower", name: "Torre rodona", x: 30, y: 46, examine: "El gravat omplert. La pluja mai no acaba d'enganxar-se a aquestes sis lletres." },
-          { id: "gate", name: "Porta oberta", x: 42, y: 64, examine: "Sense caixa de peatge. Un bol, de coure, amb una sola fulla seca a dins." },
-          { id: "yard", name: "Pati", x: 60, y: 48, examine: "La cadena taral·leja si dues persones hi pugen. És un instrument, no un pany.", threat: true },
-          { id: "cart", name: "Carro de provisions", x: 74, y: 34, examine: "Corda vella. En Holt diu que els nusos són de barquer." },
-          { id: "wall", name: "Passeig de muralla", x: 80, y: 60, examine: "Es veu el fum del poble. El riu entremig sembla, per un moment, un camí." },
-        ],
-      },
-    ],
-  },
+  AIGUAQUIETA,
   {
     id: "harbor",
     name: "Port del Crepuscle",

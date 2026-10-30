@@ -104,9 +104,9 @@ const VERBS = {
   use: /\b(fes servir|fem servir|faig servir|usa|usem|uso|menja\w*|beu|bec)\b/,
   attack: /\b(atac\w*|colpej\w*|lluit\w*|dispar\w*|apunyal\w*|mato|mata|matem|combat\w*|carrega\w*|clavo|clavem)\b/,
   take: /\b(agaf\w*|recull\w*|pren\w*|llev\w*|robo|robem)\b/,
-  talk: /\b(parl\w*|dic|diem|dona\w*|dono|doni|pag\w*|lliur\w*|entreg\w*|ofer\w*|recit\w*|digu\w*|pregunt\w*|saluda\w*|xerr\w*|demana\w*|convenc\w*|negoci\w*|enganya\w*|persuad\w*|amenac\w*|intimid\w*|suborn\w*|raon\w*|explic\w*)\b/,
+  talk: /\b(parl\w*|promet\w*|jur\w*|acompany\w*|dic|diem|dona\w*|dono|doni|pag\w*|lliur\w*|entreg\w*|ofer\w*|recit\w*|digu\w*|pregunt\w*|saluda\w*|xerr\w*|demana\w*|convenc\w*|negoci\w*|enganya\w*|persuad\w*|amenac\w*|intimid\w*|suborn\w*|raon\w*|explic\w*)\b/,
   go: /\b(ves|vaig|vagi|anem|anar|entr\w*|surt\w*|sort\w*|camin\w*|puj\w*|baix\w*|segu\w*|torn\w*|avanc\w*|endavant|marxem|marxo)\b/,
-  force: /\b(netej\w*|frego\w*|fregu\w*|toc\w*|vad\w*|nad\w*|obr\w*|forc\w*|trenc\w*|empeny\w*|pic\w*|ganx\w*|moc|movem|sigil\w*|amag\w*|colo|colem|esquiv\w*|salt\w*|escal\w*|pas|passo|passem|passar|rodej\w*|sortej\w*)\b/,
+  force: /\b(present\w*|salud\w*|tap\w*|calm\w*|prov\w*|intent\w*|netej\w*|frego\w*|fregu\w*|toc\w*|vad\w*|nad\w*|obr\w*|forc\w*|trenc\w*|empeny\w*|pic\w*|ganx\w*|moc|movem|sigil\w*|amag\w*|colo|colem|esquiv\w*|salt\w*|escal\w*|pas|passo|passem|passar|rodej\w*|sortej\w*)\b/,
   look: /\b(lleg\w*|mir\w*|examin\w*|observ\w*|inspeccion\w*|busc\w*|escorcoll\w*|regir\w*|escolt\w*|olor\w*|comprov\w*|ull|fixo|fixem)\b/,
 };
 
@@ -582,7 +582,7 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
     const hit = ender ?? topics.find((tp) => tp.keywords.some((k) => t.includes(norm(k))));
     if (hit) {
       mech.xp = hit.xp ?? 0;
-      mech.flags = hit.flag ? [hit.flag] : [];
+      mech.flags = hit.flag ? hit.flag.split(",") : [];
       if (hit.ends) {
         return plain(narrate([hit.say]), mech, {
           endTale: true,
@@ -602,9 +602,11 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
 
   if (intent === "go") {
     const exits = visibleSpots(tale).filter((h) => h.kind === "exit");
-    const spot = matchSpot(tale, text, ["exit"]) ?? (exits.length === 1 ? exits[0] : undefined);
+    const named = matchSpot(tale, text);
+    const spot =
+      matchSpot(tale, text, ["exit"]) ?? (named ? undefined : exits.length === 1 ? exits[0] : undefined);
     if (!spot) {
-      const other = matchSpot(tale, text);
+      const other = named;
       if (other?.check && !(other.check.flag && has(tale, other.check.flag))) {
         return askRoll(tale, other, other.check, raw, other.examine, mech);
       }

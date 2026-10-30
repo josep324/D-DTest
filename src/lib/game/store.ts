@@ -64,7 +64,8 @@ type Store = {
   openTale: (id: string) => void;
   retireTale: (id: string) => void;
   commit: (id: string, line: string, result: GmResult, toldBy: "live" | "book", mech?: Mechanics) => void;
-  setActive: (id: string) => void;
+  setActive: (id: string, via?: "nom" | "retrat") => void;
+  addFlag: (flag: string) => void;
 };
 
 function snapshot(patch: Partial<Persisted> = {}): Persisted {
@@ -199,11 +200,18 @@ export const useGame = create<Store>((set, get) => ({
     set({ tales, toldBy, writing: false, dice: null });
     persist(snapshot({ tales }));
   },
-  setActive: (id) => {
+  setActive: (id, via) => {
     set((s) => ({
-      tales: s.tales.map((t) =>
-        t.id === s.taleId && !(t.encounter && t.encounter.order[t.encounter.turn] !== id) ? { ...t, activeId: id } : t,
-      ),
+      tales: s.tales.map((t) => {
+        if (t.id !== s.taleId || (t.encounter && t.encounter.order[t.encounter.turn] !== id)) return t;
+        const flag = via && t.activeId !== id ? `canvi-${via}` : null;
+        return { ...t, activeId: id, flags: flag && !t.flags.includes(flag) ? [...t.flags, flag] : t.flags };
+      }),
+    }));
+  },
+  addFlag: (flag) => {
+    set((s) => ({
+      tales: s.tales.map((t) => (t.id === s.taleId && !t.flags.includes(flag) ? { ...t, flags: [...t.flags, flag] } : t)),
     }));
   },
 }));

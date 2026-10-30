@@ -9,7 +9,7 @@ function ownerName(tale: Tale, person: Character): string {
   return second && tale.partner ? tale.partner : tale.playerName;
 }
 
-export function Hud({ tale }: { tale: Tale }) {
+export function Hud({ tale, guideHero }: { tale: Tale; guideHero?: string }) {
   const setActive = useGame((s) => s.setActive);
   const sound = useGame((s) => s.sound);
   const hearts = Object.fromEntries(tale.party.map((p) => [p.id, p.heart]));
@@ -26,11 +26,15 @@ export function Hud({ tale }: { tale: Tale }) {
           <li key={p.id} className="relative">
             <button
               type="button"
-              onClick={() => setActive(p.id)}
+              onClick={() => setActive(p.id, "retrat")}
               aria-pressed={on}
-              className={`flex w-full min-h-14 items-center gap-2 border bg-ink/80 p-1.5 text-left transition sm:p-2 ${
-                on ? "border-gold-bright" : "border-gold/20"
-              } ${turn === p.id ? "turn-glow" : ""} ${p.down || p.fallen ? "opacity-60 grayscale" : ""}`}
+              className={`flex w-full min-h-14 items-center gap-2 border p-1.5 text-left transition sm:p-2 ${
+                guideHero === p.id
+                  ? "border-gold-bright bg-gold/25"
+                  : on
+                    ? "border-gold-bright bg-ink/80"
+                    : "border-gold/20 bg-ink/80"
+              } ${turn === p.id || guideHero === p.id ? "turn-glow" : ""} ${p.down || p.fallen ? "opacity-60 grayscale" : ""}`}
             >
               <span
                 key={p.heart}
@@ -40,7 +44,9 @@ export function Hud({ tale }: { tale: Tale }) {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-1">
-                  <span className="truncate font-serif text-xs text-parchment sm:text-sm">{p.name}</span>
+                  <span className="truncate font-serif text-xs text-parchment sm:text-sm">
+                    {p.name}
+                  </span>
                   {turn === p.id ? (
                     <span className="shrink-0 border border-gold-bright bg-gold/20 px-1 font-sans text-xs tracking-widest text-gold-bright">
                       TORN
@@ -60,7 +66,9 @@ export function Hud({ tale }: { tale: Tale }) {
                 <span className="mt-0.5 flex items-center gap-1 font-sans text-xs text-mist">
                   <Heart className={`size-3 ${low ? "text-blood" : "text-gold"}`} aria-hidden />
                   {p.heart}/{p.heartMax}
-                  {tale.edge === p.id ? <Zap className="size-3 text-gold-bright" aria-label="avantatge" /> : null}
+                  {tale.edge === p.id ? (
+                    <Zap className="size-3 text-gold-bright" aria-label="avantatge" />
+                  ) : null}
                 </span>
                 {p.fallen ? (
                   <span className="hidden font-sans text-xs text-blood sm:block">caigut</span>
@@ -69,7 +77,9 @@ export function Hud({ tale }: { tale: Tale }) {
                     a terra · {p.saves?.ok ?? 0}✓ {p.saves?.fail ?? 0}✗
                   </span>
                 ) : tale.partner ? (
-                  <span className="hidden truncate font-sans text-xs text-gold-dim lg:block">{ownerName(tale, p)}</span>
+                  <span className="hidden truncate font-sans text-xs text-gold-dim lg:block">
+                    {ownerName(tale, p)}
+                  </span>
                 ) : null}
               </span>
             </button>

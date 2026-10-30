@@ -134,18 +134,19 @@ export function rollFor(request: RollRequest, mode?: RollMode, physical?: number
 }
 
 /** Free-form words from the table. If they sound uncertain, ask for a roll first. */
-export function say(text: string): void {
+export function say(text: string, viaVoice = false): void {
   const state = useGame.getState();
   let tale = activeTale(state);
   if (!tale || state.writing || tale.finished) return;
   // Saying a hero's name hands them the action; in a fight the turn order decides instead.
   const named = heroNamed(tale, text);
   if (named && !tale.fight && named.id !== tale.activeId && named.heart > 0 && !named.down && !named.fallen) {
-    state.setActive(named.id);
+    state.setActive(named.id, "nom");
     tale = activeTale(useGame.getState()) ?? tale;
   }
   const hero = heroOf(tale);
   const line = `${hero.name}: ${text}`;
+  if (viaVoice) state.addFlag("veu-usada");
   if (isModule(tale)) {
     const turn = dmAct(tale, line);
     if (turn) commitTurn(line, turn);

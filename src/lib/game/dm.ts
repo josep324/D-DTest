@@ -726,6 +726,7 @@ function resolveAttack(tale: Tale, request: RollRequest, show: DiceShow, mech: M
   const hero = heroOf(tale, request.heroId);
   const foe = s.fight.foes.find((f) => f.id === request.target) ?? s.fight.foes.find((f) => f.hp > 0)!;
   s.rules.push(describeRoll(show));
+  mech.flags = [...(mech.flags ?? []), "atac-fet"];
   const t = tip(tale, "tip-damage", "has encertat! Ara es tira el dau de dany de la teva arma i es resta a la vida del monstre. Quan arriba a zero, cau.", mech);
   if (show.success) {
     const weapon = hero.weapon;

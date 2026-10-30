@@ -33,7 +33,7 @@ export function startTalk() {
         else if (/tir|dau|per mi|endavant/i.test(text)) rollFor(pending);
         return;
       }
-      say(text);
+      say(text, true);
     },
     onEnd: () => useTalk.setState({ hearing: false }),
   });

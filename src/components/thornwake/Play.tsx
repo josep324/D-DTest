@@ -226,7 +226,7 @@ export function Play() {
         </Stage>
         {desktop ? (
           <div>
-            <Hud tale={tale} />
+            <Hud tale={tale} guideHero={guideStep && !guideHidden ? guideStep.hero : undefined} />
             <Dock tale={tale} module={module} onDice={onDice} />
           </div>
         ) : null}
@@ -252,7 +252,7 @@ export function Play() {
 
       {!desktop ? (
         <div className="flex-none">
-          <Hud tale={tale} />
+          <Hud tale={tale} guideHero={guideStep && !guideHidden ? guideStep.hero : undefined} />
           <Dock tale={tale} module={module} onDice={onDice} />
         </div>
       ) : null}

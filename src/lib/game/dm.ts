@@ -402,7 +402,7 @@ function askRoll(tale: Tale, spot: Hotspot, check: Check, text: string, lead: st
   const adv = tip(
     tale,
     "tip-roll",
-    "quan el que intentes pot sortir bé o malament, es fa una tirada. Tires un d20 i hi sumes el teu bonus. Si arribes a la dificultat, ho aconsegueixes. Un 20 sempre reïx i un 1 sempre falla. Pots tirar tu o fer servir un dau de veritat de la taula.",
+    "quan el que intentes pot sortir bé o malament, es fa una tirada. Tires un d20 i hi sumes la teva bonificació. Si arribes a la dificultat, ho aconsegueixes. Un 20 sempre reïx i un 1 sempre falla. Pots tirar tu o fer servir un dau de veritat de la taula.",
     mech,
   );
   if (adv) lines.push(adv);

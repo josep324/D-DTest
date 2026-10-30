@@ -93,7 +93,7 @@ export const TUTORIAL: Campaign = {
           examine: "Fang, fulles i marques que es barregen. Potser n'hi ha, de petjades; potser no.",
           check: {
             ability: "wis", dc: 10, reason: "Buscar petjades al fang", flag: "rastre", xp: 15,
-            success: "Entre les fulles, una roderada de carro i botes pesades, recents, que van cap als roures. Els lladres van carregats: han deixat un solc fàcil de seguir.",
+            success: "Entre les fulles, una rodera de carro i botes pesades, recents, que van cap als roures. Els lladres van carregats: han deixat un solc fàcil de seguir.",
             fail: "Només veus fang i fulles. Potser si t'hi fixes millor, o algú altre ho prova…",
           },
         },
@@ -114,22 +114,22 @@ export const TUTORIAL: Campaign = {
       ambient: "Una vella farga a la roca. Olor de fusta humida i ferro.",
       chronicleTitle: "La porta de la farga",
       opening:
-        "La senda acaba davant d'una vella farga excavada a la roca. La porta de fusta és tancada per dins amb una tranca. Un carro buit és al costat.\n\nConsell del DM: sovint hi ha més d'una manera de fer una cosa. Pots forçar la porta (Força) o provar de moure el forrellat amb una ganxo (Destresa). Digues què fas.",
+        "La senda acaba davant d'una vella farga excavada a la roca. La porta de fusta és tancada per dins amb una barra. Un carro buit és al costat.\n\nConsell del DM: sovint hi ha més d'una manera de fer una cosa. Pots forçar la porta (Força) o provar de moure el forrellat amb una ganxo (Destresa). Digues què fas.",
       quest: { title: "Entra a la cova", detail: "Obre la porta de la farga." },
       choices: [],
       hotspots: [
         {
           id: "porta", kind: "exit", name: "La porta de fusta", x: 54, y: 44, to: "rates", keywords: ["porta", "tranca", "farga", "forrellat", "entr", "obrir"],
-          examine: "Fusta vella amb una tranca per dins. Mal segellada: alguna cosa cedirà.",
+          examine: "Fusta vella amb una barra per dins. Mal segellada: alguna cosa cedirà.",
           check: {
             ability: "str", dc: 12, reason: "Forçar la porta", flag: "porta-oberta", xp: 20,
-            alts: [{ keywords: ["ganxo", "ganxos", "forrellat", "pany", "tranca", "obre amb"], ability: "dex", dc: 13, reason: "Moure la tranca amb un ganxo" }],
+            alts: [{ keywords: ["ganxo", "ganxos", "forrellat", "pany", "tranca", "obre amb"], ability: "dex", dc: 13, reason: "Moure la barra amb un ganxo" }],
             success: "La porta cedeix amb un cruixit de fusta. Dins fa fred i es fa tard, i s'hi sent un esgarrapar suau.",
             fail: "La porta s'hi resisteix. Fa un soroll, però no cedeix. Es pot tornar a provar.",
           },
         },
         { id: "carro", kind: "feature", name: "El carro buit", x: 24, y: 64, keywords: ["carro", "rodes"], examine: "Un carro buit amb cordes soltes. Van descarregar-hi alguna cosa pesada: el cofre." },
-        { id: "marques", kind: "feature", name: "Marques a la paret", x: 76, y: 66, keywords: ["marques", "paret", "roca", "pintura", "dibuix"], examine: "Algú ha dibuixat una moneda amb un forat i, sota seu, un nom: «Garrulla». La capa dels lladres." },
+        { id: "marques", kind: "feature", name: "Marques a la paret", x: 76, y: 66, keywords: ["marques", "paret", "roca", "pintura", "dibuix"], examine: "Algú ha dibuixat una moneda amb un forat i, sota seu, un nom: «Garrulla». La marca dels lladres." },
         { id: "tornar", kind: "exit", name: "Tornar al camí", x: 12, y: 22, to: "bosc", keywords: ["cami", "camí", "bosc", "tornar", "enrere"], examine: "La senda que baixa al bosc." },
       ],
     },
@@ -197,7 +197,7 @@ export const TUTORIAL: Campaign = {
       chronicleTitle: "La cap dels lladres",
       opening:
         "La sala del fons és plena de fanals, sacs i caixes robades. Al mig, asseguda sobre el cofre de la fornera com si fos un tron, una dona alta amb un abric de pell us mira sense moure's.\n\n«Heu fet una bona caminada per un cofre vell», diu. «Sóc la Garrulla. Què en traureu, si me'l prengueu?»\n\nConsell del DM: aquí tens opcions: convèncer-la (Encant), amenaçar-la o lluitar. Per parlar, digues, per exemple: «convenço la Garrulla de tornar el cofre».",
-      quest: { title: "Recupera el cofre", detail: "La Garrulla guarda el cofre. Convenç-la o vence-la." },
+      quest: { title: "Recupera el cofre", detail: "La Garrulla guarda el cofre. Convenç-la o venç-la." },
       choices: [],
       hotspots: [
         {

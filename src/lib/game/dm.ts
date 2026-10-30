@@ -2,6 +2,7 @@ import { getCampaign, getScene, INVENTORY } from "@/lib/game/content";
 import {
   ABILITY_NAMES,
   abilityMod,
+  betterHero,
   describeRoll,
   die,
   heroOf,
@@ -54,8 +55,16 @@ function pick<T>(list: T[]): T {
   return list[Math.floor(Math.random() * list.length)];
 }
 
+/** "a" is a flag, "a|b" is either, "a&b" is both ("a&b|c" is both, or c). */
 function has(tale: Tale, flag: string): boolean {
-  return flag.split("|").some((f) => tale.flags.includes(f));
+  return flag.split("|").some((alt) => alt.split("&").every((f) => tale.flags.includes(f)));
+}
+
+/** A person or thing that cannot be tried yet, and why. */
+function lockedHint(tale: Tale, spot: Hotspot): string | null {
+  if (spot.kind === "exit" || spot.kind === "item") return null;
+  if (spot.requires && !has(tale, spot.requires.flag)) return spot.requires.hint;
+  return null;
 }
 
 function sceneOf(tale: Tale): Scene | undefined {
@@ -104,9 +113,9 @@ const VERBS = {
   use: /\b(fes servir|fem servir|faig servir|usa|usem|uso|menja\w*|beu|bec)\b/,
   attack: /\b(atac\w*|colpej\w*|lluit\w*|dispar\w*|apunyal\w*|mato|mata|matem|combat\w*|carrega\w*|clavo|clavem)\b/,
   take: /\b(agaf\w*|recull\w*|pren\w*|llev\w*|robo|robem)\b/,
-  talk: /\b(parl\w*|promet\w*|jur\w*|acompany\w*|dic|diem|dona\w*|dono|doni|pag\w*|lliur\w*|entreg\w*|ofer\w*|recit\w*|digu\w*|pregunt\w*|saluda\w*|xerr\w*|demana\w*|convenc\w*|negoci\w*|enganya\w*|persuad\w*|amenac\w*|intimid\w*|suborn\w*|raon\w*|explic\w*)\b/,
+  talk: /\b(parl\w*|pug\w*|aixec\w*|salv\w*|rescat\w*|promet\w*|jur\w*|acompany\w*|dic|diem|dona\w*|dono|doni|pag\w*|lliur\w*|entreg\w*|ofer\w*|recit\w*|digu\w*|pregunt\w*|saluda\w*|xerr\w*|demana\w*|convenc\w*|negoci\w*|enganya\w*|persuad\w*|amenac\w*|intimid\w*|suborn\w*|raon\w*|explic\w*)\b/,
   go: /\b(ves|vaig|vagi|anem|anar|entr\w*|surt\w*|sort\w*|camin\w*|puj\w*|baix\w*|segu\w*|torn\w*|avanc\w*|endavant|marxem|marxo)\b/,
-  force: /\b(present\w*|salud\w*|tap\w*|calm\w*|prov\w*|intent\w*|netej\w*|frego\w*|fregu\w*|toc\w*|vad\w*|nad\w*|obr\w*|forc\w*|trenc\w*|empeny\w*|pic\w*|ganx\w*|moc|movem|sigil\w*|amag\w*|colo|colem|esquiv\w*|salt\w*|escal\w*|pas|passo|passem|passar|rodej\w*|sortej\w*)\b/,
+  force: /\b(repar\w*|adob\w*|mend\w*|enganx\w*|senyal\w*|ences\w*|encen\w*|present\w*|salud\w*|tap\w*|calm\w*|prov\w*|intent\w*|netej\w*|frego\w*|fregu\w*|toc\w*|vad\w*|nad\w*|obr\w*|forc\w*|trenc\w*|empeny\w*|pic\w*|ganx\w*|moc|movem|sigil\w*|amag\w*|colo|colem|esquiv\w*|salt\w*|escal\w*|pas|passo|passem|passar|rodej\w*|sortej\w*)\b/,
   look: /\b(lleg\w*|mir\w*|examin\w*|observ\w*|inspeccion\w*|busc\w*|escorcoll\w*|regir\w*|escolt\w*|olor\w*|comprov\w*|ull|fixo|fixem)\b/,
 };
 
@@ -384,6 +393,12 @@ function askRoll(tale: Tale, spot: Hotspot, check: Check, text: string, lead: st
     }
   }
   const lines = [lead];
+  const better = check.alts?.length ? null : betterHero(tale, ability, hero.id);
+  if (better) {
+    lines.push(
+      `${art(better.hero.name, true)} seria qui ho faria millor (${ABILITY_NAMES[ability]} ${better.mod >= 0 ? "+" : ""}${better.mod}). Si prefereixes que ho provi ell o ella, digues-ho.`,
+    );
+  }
   const adv = tip(
     tale,
     "tip-roll",
@@ -549,6 +564,7 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
       const campaign = getCampaign(tale.campaignId);
       const item: Item | undefined = campaign?.items?.find((i) => i.id === spot.itemId) ?? INVENTORY.find((i) => i.id === spot.itemId);
       if (!item) return plain("No ho pots agafar.", mech);
+      if (!item.effect && tale.inventory.some((i) => i.id === item.id)) return plain(`Ja tens ${item.name.toLowerCase()}.`, mech);
       mech.flags = [`taken-${spot.id}`, ...(spot.flag ? [spot.flag] : [])];
       mech.give = item;
       mech.xp = spot.itemId === "cofre" ? 30 : 0;
@@ -574,6 +590,8 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
     if (!spot) return plain("No hi ha ningú aquí amb qui parlar.", mech);
     const persuade = /(convenc|negoci|enganya|persuad|amenac|intimid|suborn|raon)/.test(t);
     if (spot.check && persuade) {
+      const locked = lockedHint(tale, spot);
+      if (locked) return plain(narrate([spot.examine, locked]), mech);
       if (spot.check.flag && has(tale, spot.check.flag)) return plain("Ja ho heu resolt: no cal insistir.", mech);
       return askRoll(tale, spot, spot.check, raw, `${art(hero.name, true)} s'hi acosta i tria bé les paraules.`, mech);
     }
@@ -584,12 +602,13 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
       mech.xp = hit.xp ?? 0;
       mech.flags = hit.flag ? hit.flag.split(",") : [];
       if (hit.ends) {
+        const campaign = getCampaign(tale.campaignId);
         return plain(narrate([hit.say]), mech, {
           endTale: true,
-          questTitle: "El cofre és a casa",
-          questDetail: "Missió complerta.",
-          chronicleTitle: "El cofre torna a casa",
-          chronicleBody: "La companyia ha recuperat el cofre de la fornera i el poble ho celebra.",
+          questTitle: "Missió complerta",
+          questDetail: campaign?.mission ?? "",
+          chronicleTitle: `El final de ${campaign?.name ?? "l'aventura"}`,
+          chronicleBody: hit.say.split("\n\n")[0].slice(0, 280),
         });
       }
       return plain(narrate([hit.say]), mech);
@@ -607,6 +626,8 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
       matchSpot(tale, text, ["exit"]) ?? (named ? undefined : exits.length === 1 ? exits[0] : undefined);
     if (!spot) {
       const other = named;
+      const lockedOther = other ? lockedHint(tale, other) : null;
+      if (other && lockedOther) return plain(narrate([other.examine, lockedOther]), mech);
       if (other?.check && !(other.check.flag && has(tale, other.check.flag))) {
         return askRoll(tale, other, other.check, raw, other.examine, mech);
       }
@@ -621,11 +642,14 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
   }
 
   if (intent === "force" || intent === "look") {
-    const spot = matchSpot(tale, text);
+    // Something you can try beats a loose object that merely shares a word with the sentence.
+    const spot = matchSpot(tale, text, ["feature", "npc", "foe", "exit"]) ?? matchSpot(tale, text);
     if (!spot) {
       if (intent === "look") return plain(describeRoom(tale), mech);
       return plain("No sé què vols fer exactament. Digues-m'ho amb més detall.", mech);
     }
+    const locked = lockedHint(tale, spot);
+    if (locked) return plain(narrate([spot.examine, locked]), mech);
     if (spot.check && !(spot.check.flag && has(tale, spot.check.flag))) {
       return askRoll(tale, spot, spot.check, raw, spot.examine, mech);
     }

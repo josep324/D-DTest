@@ -33,7 +33,7 @@ export const TUTORIAL: Campaign = {
       ambient: "Fum de forn, aroma de pa calent i un poble que avui parla baix.",
       chronicleTitle: "Un cofre que falta",
       opening:
-        "El poble de Pinassa fa olor de pa, però avui ningú no té gana. La fornera es retorça el davantal davant la seva parada i, quan us veu, corre cap a vosaltres.\n\n«Heu d'ajudar-me», diu. «Aquesta nit m'han robat el cofre de casa: les receptes de tres generacions i tot el que he estalviat. Han anat cap al bosc.»\n\nConsell del DM: aquí no hi ha botons. Tu decideixes què fas. Digues, per exemple, «parlo amb la fornera», «miro el pou» o «vaig al bosc». Si t'encalles, digues «què puc fer?».",
+        "El poble de Pinassa fa olor de pa, però avui ningú no té gana. La fornera es retorça el davantal davant la seva parada i, quan us veu, corre cap a vosaltres.\n\n«Heu d'ajudar-me», diu. «Aquesta nit m'han robat el cofre de casa: les receptes de tres generacions i tot el que he estalviat. Han anat cap al bosc.»\n\nConsell del DM: aquí no hi ha botons. Tu decideixes què fas. Digues, per exemple, «parlo amb la fornera», «miro el pou» o «vaig al bosc». Si t'encalles, digues «què puc fer?».\n\nConsell del DM: parles sempre per l'heroi que té la vora clara a la barra de baix, ara en Calder. Per canviar, toca el retrat d'un altre o digues-ne el nom: «la Bramble escolta» o «Holt, forces la porta». Fora de combat no hi ha torns: actua qui vulgui. Només als combats cal respectar l'ordre.",
       quest: { title: "El cofre de la fornera", detail: "Parla amb la fornera i segueix els lladres cap al bosc." },
       choices: [],
       hotspots: [

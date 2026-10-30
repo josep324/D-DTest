@@ -319,3 +319,82 @@ export function rollDice(expr: string, crit = false): { total: number; text: str
   const total = Math.max(0, rolls.reduce((a, b) => a + b, 0) + bonus);
   return { total, text: `${rolls.join("+")}${bonus ? (bonus > 0 ? `+${bonus}` : `${bonus}`) : ""}` };
 }
+
+// How a hero may be called out loud, including what a speech recogniser tends to write.
+const CALLS: Record<string, string[]> = {
+  calder: ["calder", "kalder", "calde", "caldeer"],
+  bramble: ["bramble", "brambel", "brambol", "brambol"],
+  vesper: ["vesper", "besper", "vespe", "vesper"],
+  holt: ["holt", "olt", "hold", "jolt"],
+};
+
+const CONNECTORS = new Set(["en", "la", "l", "el", "jo", "soc", "som", "vaig", "faig", "ho", "ara", "ei", "hola", "ve", "va"]);
+const TARGET_WORDS = new Set(["amb", "a", "al", "per", "de", "pel", "cap", "vers", "des", "sobre", "que"]);
+
+function plainWord(text: string): string[] {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+function near(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (a.length < 4 || Math.abs(a.length - b.length) > 1) return false;
+  let i = 0;
+  let j = 0;
+  let edits = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) {
+      i += 1;
+      j += 1;
+      continue;
+    }
+    edits += 1;
+    if (edits > 1) return false;
+    if (a.length > b.length) i += 1;
+    else if (a.length < b.length) j += 1;
+    else {
+      i += 1;
+      j += 1;
+    }
+  }
+  return edits + (a.length - i) + (b.length - j) <= 1;
+}
+
+/**
+ * "Holt, força la porta", "la Bramble escolta", "vaig jo, la Vesper": the hero whose name opens the sentence.
+ * A name after "amb" or "a" is somebody being talked to, not the one acting.
+ */
+export function heroNamed(tale: Tale, text: string): Character | null {
+  const words = plainWord(text).slice(0, 5);
+  for (let i = 0; i < words.length; i += 1) {
+    const word = words[i];
+    if (i > 0 && !CONNECTORS.has(words[i - 1]) && i > 1) break;
+    if (i > 0 && TARGET_WORDS.has(words[i - 1])) break;
+    for (const [id, calls] of Object.entries(CALLS)) {
+      if (calls.some((c) => near(word, c))) return tale.party.find((p) => p.id === id) ?? null;
+    }
+  }
+  return null;
+}
+
+/** The standing hero best suited to an ability, if clearly better than whoever is acting. */
+export function betterHero(tale: Tale, ability: Ability, actingId: string): { hero: Character; mod: number } | null {
+  const acting = tale.party.find((p) => p.id === actingId);
+  if (!acting) return null;
+  const mine = checkMod(acting, ability, tale.level);
+  const best = tale.party
+    .filter((p) => p.id !== actingId && p.heart > 0 && !p.down && !p.fallen)
+    .map((hero) => ({ hero, mod: checkMod(hero, ability, tale.level) }))
+    .sort((a, b) => b.mod - a.mod)[0];
+  return best && best.mod - mine >= 2 ? best : null;
+}
+
+/** "de la Bramble", "d'en Calder": how a hero's name sits after "torn". */
+export function ofHero(name: string): string {
+  return { Calder: "d'en Calder", Holt: "d'en Holt", Bramble: "de la Bramble", Vesper: "de la Vesper" }[name] ?? `de ${name}`;
+}

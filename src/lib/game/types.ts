@@ -112,12 +112,14 @@ export type GuideStep = {
   title: string;
   /** What to do, in plain words. */
   text: string;
-  /** A sentence that does it, offered as a button. */
-  phrase: string;
+  /** A sentence that does it, offered as a button. Left out when the step is something to tap or look at. */
+  phrase?: string;
   /** Flag (or "a|b") that says the step is done. */
   done: string;
   /** Hotspot to light up while the step is current. */
   target?: string;
+  /** Hero whose portrait lights up in the party bar. */
+  hero?: string;
 };
 
 export type Campaign = {

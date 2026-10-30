@@ -214,7 +214,7 @@ export function Caption({
         {blocked && done ? (
           <p className="font-serif text-sm text-gold">Els daus esperen a la taula.</p>
         ) : null}
-        {done && !blocked && !tale.finished && banner ? (
+        {done && !tale.finished && banner ? (
           <div className="-mx-4 mt-2">{banner}</div>
         ) : null}
         {done && tale.finished ? <EndCard tale={tale} /> : null}

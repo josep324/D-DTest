@@ -83,7 +83,7 @@ function persist(slice: Persisted) {
 
 export const useGame = create<Store>((set, get) => ({
   screen: "gate",
-  playerName: "Traveler",
+  playerName: "Viatger",
   tales: [],
   taleId: null,
   worldIndex: -1,
@@ -93,7 +93,7 @@ export const useGame = create<Store>((set, get) => ({
   modal: null,
   sound: false,
   voice: true,
-  lang: "en",
+  lang: "ca",
   partner: "",
   writing: false,
   toldBy: null,
@@ -150,11 +150,11 @@ export const useGame = create<Store>((set, get) => ({
       const data = JSON.parse(raw) as Persisted;
       if (!data || !Array.isArray(data.tales)) return;
       set({
-        playerName: typeof data.playerName === "string" && data.playerName ? data.playerName : "Traveler",
+        playerName: typeof data.playerName === "string" && data.playerName ? data.playerName : "Viatger",
         tales: data.tales.map(normalizeTale),
         sound: Boolean(data.sound),
         voice: data.voice !== false,
-        lang: data.lang === "ca" || data.lang === "es" ? data.lang : "en",
+        lang: data.lang === "en" || data.lang === "es" ? data.lang : "ca",
         partner: typeof data.partner === "string" ? data.partner : "",
       });
     } catch {

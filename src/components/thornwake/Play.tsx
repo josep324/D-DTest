@@ -104,9 +104,9 @@ export function Play() {
       heroId: hero.id,
       ability: best,
       dc: 12,
-      reason: "Trusting a good hand",
+      reason: "Confiar en una bona mà",
       kind: "check",
-      line: `${hero.name} asks the dice what the moment holds.`,
+      line: `${hero.name} pregunta als daus què guarda el moment.`,
     });
   }
 
@@ -121,11 +121,11 @@ export function Play() {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <IconButton label="Chronicle" onClick={() => setModal("chronicle")}>
+          <IconButton label="Crònica" onClick={() => setModal("chronicle")}>
             <BookOpen className="size-4" />
           </IconButton>
           <IconButton
-            label={voice ? "Silence the storyteller's voice" : "Let the storyteller speak"}
+            label={voice ? "Silencia la veu de la narradora" : "Deixa parlar la narradora"}
             onClick={() => {
               if (voice) stopSpeaking();
               setVoice(!voice);
@@ -133,7 +133,7 @@ export function Play() {
           >
             {voice ? <Mic className="size-4" /> : <MicOff className="size-4" />}
           </IconButton>
-          <IconButton label={sound ? "Silence the room" : "Room sound"} onClick={() => setSound(!sound)}>
+          <IconButton label={sound ? "Silencia la sala" : "So de la sala"} onClick={() => setSound(!sound)}>
             {sound ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
           </IconButton>
           <button
@@ -141,9 +141,9 @@ export function Play() {
             onClick={() => setStoryOpen(!storyOpen)}
             className="hidden h-11 items-center border border-gold/50 px-3 font-serif text-sm text-parchment sm:flex"
           >
-            The Storyteller
+            La narradora
           </button>
-          <IconButton label="Leave the table" onClick={() => setScreen("select")}>
+          <IconButton label="Surt de la taula" onClick={() => setScreen("select")}>
             <X className="size-4" />
           </IconButton>
         </div>
@@ -152,11 +152,11 @@ export function Play() {
       <div className="pointer-events-none absolute top-16 left-1/2 z-30 hidden -translate-x-1/2 md:block">
         <div className="pointer-events-auto border border-gold/30 bg-ink/75 px-4 py-2 text-center">
           <p className="font-serif text-sm text-parchment">
-            Day {tale.day} · {tale.daypart}
+            Dia {tale.day} · {tale.daypart}
           </p>
           <p className="font-sans text-xs text-mist">
-            {tale.clock} · Level {tale.level}
-            {tale.level < MAX_LEVEL ? ` · ${tale.xp}/${LEVEL_XP[tale.level]} XP` : " · fully grown"}
+            {tale.clock} · Nivell {tale.level}
+            {tale.level < MAX_LEVEL ? ` · ${tale.xp}/${LEVEL_XP[tale.level]} XP` : " · al màxim"}
           </p>
         </div>
       </div>
@@ -235,8 +235,8 @@ export function Play() {
                   <span className="bar-fill block" style={{ width: `${(person.heart / person.heartMax) * 100}%` }} />
                 </span>
                 <span className="mt-1 block font-sans text-xs text-mist">
-                  {person.heart}/{person.heartMax} · Guard {person.guard}
-                  {tale.edge === person.id ? " · edge" : ""}
+                  {person.heart}/{person.heartMax} · Defensa {person.guard}
+                  {tale.edge === person.id ? " · avantatge" : ""}
                 </span>
               </span>
             </button>
@@ -248,7 +248,7 @@ export function Play() {
         <h2 className="font-serif text-sm text-parchment">{tale.quest.title}</h2>
         <p className="mt-1 font-serif text-sm leading-relaxed text-mist">{tale.quest.detail}</p>
         <button type="button" className="mt-2 font-sans text-xs tracking-widest text-gold" onClick={() => setModal("chronicle")}>
-          View journey
+          Veure el viatge
         </button>
       </section>
 
@@ -279,30 +279,30 @@ export function Play() {
         </div>
       ) : (
         <div className="z-30 mx-3 mb-2 lg:absolute lg:right-4 lg:bottom-28">
-          <TextButton onClick={() => setStoryOpen(true)}>Open the storyteller</TextButton>
+          <TextButton onClick={() => setStoryOpen(true)}>Obre la narradora</TextButton>
         </div>
       )}
 
       <p className="z-20 px-3 text-center font-sans text-xs text-mist lg:absolute lg:bottom-24 lg:left-1/2 lg:-translate-x-1/2">
         {mode === "move"
-          ? `Move ${actor.name} · choose a place`
+          ? `Mou ${actor.name} · tria un lloc`
           : mode === "look"
-            ? `Look with ${actor.name} · choose a place`
+            ? `Mira amb ${actor.name} · tria un lloc`
             : tale.encounter
-              ? `Strike with ${actor.name} · press the trouble at ${tale.encounter.name}`
-              : `Strike with ${actor.name} · choose a tense place`}
+              ? `Ataca amb ${actor.name} · fes recular el problema de ${tale.encounter.name}`
+              : `Ataca amb ${actor.name} · tria un lloc tens`}
       </p>
 
       <div className="sticky bottom-0 z-30 mt-auto flex justify-center px-2 py-3 lg:absolute lg:inset-x-0 lg:bottom-3 lg:mt-0">
         <div className="flex max-w-full gap-1 overflow-x-auto border border-gold/40 bg-ink/85 p-1">
-          <Act icon={<Footprints className="size-4" />} label="Move" on={mode === "move"} onClick={() => setMode("move")} />
-          <Act icon={<Sword className="size-4" />} label="Strike" on={mode === "strike"} onClick={() => setMode("strike")} />
-          <Act icon={<Search className="size-4" />} label="Look" on={mode === "look"} onClick={() => setMode("look")} />
-          <Act icon={<Backpack className="size-4" />} label="Pack" on={false} onClick={() => setModal("pack")} />
-          <Act icon={<Dices className="size-4" />} label="Dice" on={false} onClick={onDice} />
+          <Act icon={<Footprints className="size-4" />} label="Mou" on={mode === "move"} onClick={() => setMode("move")} />
+          <Act icon={<Sword className="size-4" />} label="Ataca" on={mode === "strike"} onClick={() => setMode("strike")} />
+          <Act icon={<Search className="size-4" />} label="Mira" on={mode === "look"} onClick={() => setMode("look")} />
+          <Act icon={<Backpack className="size-4" />} label="Motxilla" on={false} onClick={() => setModal("pack")} />
+          <Act icon={<Dices className="size-4" />} label="Daus" on={false} onClick={onDice} />
           <Act
             icon={<Moon className="size-4" />}
-            label={`Rest ${tale.rests}`}
+            label={`Descans ${tale.rests}`}
             on={false}
             onClick={restParty}
             disabled={tale.rests <= 0 || Boolean(tale.encounter) || tale.finished || writing}
@@ -312,8 +312,8 @@ export function Play() {
             onClick={() => setModal("chronicle")}
             className="flex h-16 w-28 shrink-0 flex-col items-center justify-center bg-ember px-2 text-center font-sans text-xs tracking-widest text-parchment"
           >
-            FOLLOW
-            <span>THE STORY</span>
+            SEGUEIX
+            <span>EL CONTE</span>
           </button>
         </div>
       </div>
@@ -335,7 +335,7 @@ export function Play() {
             {dice.roll}
             {dice.rolls.length > 1 ? (
               <span className="ml-2 font-sans text-xs text-mist">
-                ({dice.rolls.join(" / ")} · {dice.mode === "advantage" ? "best" : "worst"})
+                ({dice.rolls.join(" / ")} · {dice.mode === "advantage" ? "la millor" : "la pitjor"})
               </span>
             ) : null}
           </p>
@@ -344,21 +344,21 @@ export function Play() {
             {dice.mod >= 0 ? "+" : ""}
             {dice.mod} = {dice.roll + dice.mod} vs {dice.dc} ·{" "}
             {dice.crit === "hit"
-              ? "a natural 20!"
+              ? "un 20 natural!"
               : dice.crit === "fumble"
-                ? "a natural 1"
+                ? "un 1 natural"
                 : dice.success
-                  ? "it turns"
-                  : "it slips"}
-            {dice.physical ? " · table die" : ""}
+                  ? "surt bé"
+                  : "s'escapa"}
+            {dice.physical ? " · dau de la taula" : ""}
           </p>
         </div>
       ) : null}
 
       {levelUp ? (
         <div className="pointer-events-none fixed top-24 left-1/2 z-50 -translate-x-1/2 border border-gold-bright bg-ink/95 px-5 py-3 text-center">
-          <p className="font-display text-lg tracking-widest text-gold-bright">LEVEL {levelUp}</p>
-          <p className="font-serif text-sm text-parchment">The company grows. Every heart reaches a little further.</p>
+          <p className="font-display text-lg tracking-widest text-gold-bright">NIVELL {levelUp}</p>
+          <p className="font-serif text-sm text-parchment">La companyia creix. Cada cor arriba una mica més lluny.</p>
         </div>
       ) : null}
     </div>
@@ -420,10 +420,10 @@ function EncounterBar({ tale }: { tale: Tale }) {
   return (
     <section className="z-30 mx-3 mb-2 border border-ember/70 bg-ink/90 p-3 lg:absolute lg:top-36 lg:left-1/2 lg:mx-0 lg:w-80 lg:-translate-x-1/2">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className="font-serif text-sm text-parchment">Trouble at {enc.name}</h2>
-        <span className="font-sans text-xs text-mist">Round {enc.round}</span>
+        <h2 className="font-serif text-sm text-parchment">Problema a {enc.name}</h2>
+        <span className="font-sans text-xs text-mist">Ronda {enc.round}</span>
       </div>
-      <span className="bar-track mt-2 block" aria-label={`Resolve ${enc.resolve} of ${enc.resolveMax}`}>
+      <span className="bar-track mt-2 block" aria-label={`Resolució ${enc.resolve} de ${enc.resolveMax}`}>
         <span className="bar-fill block" style={{ width: `${(enc.resolve / enc.resolveMax) * 100}%` }} />
       </span>
       <ol className="mt-2 flex flex-wrap gap-1">
@@ -435,13 +435,13 @@ function EncounterBar({ tale }: { tale: Tale }) {
               key={id}
               className={`px-2 py-1 font-sans text-xs ${on ? "bg-gold/25 text-gold-bright" : "text-mist"} border ${on ? "border-gold" : "border-gold/20"}`}
             >
-              {hero ? hero.name : "Trouble"}
+              {hero ? hero.name : "Problema"}
             </li>
           );
         })}
       </ol>
       <button type="button" className="mt-2 min-h-11 font-sans text-xs tracking-widest text-gold" onClick={stepBack}>
-        STEP BACK
+        RETIRA'T
       </button>
     </section>
   );
@@ -478,21 +478,21 @@ function RollPrompt({ tale, request, lang }: { tale: Tale; request: RollRequest;
   };
 
   return (
-    <div className="fixed inset-x-3 bottom-24 z-40 mx-auto max-w-md border border-gold bg-ink/95 p-4 sm:bottom-28" role="dialog" aria-label="Roll">
+    <div className="fixed inset-x-3 bottom-24 z-40 mx-auto max-w-md border border-gold bg-ink/95 p-4 sm:bottom-28" role="dialog" aria-label="Tirada">
       <p className="font-sans text-xs tracking-widest text-gold-dim">
-        {request.kind === "strike" ? "STRIKE" : "THE DICE ARE ASKED"}
+        {request.kind === "strike" ? "ATAC" : "ES DEMANEN ELS DAUS"}
       </p>
       <h2 className="mt-1 font-serif text-lg text-parchment">
         {hero.name} · {ABILITY_NAMES[request.ability]} {mod >= 0 ? "+" : ""}
-        {mod} <span className="text-mist">vs {request.dc}</span>
+        {mod} <span className="text-mist">contra {request.dc}</span>
       </h2>
       <p className="font-serif text-sm text-mist">{request.reason}</p>
-      <div className="mt-3 grid grid-cols-3 gap-1" role="group" aria-label="How the die falls">
+      <div className="mt-3 grid grid-cols-3 gap-1" role="group" aria-label="Com cau el dau">
         {(
           [
-            ["normal", "Plain"],
-            ["advantage", "Advantage"],
-            ["disadvantage", "Disadvantage"],
+            ["normal", "Normal"],
+            ["advantage", "Avantatge"],
+            ["disadvantage", "Desavantatge"],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -506,10 +506,10 @@ function RollPrompt({ tale, request, lang }: { tale: Tale; request: RollRequest;
           </button>
         ))}
       </div>
-      {auto.why ? <p className="mt-1 font-sans text-xs text-gold-dim">Suggested: advantage, {auto.why}.</p> : null}
+      {auto.why ? <p className="mt-1 font-sans text-xs text-gold-dim">Suggeriment: avantatge, {auto.why}.</p> : null}
       <div className="mt-3">
         <TextButton tone="ember" onClick={() => rollFor(request, mode)}>
-          Roll for me
+          Tira per mi
         </TextButton>
       </div>
       <form
@@ -523,15 +523,15 @@ function RollPrompt({ tale, request, lang }: { tale: Tale; request: RollRequest;
           value={num}
           onChange={(e) => setNum(e.target.value.replace(/\D/g, "").slice(0, 2))}
           inputMode="numeric"
-          placeholder="Or the d20 on the table"
-          aria-label="The number on the table die"
+          placeholder="O el d20 de la taula"
+          aria-label="El número del dau de la taula"
           className="h-11 min-w-0 flex-1 border border-gold/40 bg-ink/40 px-2 font-serif text-sm text-parchment outline-none"
         />
         {canListen() ? (
           <button
             type="button"
             onClick={hear}
-            aria-label={hearing ? "Stop listening" : "Say the number"}
+            aria-label={hearing ? "Deixa d'escoltar" : "Digues el número"}
             aria-pressed={hearing}
             className={`flex size-11 items-center justify-center border ${hearing ? "border-gold-bright text-gold-bright" : "border-gold/40 text-gold"}`}
           >
@@ -543,11 +543,11 @@ function RollPrompt({ tale, request, lang }: { tale: Tale; request: RollRequest;
           disabled={!validPhysical}
           className="min-h-11 border border-gold/70 bg-gold/10 px-3 font-sans text-xs tracking-widest text-gold-bright disabled:opacity-40"
         >
-          USE
+          USA
         </button>
       </form>
       <button type="button" className="mt-2 min-h-11 font-sans text-xs tracking-widest text-mist" onClick={() => setPending(null)}>
-        NEVER MIND
+        DEIXA-HO
       </button>
     </div>
   );
@@ -560,9 +560,9 @@ function EndCard({ tale }: { tale: Tale }) {
   return (
     <div className="px-4 pb-3">
       <div className="border border-gold-dim/50 bg-parchment-deep/50 p-3 text-center">
-        <p className="font-display text-sm tracking-widest text-gold-dim">THE TALE IS TOLD</p>
+        <p className="font-display text-sm tracking-widest text-gold-dim">EL CONTE ÉS CONTAT</p>
         <p className="mt-1 font-serif text-sm text-soot">
-          Day {tale.day} · Level {tale.level} · {tale.xp} XP · {tale.chronicle.length} pages in the chronicle
+          Dia {tale.day} · Nivell {tale.level} · {tale.xp} XP · {tale.chronicle.length} pàgines a la crònica
         </p>
       </div>
       <div className="mt-2 grid gap-2">
@@ -571,17 +571,17 @@ function EndCard({ tale }: { tale: Tale }) {
           onClick={() => setModal("chronicle")}
           className="min-h-11 border border-gold-dim/60 bg-parchment-deep/60 px-3 font-serif text-sm text-soot"
         >
-          Read the chronicle
+          Llegeix la crònica
         </button>
         <button
           type="button"
           onClick={() => addTale(createTale(tale.campaignId, tale.playerName))}
           className="min-h-11 border border-gold-dim/60 px-3 font-serif text-sm text-soot"
         >
-          Play this tale again
+          Torna a jugar aquest conte
         </button>
         <button type="button" onClick={() => setScreen("select")} className="min-h-11 border border-gold-dim/60 px-3 font-serif text-sm text-soot">
-          Choose another tale
+          Tria un altre conte
         </button>
       </div>
     </div>
@@ -687,17 +687,17 @@ function StoryPanel({
   return (
     <Ornate variant="light" className="story-panel flex flex-col">
       <div className="flex items-center justify-between px-4 pt-4">
-        <p className="font-sans text-xs tracking-widest text-gold-dim">THE STORYTELLER</p>
+        <p className="font-sans text-xs tracking-widest text-gold-dim">LA NARRADORA</p>
         <div className="flex items-center">
           <button
             type="button"
             className="min-h-11 px-2 text-soot"
-            aria-label="Hear it again"
+            aria-label="Torna-ho a escoltar"
             onClick={() => void speak(narration, { voice: heroVoice, lang })}
           >
             <Volume2 className="size-4" />
           </button>
-          <button type="button" className="min-h-11 px-2 text-soot lg:hidden" onClick={onClose} aria-label="Hide storyteller">
+          <button type="button" className="min-h-11 px-2 text-soot lg:hidden" onClick={onClose} aria-label="Amaga la narradora">
             <X className="size-4" />
           </button>
         </div>
@@ -705,7 +705,7 @@ function StoryPanel({
       <div className="scroll-thin flex-1 overflow-y-auto px-4 py-3">
         {writing ? (
           <p className="flex items-center gap-2 font-serif text-soot">
-            <Feather className="size-4" /> Writing the tale…
+            <Feather className="size-4" /> Escrivint el conte…
           </p>
         ) : (
           body.split("\n\n").map((para, i) => (
@@ -715,13 +715,13 @@ function StoryPanel({
           ))
         )}
         {toldBy === "book" && done ? (
-          <p className="font-sans text-xs text-gold-dim">Told from the table book.</p>
+          <p className="font-sans text-xs text-gold-dim">Contat des del llibre de la taula.</p>
         ) : null}
       </div>
       {!writing && !done ? (
         <div className="px-4 pb-2">
           <button type="button" className="ml-auto block min-h-11 border border-gold-dim/40 px-3 font-sans text-xs text-soot" onClick={() => setSkip(true)}>
-            Skip narration
+            Salta la narració
           </button>
         </div>
       ) : null}
@@ -742,7 +742,7 @@ function StoryPanel({
         </div>
       ) : null}
       {done && blocked ? (
-        <p className="px-4 pb-2 font-serif text-sm text-soot">The dice are waiting on the table.</p>
+        <p className="px-4 pb-2 font-serif text-sm text-soot">Els daus esperen a la taula.</p>
       ) : null}
       {!finished ? (
         <form
@@ -755,7 +755,7 @@ function StoryPanel({
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder={hearing ? "Listening…" : "What does the company do?"}
+            placeholder={hearing ? "Escoltant…" : "Què fa la companyia?"}
             maxLength={400}
             className="h-11 min-w-0 flex-1 border border-gold-dim/40 bg-parchment/40 px-2 font-serif text-sm text-soot outline-none"
           />
@@ -765,7 +765,7 @@ function StoryPanel({
               onClick={talk}
               disabled={writing || blocked}
               aria-pressed={hearing}
-              aria-label={hearing ? "Stop listening" : "Speak your action"}
+              aria-label={hearing ? "Deixa d'escoltar" : "Digues la teva acció"}
               className={`flex size-11 items-center justify-center border disabled:opacity-40 ${hearing ? "border-ember bg-ember/20 text-ember" : "border-gold-dim/50 text-soot"}`}
             >
               <Mic className="size-4" />
@@ -775,7 +775,7 @@ function StoryPanel({
             type="submit"
             disabled={writing || blocked || !draft.trim()}
             className="flex size-11 items-center justify-center bg-ember text-parchment disabled:opacity-40"
-            aria-label="Send"
+            aria-label="Envia"
           >
             <Send className="size-4" />
           </button>

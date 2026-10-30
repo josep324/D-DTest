@@ -166,7 +166,7 @@ export default defineConfig(({ command, isPreview }) => ({
     // PWA head + ?install=1 tutorial page; runs before Start/Nitro.
     grokPwaPlugin(),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart({ pages: [{ path: "/" }], prerender: { enabled: true, crawlLinks: false } }),
     ...(command === "build" || isPreview
       ? [
           nitro({

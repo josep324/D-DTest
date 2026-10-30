@@ -29,8 +29,8 @@ function encounterFacts(tale: Tale): string | undefined {
   const enc = tale.encounter;
   if (!enc) return undefined;
   const turn = enc.order[enc.turn];
-  const who = tale.party.find((p) => p.id === turn)?.name ?? "the trouble";
-  return `Trouble at ${enc.name}, resolve ${enc.resolve}/${enc.resolveMax}, round ${enc.round}, turn: ${who}`;
+  const who = tale.party.find((p) => p.id === turn)?.name ?? "el problema";
+  return `Problema a ${enc.name}, resolució ${enc.resolve}/${enc.resolveMax}, ronda ${enc.round}, torn: ${who}`;
 }
 
 /** Ask the storyteller (or the table book) what happens, then fold the result into the tale. */
@@ -96,7 +96,7 @@ export function rollFor(request: RollRequest, mode?: RollMode, physical?: number
   state.setPending(null);
   state.setDice(show);
   const mech = request.kind === "strike" ? strikeMechanics(tale, show) : checkMechanics(show);
-  const line = request.line ?? `${hero.name} tries: ${request.reason}.`;
+  const line = request.line ?? `${hero.name} ho intenta: ${request.reason}.`;
   window.setTimeout(() => void perform(line, { rolled: show, mech, resume: true }), physical !== undefined ? 400 : 1000);
 }
 
@@ -124,14 +124,14 @@ export function strikeAt(spot: Hotspot): void {
 
   if (!enc) {
     if (!spot.threat) {
-      void perform(`${hero.name} searches ${spot.name} for a fight and finds only weather.`);
+      void perform(`${hero.name} busca baralla a ${spot.name} i només hi troba el temps.`);
       return;
     }
-    void perform(`${hero.name} squares up to the trouble at ${spot.name}.`, { mech: beginEncounter(tale, spot) });
+    void perform(`${hero.name} s'encara amb el problema de ${spot.name}.`, { mech: beginEncounter(tale, spot) });
     return;
   }
   if (spot.id !== enc.spotId) {
-    void perform(`${hero.name} glances at ${spot.name}, but the trouble is at ${enc.name}.`);
+    void perform(`${hero.name} mira ${spot.name}, però el problema és a ${enc.name}.`);
     return;
   }
   if (enc.order[enc.turn] !== hero.id) {
@@ -143,9 +143,9 @@ export function strikeAt(spot: Hotspot): void {
     heroId: hero.id,
     ability: hero.attack,
     dc: enc.guard,
-    reason: `Press the trouble at ${spot.name}`,
+    reason: `Fes recular el problema de ${spot.name}`,
     kind: "strike",
-    line: `${hero.name} presses the trouble at ${spot.name}.`,
+    line: `${hero.name} fa recular el problema de ${spot.name}.`,
   });
 }
 
@@ -154,8 +154,8 @@ export function stepBack(): void {
   const tale = activeTale(state);
   if (!tale?.encounter || state.writing) return;
   const hero = heroOf(tale);
-  void perform(`${hero.name} calls the company back from ${tale.encounter.name}.`, {
-    mech: { heartDelta: [], xp: 0, encounter: null, notes: [`The company steps back from the trouble at ${tale.encounter.name}. Nobody is hurt.`] },
+  void perform(`${hero.name} fa recular la companyia de ${tale.encounter.name}.`, {
+    mech: { heartDelta: [], xp: 0, encounter: null, notes: [`La companyia es retira del problema de ${tale.encounter.name}. Ningú no queda ferit.`] },
   });
 }
 
@@ -163,7 +163,7 @@ export function restParty(): void {
   const state = useGame.getState();
   const tale = activeTale(state);
   if (!tale || state.writing || tale.finished || tale.encounter || tale.rests <= 0) return;
-  void perform("The company makes camp and rests.", { mech: restMechanics(tale) });
+  void perform("La companyia fa campament i descansa.", { mech: restMechanics(tale) });
 }
 
 export function consumeItem(item: Item): void {
@@ -172,7 +172,7 @@ export function consumeItem(item: Item): void {
   if (!tale || state.writing || tale.finished) return;
   const hero = heroOf(tale);
   const mech = itemMechanics(tale, item, hero) ?? undefined;
-  void perform(`${hero.name} uses the ${item.name.toLowerCase()}. ${item.detail}`, { mech });
+  void perform(`${hero.name} fa servir ${item.name.toLowerCase()}. ${item.detail}`, { mech });
 }
 
 export function onPlaceMove(spot: Hotspot, mode: "move" | "look"): void {
@@ -181,6 +181,6 @@ export function onPlaceMove(spot: Hotspot, mode: "move" | "look"): void {
   const hero = heroOf(tale);
   const scene = getScene(tale.campaignId, tale.sceneId);
   if (!scene) return;
-  if (mode === "look") void perform(`${hero.name} looks closely at ${spot.name}.`);
-  else void perform(`${hero.name} goes to ${spot.name}.`);
+  if (mode === "look") void perform(`${hero.name} mira de prop ${spot.name}.`);
+  else void perform(`${hero.name} va a ${spot.name}.`);
 }

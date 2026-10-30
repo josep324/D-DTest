@@ -38,7 +38,7 @@ const Input = z.object({
   facts: z.array(z.string().max(300)).max(10).optional(),
   summary: z.string().max(600).optional(),
   level: z.number().int().min(1).max(10).optional(),
-  lang: z.enum(["en", "ca", "es"]).default("en"),
+  lang: z.enum(["en", "ca", "es"]).default("ca"),
   partner: z.string().max(40).optional(),
   inventory: z.array(z.string().max(40)).max(20).optional(),
   heroLine: z.string().max(160).optional(),
@@ -97,11 +97,11 @@ export const consultStoryteller = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<{ ok: true; result: GmResult } | { ok: false; error: string }> => {
     const campaign = getCampaign(data.campaignId);
     const scene = getScene(data.campaignId, data.sceneId);
-    if (!campaign || !scene) return { ok: false, error: "Unknown tale" };
+    if (!campaign || !scene) return { ok: false, error: "Conte desconegut" };
 
     const apiKey = nanoKey();
-    if (!apiKey) return { ok: false, error: "The storyteller is away from the table" };
-    if (!allow("gm", 14, 60_000)) return { ok: false, error: "The storyteller needs a breath" };
+    if (!apiKey) return { ok: false, error: "La narradora és lluny de la taula" };
+    if (!allow("gm", 14, 60_000)) return { ok: false, error: "La narradora necessita respirar" };
 
     const spots = scene.hotspots.map((h) => `${h.id} (${h.name}): ${h.examine}`).join("\n");
     const scenes = campaign.scenes.map((s) => s.id).join(", ");
@@ -163,7 +163,7 @@ The company does: ${data.action}`;
           ],
         }),
       });
-      if (!res.ok) return { ok: false, error: "The storyteller lost the thread" };
+      if (!res.ok) return { ok: false, error: "La narradora ha perdut el fil" };
       const body = (await res.json()) as { choices?: { message?: { content?: string } }[] };
       const text = body.choices?.[0]?.message?.content ?? "";
       const parsed = Out.parse(extractJson(text));
@@ -188,6 +188,6 @@ The company does: ${data.action}`;
       };
       return { ok: true, result };
     } catch {
-      return { ok: false, error: "The storyteller lost the thread" };
+      return { ok: false, error: "La narradora ha perdut el fil" };
     }
   });

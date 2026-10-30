@@ -12,12 +12,12 @@ import type {
 } from "@/lib/game/types";
 
 export const ABILITY_NAMES: Record<Ability, string> = {
-  str: "Strength",
-  dex: "Dexterity",
-  con: "Constitution",
-  int: "Intellect",
-  wis: "Wisdom",
-  cha: "Charm",
+  str: "Força",
+  dex: "Destresa",
+  con: "Constitució",
+  int: "Intel·lecte",
+  wis: "Saviesa",
+  cha: "Encant",
 };
 
 export const LEVEL_XP = [0, 80, 200, 360];
@@ -54,10 +54,10 @@ export function heroOf(tale: Tale, id?: string): Character {
 
 /** Advantage when an item set an edge for this hero or a companion stands at the same place. */
 export function autoMode(tale: Tale, hero: Character): { mode: RollMode; why: string } {
-  if (tale.edge === hero.id) return { mode: "advantage", why: "an item gives an edge" };
+  if (tale.edge === hero.id) return { mode: "advantage", why: "un objecte et dóna avantatge" };
   const here = tale.positions[hero.id];
   const helper = tale.party.find((p) => p.id !== hero.id && tale.positions[p.id] === here);
-  if (helper) return { mode: "advantage", why: `${helper.name} lends a hand` };
+  if (helper) return { mode: "advantage", why: `${helper.name} fa costat` };
   return { mode: "normal", why: "" };
 }
 
@@ -98,21 +98,21 @@ export function makeCheck(
 
 export function describeRoll(show: DiceShow): string {
   const how =
-    show.mode === "advantage" ? " with advantage" : show.mode === "disadvantage" ? " with disadvantage" : "";
-  const tag = show.crit === "hit" ? " (a natural 20!)" : show.crit === "fumble" ? " (a natural 1)" : "";
-  return `${show.who} rolls ${ABILITY_NAMES[show.ability]}${how}: ${show.roll}${show.mod >= 0 ? "+" : ""}${show.mod} = ${show.roll + show.mod} against ${show.dc}${tag}. ${show.success ? "Success" : "Failure"}.`;
+    show.mode === "advantage" ? " amb avantatge" : show.mode === "disadvantage" ? " amb desavantatge" : "";
+  const tag = show.crit === "hit" ? " (un 20 natural!)" : show.crit === "fumble" ? " (un 1 natural)" : "";
+  return `${show.who} tira ${ABILITY_NAMES[show.ability]}${how}: ${show.roll}${show.mod >= 0 ? "+" : ""}${show.mod} = ${show.roll + show.mod} contra ${show.dc}${tag}. ${show.success ? "Èxit" : "Fracàs"}.`;
 }
 
 type Intent = { ability: Ability; dc: number; reason: string; re: RegExp };
 
 // English first, then the Catalan and Spanish stems the table is likely to say out loud.
 const INTENTS: Intent[] = [
-  { ability: "dex", dc: 13, reason: "Moving quietly", re: /\b(sneak|creep|tiptoe|hide|slip past|pick|lockpick|dodge|balance|juggle)|(sigil|amag|esquiv|furt|colar|ganxo|sigilos|esconde)/i },
-  { ability: "str", dc: 13, reason: "Hard physical effort", re: /\b(push|pull|lift|force|break|smash|haul|drag|shove|heave|climb)|(empeny|estira|aixec|trenc|força|forzar|empuj|levant|escal)/i },
-  { ability: "wis", dc: 12, reason: "Noticing what is easy to miss", re: /\b(look|search|inspect|examine|listen|watch|notice|track|follow|study the)|(mira|busc|busqu|inspecciona|escolta|observa|segueix|rastre|escucha|examina)/i },
-  { ability: "int", dc: 13, reason: "Working something out", re: /\b(read|decipher|recall|figure|solve|translate|analy[sz]e|remember|puzzle|study)|(llegeix|desxifra|recorda|resol|descifra|lee|resuelve)/i },
-  { ability: "cha", dc: 12, reason: "Choosing the right words", re: /\b(ask|persuade|convince|charm|talk|bargain|plead|reassure|haggle|speak to)|(pregunta|convenc|parla|regateja|demana|habla|pide)/i },
-  { ability: "con", dc: 12, reason: "Holding on a little longer", re: /\b(endure|brace|hold (?:on|out)|wade|push through|swim|carry on)|(aguanta|resisteix|nada|nedar|aguanta)/i },
+  { ability: "dex", dc: 13, reason: "Moure's sense fer soroll", re: /\b(sneak|creep|tiptoe|hide|slip past|pick|lockpick|dodge|balance|juggle)|(sigil|amag|esquiv|furt|colar|ganxo|sigilos|esconde)/i },
+  { ability: "str", dc: 13, reason: "Un esforç físic dur", re: /\b(push|pull|lift|force|break|smash|haul|drag|shove|heave|climb)|(empeny|estira|aixec|trenc|força|forzar|empuj|levant|escal)/i },
+  { ability: "wis", dc: 12, reason: "Notar el que costa de veure", re: /\b(look|search|inspect|examine|listen|watch|notice|track|follow|study the)|(mira|busc|busqu|inspecciona|escolta|observa|segueix|rastre|escucha|examina)/i },
+  { ability: "int", dc: 13, reason: "Descobrir com funciona", re: /\b(read|decipher|recall|figure|solve|translate|analy[sz]e|remember|puzzle|study)|(llegeix|desxifra|recorda|resol|descifra|lee|resuelve)/i },
+  { ability: "cha", dc: 12, reason: "Trobar les paraules justes", re: /\b(ask|persuade|convince|charm|talk|bargain|plead|reassure|haggle|speak to)|(pregunta|convenc|parla|regateja|demana|habla|pide)/i },
+  { ability: "con", dc: 12, reason: "Aguantar una mica més", re: /\b(endure|brace|hold (?:on|out)|wade|push through|swim|carry on)|(aguanta|resisteix|nada|nedar|aguanta)/i },
 ];
 
 export function classifyAction(text: string): RollRequest | null {
@@ -138,7 +138,7 @@ export function checkMechanics(show: DiceShow): Mechanics {
   const heartDelta: Mechanics["heartDelta"] = [];
   if (show.crit === "fumble") {
     heartDelta.push({ id: show.heroId, delta: -1 });
-    notes.push(`${show.who} loses 1 heart to the stumble. The others pull them back.`);
+    notes.push(`${show.who} perd 1 cor per l'entrebanc. Els altres l'ajuden a aixecar-se.`);
   }
   return { heartDelta, xp: xpForCheck(show), notes };
 }
@@ -164,8 +164,8 @@ export function startEncounter(tale: Tale, spot: Hotspot): { encounter: Encounte
     round: 1,
   };
   const notes = [
-    `Trouble stirs at ${spot.name}. Initiative: ${order.map((o) => `${o.name} ${o.score}`).join(", ")}.`,
-    "The company can calm the trouble. Nobody here dies; a hero at 1 heart is pulled back by the others.",
+    `El problema es desperta a ${spot.name}. Iniciativa: ${order.map((o) => `${o.id === "foe" ? "el problema" : o.name} ${o.score}`).join(", ")}.`,
+    "La companyia pot calmar el problema. Aquí no es mor ningú; un heroi amb 1 cor és retirat pels altres.",
   ];
   return { encounter, notes };
 }
@@ -184,7 +184,7 @@ function runFoeTurns(
     if (enc.order[turn] !== "foe") break;
     const live = tale.party.filter((p) => hearts[p.id] > 1);
     if (live.length === 0) {
-      notes.push(`The trouble at ${enc.name} huffs and finds every hero already worn thin. It holds back.`);
+      notes.push(`El problema de ${enc.name} bufa i veu tots els herois ja esgotats. Es reté.`);
     } else {
       const target = live[Math.floor(Math.random() * live.length)];
       const swing = die(20) + 3;
@@ -192,9 +192,9 @@ function runFoeTurns(
         const dmg = Math.min(enc.bite, hearts[target.id] - 1);
         hearts[target.id] -= dmg;
         deltas[target.id] = (deltas[target.id] ?? 0) - dmg;
-        notes.push(`The trouble at ${enc.name} strikes ${target.name} (${swing} vs guard ${target.guard}) and costs ${dmg} heart.`);
+        notes.push(`El problema de ${enc.name} colpeja ${target.name} (${swing} contra defensa ${target.guard}) i costa ${dmg} cor.`);
       } else {
-        notes.push(`The trouble at ${enc.name} swings at ${target.name} (${swing} vs guard ${target.guard}) and misses.`);
+        notes.push(`El problema de ${enc.name} ataca ${target.name} (${swing} contra defensa ${target.guard}) i falla.`);
       }
     }
     turn += 1;
@@ -237,17 +237,17 @@ export function strikeMechanics(tale: Tale, show: DiceShow): Mechanics {
       hearts[hero.id] -= dmg;
       deltas[hero.id] = -dmg;
     }
-    notes.push(`${hero.name} overreaches and loses ${dmg} heart.`);
+    notes.push(`${hero.name} s'estén massa i perd ${dmg} cor.`);
   } else if (show.success) {
     const dmg = die(4) + Math.max(0, abilityMod(hero.abilities[hero.attack])) + (show.crit === "hit" ? 3 : 0);
     resolve = Math.max(0, resolve - dmg);
-    notes.push(`${hero.name} presses the trouble back by ${dmg}. It has ${resolve} of ${enc.resolveMax} resolve left.`);
+    notes.push(`${hero.name} fa recular el problema ${dmg}. Li queden ${resolve} de ${enc.resolveMax} de resolució.`);
   } else {
-    notes.push(`${hero.name} cannot find the opening. The trouble is unmoved.`);
+    notes.push(`${hero.name} no troba l'escletxa. El problema no es mou.`);
   }
 
   if (resolve <= 0) {
-    notes.push(`The trouble at ${enc.name} is calmed. Nobody has to be hurt further.`);
+    notes.push(`El problema de ${enc.name} queda calmat. Ningú no ha de patir més.`);
     return {
       heartDelta: Object.entries(deltas).map(([id, delta]) => ({ id, delta })),
       xp: 30 + xpForCheck(show),
@@ -282,7 +282,7 @@ export function restMechanics(tale: Tale): Mechanics {
     heartDelta,
     xp: 0,
     rest: true,
-    notes: [`The company rests. Each hero recovers up to half their hearts. ${tale.rests - 1} rests remain.`],
+    notes: [`La companyia descansa. Cada heroi recupera fins a la meitat dels cors. Queden ${tale.rests - 1} descansos.`],
   };
 }
 
@@ -294,7 +294,7 @@ export function itemMechanics(tale: Tale, item: Item, hero: Character): Mechanic
       heartDelta: delta > 0 ? [{ id: target.id, delta }] : [],
       xp: 0,
       consume: item.id,
-      notes: [`${hero.name} uses the ${item.name.toLowerCase()} on ${target.name}, who recovers ${Math.max(0, delta)} heart.`],
+      notes: [`${hero.name} fa servir ${item.name.toLowerCase()} amb ${target.name}, que recupera ${Math.max(0, delta)} cor.`],
     };
   }
   if (item.effect === "edge") {
@@ -302,7 +302,7 @@ export function itemMechanics(tale: Tale, item: Item, hero: Character): Mechanic
       heartDelta: [],
       xp: 0,
       edge: hero.id,
-      notes: [`${hero.name} uses the ${item.name.toLowerCase()}. The next check has advantage.`],
+      notes: [`${hero.name} fa servir ${item.name.toLowerCase()}. La propera tirada té avantatge.`],
     };
   }
   return null;

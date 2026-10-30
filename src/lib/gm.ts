@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getCampaign, getScene } from "@/lib/game/content";
 import type { GmResult } from "@/lib/game/types";
-import { NANO_BASE, NANO_CHAT_MODEL, nanoKey } from "@/lib/nano.server";
+import { chatTarget } from "@/lib/llm.server";
 import { allow } from "@/lib/rate-limit.server";
 
 const Input = z.object({
@@ -56,29 +56,29 @@ const Out = z.object({
       z.object({
         id: z.string().max(40),
         label: z.string().min(1).max(90),
-        hint: z.string().max(90).optional(),
+        hint: z.string().max(90).nullish(),
       }),
     )
     .min(0)
     .max(4),
-  questTitle: z.string().max(90).optional(),
-  questDetail: z.string().max(240).optional(),
+  questTitle: z.string().max(90).nullish(),
+  questDetail: z.string().max(240).nullish(),
   heartDelta: z
     .array(z.object({ id: z.string().max(20), delta: z.number().int().min(-4).max(4) }))
-    .optional(),
-  chronicleTitle: z.string().max(90).optional(),
-  chronicleBody: z.string().max(400).optional(),
-  moveTo: z.string().max(40).optional(),
-  nextSceneId: z.string().max(40).optional(),
-  daypart: z.string().max(40).optional(),
-  weather: z.string().max(40).optional(),
-  sky: z.string().max(40).optional(),
-  clock: z.string().max(20).optional(),
-  day: z.number().int().min(1).max(30).optional(),
-  summary: z.string().max(600).optional(),
+    .nullish(),
+  chronicleTitle: z.string().max(90).nullish(),
+  chronicleBody: z.string().max(400).nullish(),
+  moveTo: z.string().max(40).nullish(),
+  nextSceneId: z.string().max(40).nullish(),
+  daypart: z.string().max(40).nullish(),
+  weather: z.string().max(40).nullish(),
+  sky: z.string().max(40).nullish(),
+  clock: z.string().max(20).nullish(),
+  day: z.number().int().min(1).max(30).nullish(),
+  summary: z.string().max(600).nullish(),
   rollRequest: z
     .object({
-      heroId: z.string().max(20).optional(),
+      heroId: z.string().max(20).nullish(),
       ability: z.enum(["str", "dex", "con", "int", "wis", "cha"]),
       dc: z.number().int().min(8).max(18),
       reason: z.string().max(120),
@@ -101,8 +101,8 @@ export const consultStoryteller = createServerFn({ method: "POST" })
     const scene = getScene(data.campaignId, data.sceneId);
     if (!campaign || !scene) return { ok: false, error: "Conte desconegut" };
 
-    const apiKey = nanoKey();
-    if (!apiKey) return { ok: false, error: "La narradora és lluny de la taula" };
+    const target = chatTarget();
+    if (!target) return { ok: false, error: "La narradora és lluny de la taula" };
     if (!allow("gm", 14, 60_000)) return { ok: false, error: "La narradora necessita respirar" };
 
     const spots = scene.hotspots.map((h) => `${h.id} (${h.name}): ${h.examine}`).join("\n");
@@ -154,17 +154,19 @@ ${(data.facts ?? []).join("\n") || "(none)"}
 The company does: ${data.action}`;
 
     try {
-      const res = await fetch(`${NANO_BASE}/chat/completions`, {
+      const res = await fetch(target.url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
+          Authorization: `Bearer ${target.key}`,
+          ...target.headers,
         },
-        signal: AbortSignal.timeout(22000),
+        // Netlify cuts functions at 10 s on the free plan: answer cleanly before that and let the book take over.
+        signal: AbortSignal.timeout(9000),
         body: JSON.stringify({
-          model: NANO_CHAT_MODEL,
+          model: target.model,
           temperature: 0.8,
-          max_tokens: 900,
+          max_tokens: 700,
           messages: [
             { role: "system", content: system },
             { role: "user", content: user },
@@ -177,10 +179,10 @@ The company does: ${data.action}`;
       const parsed = Out.parse(extractJson(text));
       const result: GmResult = {
         narration: parsed.narration.trim(),
-        choices: parsed.choices,
+        choices: parsed.choices.map((c) => ({ id: c.id, label: c.label, hint: c.hint || undefined })),
         questTitle: parsed.questTitle || undefined,
         questDetail: parsed.questDetail || undefined,
-        heartDelta: parsed.heartDelta,
+        heartDelta: parsed.heartDelta ?? undefined,
         chronicleTitle: parsed.chronicleTitle || undefined,
         chronicleBody: parsed.chronicleBody || undefined,
         moveTo: parsed.moveTo || undefined,
@@ -189,9 +191,9 @@ The company does: ${data.action}`;
         weather: parsed.weather || undefined,
         sky: parsed.sky || undefined,
         clock: parsed.clock || undefined,
-        day: parsed.day,
+        day: parsed.day ?? undefined,
         summary: parsed.summary || undefined,
-        rollRequest: data.roll ? undefined : parsed.rollRequest ?? undefined,
+        rollRequest: data.roll ? undefined : parsed.rollRequest ? { ...parsed.rollRequest, heroId: parsed.rollRequest.heroId || undefined } : undefined,
         endTale: parsed.endTale || undefined,
       };
       return { ok: true, result };

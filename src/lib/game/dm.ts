@@ -104,10 +104,10 @@ const VERBS = {
   use: /\b(fes servir|fem servir|faig servir|usa|usem|uso|menja\w*|beu|bec)\b/,
   attack: /\b(atac\w*|colpej\w*|lluit\w*|dispar\w*|apunyal\w*|mato|mata|matem|combat\w*|carrega\w*|clavo|clavem)\b/,
   take: /\b(agaf\w*|recull\w*|pren\w*|llev\w*|robo|robem)\b/,
-  talk: /\b(parl\w*|digu\w*|pregunt\w*|saluda\w*|xerr\w*|demana\w*|convenc\w*|negoci\w*|enganya\w*|persuad\w*|amenac\w*|intimid\w*|suborn\w*|raon\w*|explic\w*)\b/,
+  talk: /\b(parl\w*|dic|diem|dona\w*|dono|doni|pag\w*|lliur\w*|entreg\w*|ofer\w*|recit\w*|digu\w*|pregunt\w*|saluda\w*|xerr\w*|demana\w*|convenc\w*|negoci\w*|enganya\w*|persuad\w*|amenac\w*|intimid\w*|suborn\w*|raon\w*|explic\w*)\b/,
   go: /\b(ves|vaig|vagi|anem|anar|entr\w*|surt\w*|sort\w*|camin\w*|puj\w*|baix\w*|segu\w*|torn\w*|avanc\w*|endavant|marxem|marxo)\b/,
-  force: /\b(obr\w*|forc\w*|trenc\w*|empeny\w*|pic\w*|ganx\w*|moc|movem|sigil\w*|amag\w*|colo|colem|esquiv\w*|salt\w*|escal\w*|pas|passo|passem|passar|rodej\w*|sortej\w*)\b/,
-  look: /\b(mir\w*|examin\w*|observ\w*|inspeccion\w*|busc\w*|escorcoll\w*|regir\w*|escolt\w*|olor\w*|comprov\w*|ull|fixo|fixem)\b/,
+  force: /\b(netej\w*|frego\w*|fregu\w*|toc\w*|vad\w*|nad\w*|obr\w*|forc\w*|trenc\w*|empeny\w*|pic\w*|ganx\w*|moc|movem|sigil\w*|amag\w*|colo|colem|esquiv\w*|salt\w*|escal\w*|pas|passo|passem|passar|rodej\w*|sortej\w*)\b/,
+  look: /\b(lleg\w*|mir\w*|examin\w*|observ\w*|inspeccion\w*|busc\w*|escorcoll\w*|regir\w*|escolt\w*|olor\w*|comprov\w*|ull|fixo|fixem)\b/,
 };
 
 type Intent = keyof typeof VERBS;
@@ -444,7 +444,9 @@ function helpText(tale: Tale): string {
 function travel(tale: Tale, spot: Hotspot, mech: Mechanics): Turn {
   const dest = spot.to ? getScene(tale.campaignId, spot.to) : undefined;
   if (!dest) return plain("No sé per on anar.", mech);
-  const lines = [dest.opening];
+  const visited = has(tale, `visited-${dest.id}`);
+  mech.flags = [...(mech.flags ?? []), `visited-${dest.id}`];
+  const lines = [visited ? (dest.back ?? `Tornes a ${dest.name}. ${dest.ambient}`) : dest.opening];
   const result: GmResult = {
     narration: "",
     choices: [],
@@ -455,8 +457,8 @@ function travel(tale: Tale, spot: Hotspot, mech: Mechanics): Turn {
     sky: dest.sky,
     questTitle: dest.quest.title,
     questDetail: dest.quest.detail,
-    chronicleTitle: dest.chronicleTitle,
-    chronicleBody: dest.opening.split("\n\n")[0],
+    chronicleTitle: visited ? undefined : dest.chronicleTitle,
+    chronicleBody: visited ? undefined : dest.opening.split("\n\n")[0],
   };
   const arrival: Tale = { ...tale, sceneId: dest.id };
   const ambush = dest.hotspots.some((h) => h.kind === "foe" && h.foe?.ambush && !has(tale, `dead-${h.id}`));
@@ -464,6 +466,12 @@ function travel(tale: Tale, spot: Hotspot, mech: Mechanics): Turn {
     result.narration = narrate(["Tornes a la plaça de Pinassa amb el cofre sota el braç. La fornera ja t'ha vist des de lluny."]);
     result.questTitle = "Torna el cofre";
     result.questDetail = "Parla amb la fornera.";
+    return { mech, result };
+  }
+  if (dest.id === "pas" && has(tale, "nom-trobat")) {
+    result.narration = narrate(["Tornes a Aiguaquieta amb el nom a la boca. Els bols de l'hostal s'han quedat quiets, per una vegada. A la riba, entre els joncs, l'home de gris et mira venir."]);
+    result.questTitle = "Torna el nom";
+    result.questDetail = "Parla amb en Teodor, el picapedrer, i amb l'home de gris.";
     return { mech, result };
   }
   if (ambush) {
@@ -559,7 +567,10 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
   }
 
   if (intent === "talk") {
-    const spot = matchSpot(tale, text, ["npc", "foe"]) ?? visibleSpots(tale).find((h) => h.kind === "npc");
+    const spot =
+      matchSpot(tale, text, ["npc", "foe"]) ??
+      visibleSpots(tale).find((h) => h.kind === "npc") ??
+      visibleSpots(tale).find((h) => h.kind === "foe" && h.talk);
     if (!spot) return plain("No hi ha ningú aquí amb qui parlar.", mech);
     const persuade = /(convenc|negoci|enganya|persuad|amenac|intimid|suborn|raon)/.test(t);
     if (spot.check && persuade) {
@@ -594,6 +605,9 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
     const spot = matchSpot(tale, text, ["exit"]) ?? (exits.length === 1 ? exits[0] : undefined);
     if (!spot) {
       const other = matchSpot(tale, text);
+      if (other?.check && !(other.check.flag && has(tale, other.check.flag))) {
+        return askRoll(tale, other, other.check, raw, other.examine, mech);
+      }
       if (other) return plain(narrate([other.examine]), mech);
       return plain(`Cap on? Les sortides són: ${exits.map((e) => e.name.toLowerCase()).join(", ")}.`, mech);
     }
@@ -652,6 +666,11 @@ export function dmResolve(tale: Tale, request: RollRequest, show: DiceShow): Tur
   if (show.success) {
     mech.xp = (check.xp ?? 10) + (show.crit === "hit" ? 5 : 0);
     mech.flags = check.flag ? [check.flag] : [];
+    if (check.go && spot.kind === "exit") {
+      const walked = travel({ ...tale, flags: [...tale.flags, ...(mech.flags ?? [])] }, spot, mech);
+      walked.result.narration = narrate([check.success, ...walked.result.narration.split("\n\n")], rules);
+      return walked;
+    }
     const result: GmResult = {
       narration: narrate([check.success], rules),
       choices: [],
@@ -662,6 +681,7 @@ export function dmResolve(tale: Tale, request: RollRequest, show: DiceShow): Tur
   }
   mech.xp = 4;
   if (show.crit === "fumble") mech.heartDelta.push({ id: show.heroId, delta: -1 });
+  if (check.hurt) mech.heartDelta.push({ id: show.heroId, delta: -check.hurt });
   if (check.onFail === "fight") {
     const result = beginFight({ ...tale }, scene, [check.fail], mech);
     result.narration = result.narration.replace(/^/, "");

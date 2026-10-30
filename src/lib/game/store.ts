@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getCampaign, getScene } from "@/lib/game/content";
 import { applyTale, normalizeTale } from "@/lib/game/logic";
 import type { DiceShow, GmResult, Mechanics, RollRequest, Tale } from "@/lib/game/types";
 
@@ -169,7 +170,7 @@ export const useGame = create<Store>((set, get) => ({
       if (!data || !Array.isArray(data.tales)) return;
       set({
         playerName: typeof data.playerName === "string" && data.playerName ? data.playerName : "Viatger",
-        tales: data.tales.map(normalizeTale),
+        tales: data.tales.filter((t) => getCampaign(t.campaignId) && getScene(t.campaignId, t.sceneId)).map(normalizeTale),
         sound: Boolean(data.sound),
         voice: data.voice !== false,
         lang: data.lang === "en" || data.lang === "es" ? data.lang : "ca",

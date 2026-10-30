@@ -1,5 +1,8 @@
 export type Choice = { id: string; label: string; hint?: string };
 
+export type Ability = "str" | "dex" | "con" | "int" | "wis" | "cha";
+export type RollMode = "normal" | "advantage" | "disadvantage";
+
 export type Character = {
   id: string;
   name: string;
@@ -7,6 +10,10 @@ export type Character = {
   heart: number;
   heartMax: number;
   guard: number;
+  abilities: Record<Ability, number>;
+  proficient: Ability[];
+  attack: Ability;
+  voice: string;
   portrait: string;
   cameo?: "vesper" | "holt";
 };
@@ -47,7 +54,37 @@ export type Campaign = {
   canon: string;
 };
 
-export type Item = { id: string; name: string; detail: string; ownerId: string };
+export type Item = {
+  id: string;
+  name: string;
+  detail: string;
+  ownerId: string;
+  effect?: "heal" | "edge";
+  amount?: number;
+  uses?: number;
+};
+
+export type RollRequest = {
+  heroId?: string;
+  ability: Ability;
+  dc: number;
+  reason: string;
+  kind?: "check" | "strike";
+  /** The player's own words, kept so the storyteller answers them once the dice are down. */
+  line?: string;
+};
+
+export type Encounter = {
+  spotId: string;
+  name: string;
+  resolve: number;
+  resolveMax: number;
+  guard: number;
+  bite: number;
+  order: string[];
+  turn: number;
+  round: number;
+};
 
 export type ChronicleEntry = {
   id: string;
@@ -83,6 +120,27 @@ export type Tale = {
   log: LogLine[];
   updatedAt: number;
   beat: number;
+  level: number;
+  xp: number;
+  summary: string;
+  finished: boolean;
+  encounter: Encounter | null;
+  pendingRoll: RollRequest | null;
+  edge: string | null;
+  rests: number;
+  partner: string;
+};
+
+/** Everything the rules decided this turn, before the storyteller dresses it in words. */
+export type Mechanics = {
+  heartDelta: { id: string; delta: number }[];
+  xp: number;
+  encounter?: Encounter | null;
+  activeId?: string;
+  edge?: string | null;
+  consume?: string;
+  rest?: boolean;
+  notes: string[];
 };
 
 export type GmResult = {
@@ -100,13 +158,22 @@ export type GmResult = {
   sky?: string;
   clock?: string;
   day?: number;
+  summary?: string;
+  rollRequest?: RollRequest;
+  endTale?: boolean;
 };
 
 export type DiceShow = {
   who: string;
+  heroId: string;
   label: string;
+  ability: Ability;
+  mode: RollMode;
+  rolls: number[];
   roll: number;
   mod: number;
   dc: number;
   success: boolean;
+  crit: "hit" | "fumble" | null;
+  physical: boolean;
 };

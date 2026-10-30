@@ -1,15 +1,8 @@
-import { n as TSS_SERVER_FUNCTION, t as createServerFn } from "./ssr.mjs";
-import { a as getScene, i as getCampaign } from "./content-BlwjfujB.mjs";
+import { t as createServerFn } from "./ssr.mjs";
+import { a as createServerRpc, i as allow, n as NANO_CHAT_MODEL, o as nanoKey, t as NANO_BASE } from "./rate-limit.server-C9a05DD-.mjs";
+import { a as getScene, i as getCampaign } from "./content-7n9J_wLk.mjs";
 import { a as number, n as array, o as object, r as boolean, s as string, t as _enum } from "../_libs/zod.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/gm-DyTWGU3X.js
-var createServerRpc = (serverFnMeta, splitImportFn) => {
-	const url = "/_serverFn/" + serverFnMeta.id;
-	return Object.assign(splitImportFn, {
-		url,
-		serverFnMeta,
-		[TSS_SERVER_FUNCTION]: true
-	});
-};
+//#region node_modules/.nitro/vite/services/ssr/assets/gm-DSIIKXof.js
 var Input = object({
 	campaignId: string().max(40),
 	sceneId: string().max(40),
@@ -29,8 +22,25 @@ var Input = object({
 		total: number().int(),
 		dc: number().int(),
 		success: boolean()
-	}).optional()
+	}).optional(),
+	facts: array(string().max(300)).max(10).optional(),
+	summary: string().max(600).optional(),
+	level: number().int().min(1).max(10).optional(),
+	lang: _enum([
+		"en",
+		"ca",
+		"es"
+	]).default("ca"),
+	partner: string().max(40).optional(),
+	inventory: array(string().max(40)).max(20).optional(),
+	heroLine: string().max(160).optional(),
+	encounter: string().max(200).optional()
 });
+var LANGUAGE = {
+	en: "English",
+	ca: "Catalan",
+	es: "Spanish"
+};
 var Out = object({
 	narration: string().min(20).max(1400),
 	choices: array(object({
@@ -52,7 +62,22 @@ var Out = object({
 	weather: string().max(40).optional(),
 	sky: string().max(40).optional(),
 	clock: string().max(20).optional(),
-	day: number().int().min(1).max(30).optional()
+	day: number().int().min(1).max(30).optional(),
+	summary: string().max(600).optional(),
+	rollRequest: object({
+		heroId: string().max(20).optional(),
+		ability: _enum([
+			"str",
+			"dex",
+			"con",
+			"int",
+			"wis",
+			"cha"
+		]),
+		dc: number().int().min(8).max(18),
+		reason: string().max(120)
+	}).nullish(),
+	endTale: boolean().nullish()
 });
 function extractJson(text) {
 	const start = text.indexOf("{");
@@ -70,12 +95,16 @@ var consultStoryteller = createServerFn({ method: "POST" }).validator((input) =>
 	const scene = getScene(data.campaignId, data.sceneId);
 	if (!campaign || !scene) return {
 		ok: false,
-		error: "Unknown tale"
+		error: "Conte desconegut"
 	};
-	const apiKey = process.env.XAI_API_KEY;
+	const apiKey = nanoKey();
 	if (!apiKey) return {
 		ok: false,
-		error: "The storyteller is away from the table"
+		error: "La narradora és lluny de la taula"
+	};
+	if (!allow("gm", 14, 6e4)) return {
+		ok: false,
+		error: "La narradora necessita respirar"
 	};
 	const spots = scene.hotspots.map((h) => `${h.id} (${h.name}): ${h.examine}`).join("\n");
 	const scenes = campaign.scenes.map((s) => s.id).join(", ");
@@ -84,13 +113,17 @@ var consultStoryteller = createServerFn({ method: "POST" }).validator((input) =>
 	const dice = data.roll ? `Dice already rolled. ${data.roll.label}. Total ${data.roll.total} vs DC ${data.roll.dc}. Success: ${data.roll.success}. Do not contradict the dice.` : "No dice were rolled.";
 	const system = `You are the storyteller at Thornwake, a family tabletop game played by adults and children together.
 Tone: wondrous, specific, sensory, mild peril. No gore, no body horror, no romance, no real-world politics, no slurs.
-Never kill a hero. Heart deltas may be -2 to +2. A hero at 1 heart is pulled back by the others.
+Never kill a hero. Hearts and dice are decided by the rules engine: the "Facts" list is true and final, so narrate it faithfully and never contradict a roll, a heart total or an initiative order.
+Put heartDelta only for peril that has no entry in Facts (-1 to +1). A hero at 1 heart is pulled back by the others.
+When a character attempts something uncertain and no dice were rolled yet, set rollRequest {"heroId":"","ability":"str|dex|con|int|wis|cha","dc":8-18,"reason":"short"} and end the narration on the moment before the outcome; do not narrate the result. Never set rollRequest when dice were already rolled.
+Set endTale true only when the quest is truly resolved and the last scene is told.
+Keep "summary" as a running memory of the story so far, under 80 words, rewritten every turn.
 Do not invent a fifth hero. Heroes are only calder, bramble, vesper, holt.
 Do not use trademarked Dungeons & Dragons creatures or settings.
-The player at the table is ${data.playerName}. Address the company as "you".
+The players at the table are ${data.playerName}${data.partner ? ` and ${data.partner}` : ""}. Address the company as "you". Write narration, choice labels, quest and chronicle text in ${LANGUAGE[data.lang]}; keep ids as short English slugs. Narration is read aloud, so keep sentences speakable.
 Reply with JSON only. No markdown.
 Schema:
-{"narration":"two short paragraphs under 130 words","choices":[{"id":"slug","label":"concrete verb phrase","hint":"optional"}],"questTitle":"","questDetail":"","heartDelta":[{"id":"calder","delta":0}],"chronicleTitle":"","chronicleBody":"one sentence if this moment matters, else empty","moveTo":"hotspot id or empty","nextSceneId":"another scene id only if they truly travel, else empty","daypart":"","weather":"","sky":"SHORT · LABEL","clock":"HH:MM","day":1}
+{"narration":"two short paragraphs under 130 words","choices":[{"id":"slug","label":"concrete verb phrase","hint":"optional"}],"questTitle":"","questDetail":"","heartDelta":[{"id":"calder","delta":0}],"chronicleTitle":"","chronicleBody":"one sentence if this moment matters, else empty","moveTo":"hotspot id or empty","nextSceneId":"another scene id only if they truly travel, else empty","daypart":"","weather":"","sky":"SHORT · LABEL","clock":"HH:MM","day":1,"summary":"","rollRequest":null,"endTale":false}
 Exactly 3 or 4 choices. Keep quest fields if the goal is unchanged. moveTo must be a hotspot id from the list or empty. nextSceneId must be one of: ${scenes} — or empty.`;
 	const user = `Campaign: ${campaign.name}
 Canon: ${campaign.canon}
@@ -100,12 +133,18 @@ ${spots}
 Party hearts: ${party}
 Active hero id: ${data.activeId}
 Current quest: ${scene.quest.title} — ${scene.quest.detail}
+Company level: ${data.level ?? 1}. Pack: ${(data.inventory ?? []).join(", ") || "(empty)"}
+${data.heroLine ? `Acting hero: ${data.heroLine}` : ""}
+${data.encounter ? `Encounter: ${data.encounter}` : ""}
+Story so far: ${data.summary || "(just begun)"}
 Recent:
 ${log || "(opening)"}
 ${dice}
+Facts (final):
+${(data.facts ?? []).join("\n") || "(none)"}
 The company does: ${data.action}`;
 	try {
-		const res = await fetch("https://api.x.ai/v1/chat/completions", {
+		const res = await fetch(`${NANO_BASE}/chat/completions`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -113,9 +152,9 @@ The company does: ${data.action}`;
 			},
 			signal: AbortSignal.timeout(22e3),
 			body: JSON.stringify({
-				model: "grok-4.5",
+				model: NANO_CHAT_MODEL,
 				temperature: .8,
-				max_tokens: 800,
+				max_tokens: 900,
 				messages: [{
 					role: "system",
 					content: system
@@ -127,7 +166,7 @@ The company does: ${data.action}`;
 		});
 		if (!res.ok) return {
 			ok: false,
-			error: "The storyteller lost the thread"
+			error: "La narradora ha perdut el fil"
 		};
 		const text = (await res.json()).choices?.[0]?.message?.content ?? "";
 		const parsed = Out.parse(extractJson(text));
@@ -147,13 +186,16 @@ The company does: ${data.action}`;
 				weather: parsed.weather || void 0,
 				sky: parsed.sky || void 0,
 				clock: parsed.clock || void 0,
-				day: parsed.day
+				day: parsed.day,
+				summary: parsed.summary || void 0,
+				rollRequest: data.roll ? void 0 : parsed.rollRequest ?? void 0,
+				endTale: parsed.endTale || void 0
 			}
 		};
 	} catch {
 		return {
 			ok: false,
-			error: "The storyteller lost the thread"
+			error: "La narradora ha perdut el fil"
 		};
 	}
 });

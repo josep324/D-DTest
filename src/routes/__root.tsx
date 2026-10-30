@@ -13,7 +13,7 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       {
         name: "description",
-        content: "A family tabletop adventure with an AI storyteller.",
+        content: "Una aventura de taula en família amb una narradora d'IA que parla.",
       },
       { name: "theme-color", content: "#140e0a" },
     ],
@@ -31,7 +31,7 @@ export const Route = createRootRoute({
     ],
   }),
   component: () => (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ca" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

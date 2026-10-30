@@ -2,8 +2,8 @@ import { i as __toESM, n as __exportAll } from "../_runtime.mjs";
 import { _ as createFileRoute, b as require_jsx_runtime, d as Scripts, f as HeadContent, g as lazyRouteComponent, h as Outlet, m as createRouter, q as require_react, v as createRootRoute, y as useRouter } from "../_libs/@tanstack/react-router+[...].mjs";
 import { a as number, c as union, i as literal, o as object, s as string } from "../_libs/zod.mjs";
 import { i as TriangleAlert } from "../_libs/lucide-react.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/router-DEdvxMH7.js
-var router_DEdvxMH7_exports = /* @__PURE__ */ __exportAll({ getRouter: () => getRouter });
+//#region node_modules/.nitro/vite/services/ssr/assets/router-CgoYPCA7.js
+var router_CgoYPCA7_exports = /* @__PURE__ */ __exportAll({ getRouter: () => getRouter });
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 var FALLBACK_MESSAGE = "An unexpected error occurred. Try reloading the page.";
@@ -331,7 +331,7 @@ function PreviewHostBridge() {
 	}, [router]);
 	return null;
 }
-var styles_default = "/assets/styles--iG_A7AX.css";
+var styles_default = "/assets/styles-DygZJeFU.css";
 var APP_NAME = "Thornwake";
 var Route$1 = createRootRoute({
 	head: () => ({
@@ -344,7 +344,7 @@ var Route$1 = createRootRoute({
 			{ title: APP_NAME },
 			{
 				name: "description",
-				content: "A family tabletop adventure with an AI storyteller."
+				content: "Una aventura de taula en família amb una narradora d'IA que parla."
 			},
 			{
 				name: "theme-color",
@@ -385,7 +385,7 @@ var Route$1 = createRootRoute({
 		]
 	}),
 	component: () => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("html", {
-		lang: "en",
+		lang: "ca",
 		suppressHydrationWarning: true,
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("head", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HeadContent, {}) }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("body", {
 			className: "bg-ink text-parchment antialiased",
@@ -397,7 +397,7 @@ var Route$1 = createRootRoute({
 		})]
 	})
 });
-var $$splitComponentImporter = () => import("./routes-CQE-1zJ1.mjs");
+var $$splitComponentImporter = () => import("./routes-CqRaBwcj.mjs");
 var rootRouteChildren = { IndexRoute: createFileRoute("/")({ component: lazyRouteComponent($$splitComponentImporter, "component") }).update({
 	id: "/",
 	path: "/",
@@ -412,4 +412,4 @@ function getRouter() {
 	});
 }
 //#endregion
-export { getRouter, router_DEdvxMH7_exports as t };
+export { getRouter, router_CgoYPCA7_exports as t };

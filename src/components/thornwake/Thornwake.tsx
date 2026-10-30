@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { getCampaign } from "@/lib/game/content";
-import { decodeTale, encodeTale, localGm } from "@/lib/game/logic";
+import { consumeItem } from "@/lib/game/actions";
+import { decodeTale, encodeTale } from "@/lib/game/logic";
 import { activeTale, useGame } from "@/lib/game/store";
-import { consultStoryteller } from "@/lib/gm";
 import { Gate } from "@/components/thornwake/Gate";
 import { Play } from "@/components/thornwake/Play";
 import { Select } from "@/components/thornwake/Select";
@@ -86,7 +86,7 @@ function Modals() {
             <h2 className={`font-serif text-2xl ${modal === "chronicle" ? "text-soot" : "text-parchment"}`}>
               {titleFor(modal)}
             </h2>
-            <button type="button" aria-label="Close" className="flex size-11 items-center justify-center" onClick={() => setModal(null)}>
+            <button type="button" aria-label="Tanca" className="flex size-11 items-center justify-center" onClick={() => setModal(null)}>
               <X className="size-4" />
             </button>
           </div>
@@ -106,19 +106,19 @@ function Modals() {
 function titleFor(modal: string) {
   switch (modal) {
     case "about":
-      return "About this world";
+      return "Sobre aquest món";
     case "notes":
-      return "Table notes";
+      return "Notes de la taula";
     case "settings":
-      return "Settings";
+      return "Ajustos";
     case "saves":
-      return "All saves";
+      return "Totes les partides";
     case "join":
-      return "Join a friend";
+      return "Continua un conte";
     case "pack":
-      return "The pack";
+      return "La motxilla";
     case "chronicle":
-      return "Your chronicle";
+      return "La teva crònica";
     default:
       return "";
   }
@@ -128,14 +128,14 @@ function About() {
   return (
     <div className="space-y-3 font-serif text-sm leading-relaxed text-mist">
       <p>
-        Thornwake is a table for family quests. You play one company of four — Calder, Bramble, Vesper, and Holt —
-        through three original tales.
+        Thornwake és una taula per a aventures en família. Jugueu una companyia de quatre — Calder, Bramble, Vesper i
+        Holt — a través de tres contes originals, dos jugadors i una narradora que parla.
       </p>
       <p>
-        An AI storyteller sits at the head when the table can reach one. If it cannot, the written book takes over,
-        and the chapter still moves. Mild peril, no gore, and nobody at this table dies.
+        Una narradora d'IA seu al capdavant quan la taula pot arribar-hi. Si no, el llibre escrit pren el relleu i el
+        capítol segueix avançant. Perill suau, sense sang, i a aquesta taula no es mor ningú.
       </p>
-      <p>The tales are Ashpine Post, Stillwater Bell, and Dusk Harbor. None of them are someone else’s dungeon.</p>
+      <p>Els contes són El Correu de Pinassa, La Campana d'Aiguaquieta i Port del Crepuscle. Cap no és la masmorra de ningú altre.</p>
     </div>
   );
 }
@@ -143,11 +143,12 @@ function About() {
 function Notes() {
   return (
     <ul className="space-y-3 font-serif text-sm leading-relaxed text-mist">
-      <li>Choose who acts by tapping a portrait. The ring on the board is the one who moves.</li>
-      <li>Move, look, or strike by picking a marked place. Or write what the company does.</li>
-      <li>Dice are honest. A high roll opens a door. A low one costs a little heart, never a life.</li>
-      <li>Follow the story to read the chronicle. Tales stay in this browser until you retire them.</li>
-      <li>Join a friend by pasting their tale-code. It is long on purpose: it is the whole chapter.</li>
+      <li>Dos jugadors comparteixen la taula: un porta en Calder i la Bramble, l'altre la Vesper i en Holt. L'app és la narradora.</li>
+      <li>Digueu o escriviu què fa la companyia. Quan és incert, la narradora demana una tirada: feu servir el dau de l'app o un d20 real de la taula, escrit o dit en veu alta.</li>
+      <li>Avantatge si un company és al costat o un objecte et dóna avantatge. Un 20 natural sempre reïx, un 1 natural sempre falla.</li>
+      <li>Ataca un lloc tens per començar un problema. Tireu iniciativa, feu torns i feu recular el problema fins que es calmi.</li>
+      <li>No es mor ningú. Un heroi amb 1 cor és retirat pels altres. Descanseu dues vegades per conte i feu servir el pastís de mel o l'embenat per curar.</li>
+      <li>Els contes es queden en aquest navegador. Compartiu un codi de conte per continuar en un altre dispositiu.</li>
     </ul>
   );
 }
@@ -155,21 +156,29 @@ function Notes() {
 function Settings() {
   const playerName = useGame((s) => s.playerName);
   const setName = useGame((s) => s.setName);
+  const partner = useGame((s) => s.partner);
+  const setPartner = useGame((s) => s.setPartner);
   const sound = useGame((s) => s.sound);
   const setSound = useGame((s) => s.setSound);
+  const voice = useGame((s) => s.voice);
+  const setVoice = useGame((s) => s.setVoice);
+  const input =
+    "mt-2 h-11 w-full border border-gold/40 bg-ink/40 px-3 font-serif text-base text-parchment outline-none";
   return (
     <div className="space-y-4">
       <label className="block font-sans text-xs tracking-widest text-mist">
-        NAME AT THE TABLE
-        <input
-          value={playerName}
-          onChange={(e) => setName(e.target.value)}
-          maxLength={24}
-          className="mt-2 h-11 w-full border border-gold/40 bg-ink/40 px-3 font-serif text-base text-parchment outline-none"
-        />
+        PRIMER JUGADOR · CALDER I BRAMBLE
+        <input value={playerName} onChange={(e) => setName(e.target.value)} maxLength={24} className={input} />
       </label>
+      <label className="block font-sans text-xs tracking-widest text-mist">
+        SEGON JUGADOR · VESPER I HOLT (OPCIONAL)
+        <input value={partner} onChange={(e) => setPartner(e.target.value)} maxLength={24} className={input} />
+      </label>
+      <TextButton tone={voice ? "solid" : "ghost"} onClick={() => setVoice(!voice)}>
+        {voice ? "La narradora parla en veu alta" : "La narradora és en silenci"}
+      </TextButton>
       <TextButton tone={sound ? "solid" : "ghost"} onClick={() => setSound(!sound)}>
-        {sound ? "Sound is on" : "Sound is off"}
+        {sound ? "So de la sala activat" : "So de la sala desactivat"}
       </TextButton>
     </div>
   );
@@ -182,7 +191,7 @@ function Saves() {
   const setModal = useGame((s) => s.setModal);
   const [armed, setArmed] = useState<string | null>(null);
   if (tales.length === 0) {
-    return <p className="font-serif text-sm text-mist">No tales yet. Choose one and begin.</p>;
+    return <p className="font-serif text-sm text-mist">Encara no hi ha cap conte. Tria'n un i comença.</p>;
   }
   return (
     <ul className="space-y-3">
@@ -190,9 +199,11 @@ function Saves() {
         const campaign = getCampaign(t.campaignId);
         return (
           <li key={t.id} className="border border-gold/30 p-3">
-            <p className="font-serif text-parchment">{campaign?.name ?? "A tale"}</p>
+            <p className="font-serif text-parchment">{campaign?.name ?? "Un conte"}</p>
             <p className="font-sans text-xs text-mist">
-              {t.playerName} · Day {t.day} · {new Date(t.updatedAt).toLocaleString()}
+              {t.playerName}
+              {t.partner ? ` & ${t.partner}` : ""} · Dia {t.day} · Nivell {t.level}
+              {t.finished ? " · Acabat" : ""} · {new Date(t.updatedAt).toLocaleString("ca-ES")}
             </p>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <TextButton
@@ -201,7 +212,7 @@ function Saves() {
                   openTale(t.id);
                 }}
               >
-                Continue
+                Continua
               </TextButton>
               <TextButton
                 onClick={() => {
@@ -211,7 +222,7 @@ function Saves() {
                   } else setArmed(t.id);
                 }}
               >
-                {armed === t.id ? "Retire it" : "Retire"}
+                {armed === t.id ? "Confirma" : "Retira"}
               </TextButton>
             </div>
             <button
@@ -222,7 +233,7 @@ function Saves() {
                 setModal("join");
               }}
             >
-              Share tale-code
+              Comparteix el codi del conte
             </button>
           </li>
         );
@@ -238,14 +249,14 @@ function Join() {
   return (
     <div className="space-y-3">
       <p className="font-serif text-sm leading-relaxed text-mist">
-        Paste a tale-code from another table, or copy one from your saves to pass along. Nothing is uploaded.
+        Enganxa un codi de conte d'una altra taula, o copia'n un de les teves partides per passar-lo. No es puja res enlloc.
       </p>
       <textarea
         value={code}
         onChange={(e) => setCode(e.target.value)}
         rows={5}
         className="w-full border border-gold/40 bg-ink/40 p-3 font-sans text-xs text-parchment outline-none"
-        placeholder="Tale-code"
+        placeholder="Codi del conte"
       />
       {error ? <p className="font-serif text-sm text-gold-bright">{error}</p> : null}
       <div className="grid grid-cols-2 gap-2">
@@ -254,14 +265,14 @@ function Join() {
           onClick={() => {
             const tale = decodeTale(code);
             if (!tale) {
-              setError("That code does not open. Check that the whole line was copied.");
+              setError("Aquest codi no s'obre. Comprova que s'hagi copiat tota la línia.");
               return;
             }
             sessionStorage.removeItem("thornwake-share");
             addTale(tale);
           }}
         >
-          Sit down
+          Seu
         </TextButton>
         <TextButton
           onClick={() => {
@@ -269,7 +280,7 @@ function Join() {
             void navigator.clipboard?.writeText(code);
           }}
         >
-          Copy
+          Copia
         </TextButton>
       </div>
     </div>
@@ -280,7 +291,6 @@ function Pack() {
   const tale = useGame(activeTale);
   const setModal = useGame((s) => s.setModal);
   if (!tale) return null;
-  const actor = tale.party.find((p) => p.id === tale.activeId) ?? tale.party[0];
   return (
     <ul className="space-y-2">
       {tale.inventory.map((item) => {
@@ -290,18 +300,21 @@ function Pack() {
             <div>
               <p className="font-serif text-parchment">{item.name}</p>
               <p className="font-serif text-sm text-mist">{item.detail}</p>
-              <p className="font-sans text-xs text-gold-dim">{owner?.name}</p>
+              <p className="font-sans text-xs text-gold-dim">
+                {owner?.name}
+                {item.uses ? ` · en queden ${item.uses}` : ""}
+                {item.effect === "edge" ? " · dóna avantatge" : ""}
+              </p>
             </div>
             <button
               type="button"
               className="min-h-11 shrink-0 px-2 font-sans text-xs tracking-widest text-gold"
               onClick={() => {
                 setModal(null);
-                const line = `${actor.name} uses the ${item.name.toLowerCase()}. ${item.detail}`;
-                void runLine(line);
+                consumeItem(item);
               }}
             >
-              Use
+              Usa
             </button>
           </li>
         );
@@ -321,9 +334,9 @@ function Chronicle() {
       <div className="mb-4 grid grid-cols-3 gap-2">
         {(
           [
-            ["read", "Read"],
-            ["scenes", "Scenes"],
-            ["finds", "Discoveries"],
+            ["read", "Llegeix"],
+            ["scenes", "Escenes"],
+            ["finds", "Descobertes"],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -339,7 +352,7 @@ function Chronicle() {
       {tab === "read" ? (
         <div>
           <p className="font-sans text-xs tracking-widest text-gold-dim">
-            Day {tale.day} of your adventure · {campaign?.name}
+            Dia {tale.day} de la teva aventura · {campaign?.name}
           </p>
           {latest ? (
             <>
@@ -349,7 +362,7 @@ function Chronicle() {
                 {[...tale.chronicle].reverse().map((entry) => (
                   <article key={entry.id}>
                     <p className="font-sans text-xs text-gold-dim">
-                      {entry.sceneName} · Day {entry.day}
+                      {entry.sceneName} · Dia {entry.day}
                     </p>
                     <h4 className="font-serif text-lg text-soot">{entry.title}</h4>
                     <p className="font-serif text-sm leading-relaxed whitespace-pre-wrap text-soot">{entry.body}</p>
@@ -369,7 +382,7 @@ function Chronicle() {
                 <img src={scene.image} alt="" className="size-14 object-cover" />
                 <div>
                   <p className="font-serif text-soot">{scene.name}</p>
-                  <p className="font-sans text-xs text-gold-dim">{seen ? "Visited" : "Not yet"}</p>
+                  <p className="font-sans text-xs text-gold-dim">{seen ? "Visitada" : "Encara no"}</p>
                 </div>
               </li>
             );
@@ -379,7 +392,7 @@ function Chronicle() {
       {tab === "finds" ? (
         <div className="space-y-3 font-serif text-sm text-soot">
           <p>
-            <span className="font-sans text-xs tracking-widest text-gold-dim">NOW</span>
+            <span className="font-sans text-xs tracking-widest text-gold-dim">ARA</span>
             <br />
             {tale.quest.title}. {tale.quest.detail}
           </p>
@@ -394,29 +407,4 @@ function Chronicle() {
       ) : null}
     </div>
   );
-}
-
-async function runLine(line: string) {
-  const state = useGame.getState();
-  const current = activeTale(state);
-  if (!current || state.writing) return;
-  state.setWriting(true);
-  const local = localGm(current, { text: line });
-  try {
-    const res = await consultStoryteller({
-      data: {
-        campaignId: current.campaignId,
-        sceneId: current.sceneId,
-        playerName: current.playerName,
-        activeId: current.activeId,
-        action: line,
-        party: current.party.map((p) => ({ id: p.id, heart: p.heart })),
-        recent: current.log.slice(-6).map((l) => ({ role: l.role, text: l.text.slice(0, 480) })),
-      },
-    });
-    if (res.ok) state.commit(current.id, line, res.result, "live");
-    else state.commit(current.id, line, local, "book");
-  } catch {
-    state.commit(current.id, line, local, "book");
-  }
 }

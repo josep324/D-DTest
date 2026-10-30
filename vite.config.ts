@@ -166,11 +166,11 @@ export default defineConfig(({ command, isPreview }) => ({
     // PWA head + ?install=1 tutorial page; runs before Start/Nitro.
     grokPwaPlugin(),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart({ pages: [{ path: "/" }], prerender: { enabled: true, crawlLinks: false } }),
     ...(command === "build" || isPreview
       ? [
           nitro({
-            preset: "vercel",
+            preset: "netlify",
             // Auto-registers server/middleware/* (the PWA install page +
             // manifest + head-tag middleware). Nitro v3 defaults serverDir to
             // false, so removing this silently unwires /?install=1 on deploys.

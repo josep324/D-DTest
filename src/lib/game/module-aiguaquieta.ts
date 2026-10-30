@@ -147,7 +147,7 @@ export const AIGUAQUIETA: Campaign = {
           foe: { name: "Fanalet del riu", the: "el fanalet del riu", hp: 7, ac: 12, atk: 3, dmg: "1d4+1", xp: 20, count: 2 },
         },
         {
-          id: "sirga", kind: "exit", name: "Camí de sirga, riu amunt", x: 10, y: 20, to: "cami", keywords: ["sirga", "cami", "camí", "amunt", "cadena", "peatge", "endavant"],
+          id: "sirga", kind: "exit", name: "Camí de sirga, riu amunt", x: 10, y: 20, to: "cami", keywords: ["sirga", "cami", "camí", "amunt", "peatge"],
           requires: { flag: "lletres|escoltat|nota-pont", hint: "No saps per on tirar. Potser val la pena escoltar bé la campana o el pont." },
           examine: "Un sender de terra a la vora del riu, que pugen els vells sirgadors. La cadena el segueix.",
         },
@@ -188,7 +188,7 @@ export const AIGUAQUIETA: Campaign = {
         { id: "tenda", kind: "feature", name: "Tenda dels sirgadors", x: 23, y: 66, keywords: ["tenda", "campament", "sirgadors", "tela"], examine: "Una tenda de lona vella. Dins hi ha una manta i una pissarra on algú va apuntar: «Peatge: un nom o una moneda. Que no us enganyin els guardians: són bons si els parleu com cal.»" },
         { id: "foguera", kind: "feature", name: "Foguera apagada", x: 28, y: 76, keywords: ["foguera", "cendra", "foc"], examine: "Cendra freda i dos taulons de banc. Algú hi va dibuixar una barca amb carbó." },
         {
-          id: "pas-sirga", kind: "exit", name: "Sender cap al fortí", x: 52, y: 52, to: "peatge", keywords: ["sender", "forti", "fortí", "rails", "sirga", "endavant", "segueixo", "seguim"],
+          id: "pas-sirga", kind: "exit", name: "Sender cap al fortí", x: 52, y: 52, to: "peatge", keywords: ["sender", "forti", "fortí", "rails", "sirga"],
           requires: { flag: "peatge-pagat|dead-armadures", hint: "Les armadures us barren el camí. Cal resoldre-ho abans." },
           examine: "El sender puja cap al fortí, per unes roques enllustrades per milers de peus.",
           check: {

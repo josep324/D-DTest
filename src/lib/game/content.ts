@@ -1,4 +1,5 @@
 import { AIGUAQUIETA } from "@/lib/game/module-aiguaquieta";
+import { CORREU } from "@/lib/game/module-correu";
 import { TUTORIAL } from "@/lib/game/module-tutorial";
 import type { Campaign, Character, Choice, Item } from "@/lib/game/types";
 
@@ -80,109 +81,7 @@ const speak = (id: string, label: string, hint?: string): Choice => ({ id, label
 
 export const CAMPAIGNS: Campaign[] = [
   TUTORIAL,
-  {
-    id: "ashpine",
-    name: "El Correu de Pinassa",
-    blurb: "Un missatger va desaparèixer abans que es tanqués el coll. La saca va tornar plena de sorra de riu.",
-    chapters: "Tres capítols",
-    levels: "Nivells 1–3",
-    span: "Una nit",
-    canon:
-      "Pinassa és un mercat nevat sota un coll de muntanya. La saca d'un missatger es va trobar a la corda del pou, buida de cartes i plena de sorra seca de riu. El forn de carbó sota la muntanya es va encendre al migdia, però ningú no en reclama el carbó. La companyia és Calder, Bramble, Vesper i Holt. El rastre va del Mercat dels Fanals a la Sala de l'Orrery i després a la Farga de l'Auró, a l'altra banda de la muntanya. To familiar, sense sang. El misteri és un esperit de riu desplaçat que fa servir el camí del correu per enviar un avís, no un dolent que s'hagi de vèncer.",
-    scenes: [
-      {
-        id: "lantern-market",
-        name: "Mercat dels Fanals",
-        image: "/art/market.jpg",
-        daypart: "Matí",
-        clock: "08:40",
-        weather: "Neu",
-        sky: "MATÍ · NEU",
-        ambient: "La neu cus les parades. Els fanals resten encesos perquè el sol mai no acaba d'arribar.",
-        chronicleTitle: "Sorra a la saca",
-        opening:
-          "La neu ha cosit el mercat, tret del pou i d'una parada de pastissos tossuda. La saca del missatger penja de la corda del pou, buida de cartes, pesant de sorra seca de riu — i el coll no és un riu.\n\nLa fornera et fa senyals amb una mà enfarinada. Sota la muntanya, diu, el forn es va encendre al migdia. Ningú a Pinassa reclamarà el carbó.",
-        quest: {
-          title: "La sorra de la saca",
-          detail: "Pregunta a la fornera, regira el pou o segueix l'olor del carbó estrany.",
-        },
-        choices: [
-          speak("ask-baker", "Pregunta a la fornera què va veure", "Va ser la primera al pou"),
-          speak("search-satchel", "Buida la saca sobre les pedres"),
-          speak("well-rope", "Baixa tant com deixi la corda"),
-          speak("follow-coal", "Segueix l'olor de carbó cap a la sala"),
-        ],
-        hotspots: [
-          { id: "road", name: "Camí del coll", x: 50, y: 18, examine: "Les petjades s'acaben on la neu es posa seriosa. Una petjada és humida, com si qui caminava hagués sortit d'un rierol." },
-          { id: "pines", name: "Pineda", x: 18, y: 58, examine: "Resina, i una tira de roba vermella de missatger enganxada massa amunt per ser d'una caiguda." },
-          { id: "stall", name: "Parada de pastissos", x: 32, y: 46, examine: "La fornera guardava un bol de sorra perquè «taral·lejava» quan el forn era obert." },
-          { id: "well", name: "El pou", x: 48, y: 60, examine: "El poal fa olor de riba de riu. L'aigua de baix és tèbia." },
-          { id: "fire", name: "Foguera", x: 66, y: 72, examine: "Els viatgers la van deixar tapada. Algú hi va afegir carbó que crema blau a les vores." },
-          { id: "sacks", name: "Sacs de carbó", x: 74, y: 44, examine: "Marcats amb el segell del correu. Un sac és ple de còdols de riu ben llisos.", threat: true },
-        ],
-      },
-      {
-        id: "orrery-hall",
-        name: "Sala de l'Orrery",
-        image: "/art/orrery.jpg",
-        daypart: "Capvespre",
-        clock: "19:10",
-        weather: "Calma",
-        sky: "CAPVESPRE · CALMA",
-        ambient: "El terra d'estels fa tic-tac. Sota el llautó, l'aigua es mou on no hauria.",
-        chronicleTitle: "Sota l'armil·lar",
-        opening:
-          "La sala era una oficina de correus abans de ser una sala de cel. Els anells de llautó giren sense que cap mà els toqui. Les cartes estan clavades sota pesos de pedra de riu.\n\nLa perla de la Vesper s'escalfa. L'armil·lar no segueix els estels. Segueix un corrent.",
-        quest: {
-          title: "El corrent al llautó",
-          detail: "Llegeix les cartes amb pes, o segueix el tic-tac sota el terra.",
-        },
-        choices: [
-          speak("read-letters", "Llegeix les cartes sota les pedres"),
-          speak("still-rings", "Demana a la Vesper que aturi els anells"),
-          speak("star-floor", "Puja a l'incrustació d'estels"),
-          speak("descend", "Segueix el so d'aigua cap avall"),
-        ],
-        hotspots: [
-          { id: "window", name: "Finestra alta", x: 78, y: 20, examine: "Fora és de nit, però el vidre sua com si la sala fos una cova de riu." },
-          { id: "armillary", name: "Armil·lar", x: 46, y: 40, examine: "Els anells s'aturen quan dius en veu alta la ruta del missatger.", threat: true },
-          { id: "telescope", name: "Telescopi", x: 74, y: 50, examine: "Apunta al terra, no al cel. Per ell, les rajoles semblen un gual." },
-          { id: "stars", name: "Terra d'estels", x: 52, y: 66, examine: "Una incrustació és mullada. Una llumeta de bagra la creua i desapareix." },
-          { id: "desk", name: "Taula de cartes", x: 24, y: 58, examine: "Una targeta de ruta: de Pinassa a la banda dels auronets. La tinta ha corregut cap al peu de la pàgina." },
-        ],
-      },
-      {
-        id: "maple-forge",
-        name: "Farga de l'Auró",
-        image: "/art/forge.jpg",
-        daypart: "Matí",
-        clock: "07:05",
-        weather: "Fum de llenya",
-        sky: "MATÍ · FUM",
-        ambient: "Tardor, d'alguna manera, a aquesta banda de la muntanya. La farga respira com una marea.",
-        chronicleTitle: "La farga que va beure un riu",
-        opening:
-          "Surts sota uns auros del color de les brases. La farga del cingle està encesa, i el carbó són còdols llisos. Un rierol baixet puja pels carrils del carro cap al foc, educat com un convidat.\n\nEl missatger seu en una caixa, eixut, avergonyit, amb una campana del tamany d'un puny. «Volia que les cartes anessin cap a l'altre costat», diu. «Cap avall. Cap al mar.»",
-        quest: {
-          title: "Porta-ho cap avall",
-          detail: "Decidiu què fa la companyia amb la campana, les cartes i el missatger cansat.",
-        },
-        choices: [
-          speak("take-bell", "Accepta la campana i les cartes"),
-          speak("ask-courier", "Demana al missatger que ho expliqui clar"),
-          speak("bank-fire", "Tapa la farga perquè les pedres es refredin"),
-          speak("close-book", "Acompanya el missatger a casa i tanca el capítol"),
-        ],
-        hotspots: [
-          { id: "maples", name: "Auroneda", x: 22, y: 30, examine: "Les fulles suren riu amunt. La Bramble ho marca amb guix vermell i la ratlla també es mou." },
-          { id: "forge", name: "Farga del cingle", x: 66, y: 38, examine: "Calor sense gana. Els manxes sospiren soles.", threat: true },
-          { id: "rails", name: "Carrils del carro", x: 54, y: 52, examine: "Mullats fins a la tenda. Costa amunt." },
-          { id: "path", name: "El camí", x: 38, y: 64, examine: "Les botes del missatger. Totes dues. Va sortir caminant pel seu propi peu." },
-          { id: "camp", name: "Tenda del campament", x: 48, y: 78, examine: "Una manta, un pastís embolicat amb el drap de la fornera, i la campaneta lligada perquè no soni sense voler." },
-        ],
-      },
-    ],
-  },
+  CORREU,
   AIGUAQUIETA,
   {
     id: "harbor",

@@ -163,10 +163,4 @@ export function listen(
   };
 }
 
-/** "I rolled 14", "un 14", "14!" → 14. Digits only; the recogniser writes numerals. */
-export function numberFromSpeech(text: string): number | null {
-  const m = text.match(/\b(\d{1,2})\b/);
-  if (!m) return null;
-  const n = Number(m[1]);
-  return n >= 1 && n <= 20 ? n : null;
-}
+export { numberFromSpeech } from "@/lib/number-words";

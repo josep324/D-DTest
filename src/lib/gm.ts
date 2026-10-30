@@ -167,6 +167,7 @@ The company does: ${data.action}`;
           model: target.model,
           temperature: 0.8,
           max_tokens: 700,
+          ...target.extra,
           messages: [
             { role: "system", content: system },
             { role: "user", content: user },

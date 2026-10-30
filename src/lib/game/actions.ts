@@ -28,6 +28,9 @@ type Opts = {
   free?: boolean;
 };
 
+/** How long the die tumbles and the verdict stays on screen before the story answers. */
+const ROLL_MS = 1900;
+
 function commitTurn(line: string, turn: Turn): void {
   const state = useGame.getState();
   const tale = activeTale(state);
@@ -121,12 +124,12 @@ export function rollFor(request: RollRequest, mode?: RollMode, physical?: number
         const fresh = activeTale(useGame.getState());
         if (fresh) commitTurn(line, dmResolve(fresh, request, show));
       },
-      physical !== undefined ? 500 : 1100,
+      ROLL_MS,
     );
     return;
   }
   const mech = request.kind === "strike" ? strikeMechanics(tale, show) : checkMechanics(show);
-  window.setTimeout(() => void perform(line, { rolled: show, mech, resume: true }), physical !== undefined ? 400 : 1000);
+  window.setTimeout(() => void perform(line, { rolled: show, mech, resume: true }), ROLL_MS);
 }
 
 /** Free-form words from the table. If they sound uncertain, ask for a roll first. */

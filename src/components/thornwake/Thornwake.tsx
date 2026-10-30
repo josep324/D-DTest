@@ -190,7 +190,7 @@ function Settings() {
       </TextButton>
       <p className="font-serif text-xs text-mist">La mort real només s'aplica a les aventures noves de rol i a les partides que comencis a partir d'ara.</p>
       <TextButton tone={sound ? "solid" : "ghost"} onClick={() => setSound(!sound)}>
-        {sound ? "So de la sala activat" : "So de la sala desactivat"}
+        {sound ? "Efectes de so i ambient activats" : "Efectes de so i ambient desactivats"}
       </TextButton>
     </div>
   );

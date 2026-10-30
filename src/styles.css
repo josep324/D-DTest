@@ -263,6 +263,30 @@
   100% { transform: scale(1.6); opacity: 0; }
 }
 
+.pin.guide {
+  z-index: 5;
+}
+
+.pin.guide .pin-dot {
+  background: rgba(243, 230, 196, 0.95);
+  color: #140e0a;
+  border-color: #f3e6c4;
+  box-shadow: 0 0 0 4px rgba(243, 230, 196, 0.35), 0 0 22px rgba(243, 230, 196, 0.55);
+}
+
+.pin.guide .pin-dot::after {
+  inset: -12px;
+  border-width: 2px;
+  border-color: rgba(243, 230, 196, 0.9);
+  animation-duration: 1.2s;
+}
+
+.pin.guide .pin-label {
+  background: rgba(243, 230, 196, 0.95);
+  color: #140e0a;
+  font-weight: 600;
+}
+
 .pin-label {
   margin-top: 4px;
   max-width: 9rem;
@@ -375,7 +399,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .kb, .stage-in, .fx-rain, .fx-snow, .fx-fog, .pin-dot::after, .die-rolling, .die-settled,
-  .rise, .float-up, .hit-shake, .turn-glow, .mic-live, .dot-1, .dot-2, .dot-3 {
+  .rise, .float-up, .hit-shake, .turn-glow, .mic-live, .dot-1, .dot-2, .dot-3, .pin.guide .pin-dot::after {
     animation: none;
   }
 }

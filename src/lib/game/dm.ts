@@ -56,7 +56,7 @@ function pick<T>(list: T[]): T {
 }
 
 /** "a" is a flag, "a|b" is either, "a&b" is both ("a&b|c" is both, or c). */
-function has(tale: Tale, flag: string): boolean {
+export function has(tale: Tale, flag: string): boolean {
   return flag.split("|").some((alt) => alt.split("&").every((f) => tale.flags.includes(f)));
 }
 
@@ -534,6 +534,7 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
       if (foes) return plain("No és un bon lloc per descansar: aquí encara hi ha perill.", mech);
       if (tale.rests <= 0) return plain("Ja no queda temps per descansar en aquesta aventura.", mech);
       const m = restMechanics(tale);
+      m.flags = [...(m.flags ?? []), "descans"];
       return plain(narrate(["La companyia fa una estona de silenci, menja una mica i recupera forces."], m.notes), m);
     }
     case "use": {
@@ -541,6 +542,7 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
       if (!item) return plain("No sé què vols fer servir. Mira la motxilla.", mech);
       const m = itemMechanics(tale, item, hero);
       if (!m) return plain(`${art(hero.name, true)} mira ${item.name.toLowerCase()}, però ara no li serveix de res.`, mech);
+      m.flags = [...(m.flags ?? []), "usat-objecte"];
       return plain(narrate([`${art(hero.name, true)} fa servir ${item.name.toLowerCase()}.`], m.notes), m);
     }
     case "attack": {
@@ -600,7 +602,7 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
     const hit = ender ?? topics.find((tp) => tp.keywords.some((k) => t.includes(norm(k))));
     if (hit) {
       mech.xp = hit.xp ?? 0;
-      mech.flags = hit.flag ? hit.flag.split(",") : [];
+      mech.flags = [`parlat-${spot.id}`, ...(hit.flag ? hit.flag.split(",") : [])];
       if (hit.ends) {
         const campaign = getCampaign(tale.campaignId);
         return plain(narrate([hit.say]), mech, {
@@ -613,10 +615,11 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
       }
       return plain(narrate([hit.say]), mech);
     }
+    mech.flags = [`parlat-${spot.id}`];
     if (spot.check) {
       return plain(narrate([spot.examine, "Podries provar de convèncer-lo, amenaçar-lo o buscar una altra sortida."]), mech);
     }
-    return plain(narrate([spot.examine, topics.length ? "Li podries preguntar pel cofre, per la cova o per la recompensa." : ""]), mech);
+    return plain(narrate([spot.examine, topics.length ? "Prova de preguntar-li per alguna cosa concreta: pel que ha passat, per un lloc o per una persona." : ""]), mech);
   }
 
   if (intent === "go") {
@@ -655,6 +658,7 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
     }
     if (spot.kind === "exit" && intent === "force" && !spot.requires) return travel(tale, spot, mech);
     if (spot.requires && spot.kind === "exit" && !has(tale, spot.requires.flag)) return plain(narrate([spot.examine, spot.requires.hint]), mech);
+    mech.flags = [`vist-${spot.id}`];
     return plain(narrate([spot.examine]), mech);
   }
 

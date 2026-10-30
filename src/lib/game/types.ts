@@ -107,6 +107,19 @@ export type Scene = {
   chronicleTitle: string;
 };
 
+export type GuideStep = {
+  id: string;
+  title: string;
+  /** What to do, in plain words. */
+  text: string;
+  /** A sentence that does it, offered as a button. */
+  phrase: string;
+  /** Flag (or "a|b") that says the step is done. */
+  done: string;
+  /** Hotspot to light up while the step is current. */
+  target?: string;
+};
+
 export type Campaign = {
   id: string;
   name: string;
@@ -116,6 +129,8 @@ export type Campaign = {
   span: string;
   scenes: Scene[];
   canon: string;
+  /** A coach for first-time players: the next thing to try, how to say it and where to look. */
+  guide?: GuideStep[];
   /** "module" tales are played by free action against authored rooms, not by picking choices. */
   kind?: "story" | "module";
   mission?: string;

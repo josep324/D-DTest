@@ -511,7 +511,7 @@ export function localGm(
   }
 
   if (action.roll || action.notes?.length) {
-    const facts = (action.notes ?? []).join(" ");
+    const facts = (action.notes ?? []).length ? `▸ ${(action.notes ?? []).join(" ")}` : "";
     const win = action.roll?.success ?? true;
     const lead = win
       ? `Compta. ${spot.examine}`

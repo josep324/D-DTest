@@ -5,8 +5,12 @@ const BCP47: Record<Lang, string> = { en: "en-US", ca: "ca-ES", es: "es-ES" };
 
 let current: HTMLAudioElement | null = null;
 let ticket = 0;
-let nanoDown = false;
+let cloudOk = false;
+let cloudDown = false;
 const cache = new Map<string, string>();
+
+// Paragraphs that start with this mark are rules text (dice, hearts). Shown, never read aloud.
+export const RULES_MARK = "▸";
 
 function clean(text: string): string {
   return text.replace(/\s+/g, " ").trim();
@@ -21,64 +25,77 @@ export function stopSpeaking() {
   if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
 }
 
-function browserSpeak(text: string, lang: Lang, onEnd?: () => void) {
-  if (typeof speechSynthesis === "undefined") {
-    onEnd?.();
-    return;
-  }
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = BCP47[lang];
-  utter.rate = 0.96;
-  const voices = speechSynthesis.getVoices();
-  const match = voices.find((v) => v.lang.toLowerCase().startsWith(lang));
-  if (match) utter.voice = match;
-  utter.onend = () => onEnd?.();
-  utter.onerror = () => onEnd?.();
-  speechSynthesis.speak(utter);
+function browserSpeak(text: string, lang: Lang): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof speechSynthesis === "undefined") return resolve();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = BCP47[lang];
+    utter.rate = 0.96;
+    const match = speechSynthesis.getVoices().find((v) => v.lang.toLowerCase().startsWith(lang));
+    if (match) utter.voice = match;
+    utter.onend = () => resolve();
+    utter.onerror = () => resolve();
+    speechSynthesis.speak(utter);
+  });
 }
 
-/** Read narration aloud: NanoGPT voice first, the browser's own voice if that is unavailable. */
+async function load(text: string, voice: string): Promise<string | null> {
+  const key = `${voice}|${text}`;
+  const hit = cache.get(key);
+  if (hit) return hit;
+  if (cloudDown) return null;
+  try {
+    const res = await narrateAloud({ data: { text: text.slice(0, 1500), voice: voice as never } });
+    if (res.ok) {
+      cloudOk = true;
+      cache.set(key, res.audio);
+      if (cache.size > 40) cache.delete(cache.keys().next().value as string);
+      return res.audio;
+    }
+    // Never worked here (no key set): settle on the browser voice for the whole session.
+    if (!cloudOk) cloudDown = true;
+  } catch {
+    if (!cloudOk) cloudDown = true;
+  }
+  return null;
+}
+
+function playClip(src: string, mine: number): Promise<void> {
+  return new Promise((resolve) => {
+    const audio = new Audio(src);
+    current = audio;
+    audio.onended = () => resolve();
+    audio.onerror = () => resolve();
+    audio.play().catch(() => resolve());
+    if (mine !== ticket) audio.pause();
+  });
+}
+
+/**
+ * Read narration aloud, paragraph by paragraph. Every paragraph is requested at once so the first
+ * one starts quickly and the rest are ready when it ends. Once a cloud voice has worked, a failed
+ * paragraph stays silent rather than swapping to a different-sounding voice mid-scene.
+ */
 export async function speak(
   raw: string,
   opts: { voice: string; lang: Lang; onEnd?: () => void },
 ): Promise<void> {
-  const text = clean(raw);
-  if (!text) return;
+  const parts = raw
+    .split(/\n\s*\n/)
+    .map(clean)
+    .filter((p) => p && !p.startsWith(RULES_MARK));
+  if (!parts.length) return;
   stopSpeaking();
   const mine = ticket;
-  const key = `${opts.voice}|${text}`;
-  let src = cache.get(key);
-  if (!src && !nanoDown) {
-    try {
-      const res = await narrateAloud({ data: { text: text.slice(0, 1500), voice: opts.voice as never } });
-      if (res.ok) {
-        src = res.audio;
-        cache.set(key, src);
-        if (cache.size > 24) cache.delete(cache.keys().next().value as string);
-      } else {
-        nanoDown = true;
-      }
-    } catch {
-      nanoDown = true;
-    }
+  const loads = parts.map((p) => load(p, opts.voice));
+  for (let i = 0; i < parts.length; i += 1) {
+    const src = await loads[i];
+    if (mine !== ticket) return;
+    if (src) await playClip(src, mine);
+    else if (!cloudOk) await browserSpeak(parts[i], opts.lang);
+    if (mine !== ticket) return;
   }
-  if (mine !== ticket) return;
-  if (!src) {
-    browserSpeak(text, opts.lang, opts.onEnd);
-    return;
-  }
-  const audio = new Audio(src);
-  current = audio;
-  audio.onended = () => opts.onEnd?.();
-  audio.onerror = () => {
-    nanoDown = true;
-    if (mine === ticket) browserSpeak(text, opts.lang, opts.onEnd);
-  };
-  try {
-    await audio.play();
-  } catch {
-    if (mine === ticket) browserSpeak(text, opts.lang, opts.onEnd);
-  }
+  opts.onEnd?.();
 }
 
 type RecognitionCtor = new () => {

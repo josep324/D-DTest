@@ -29,7 +29,7 @@ import {
 import { activeTale, useGame } from "@/lib/game/store";
 import type { Character, Hotspot, RollMode, RollRequest, Tale } from "@/lib/game/types";
 import { Mark, Ornate, Portrait, TextButton } from "@/components/thornwake/ui";
-import { canListen, listen, numberFromSpeech, speak, stopSpeaking } from "@/lib/voice";
+import { RULES_MARK, canListen, listen, numberFromSpeech, speak, stopSpeaking } from "@/lib/voice";
 
 function ownerName(tale: Tale, person: Character): string {
   const second = person.id === "vesper" || person.id === "holt";
@@ -708,11 +708,17 @@ function StoryPanel({
             <Feather className="size-4" /> Escrivint el conte…
           </p>
         ) : (
-          body.split("\n\n").map((para, i) => (
-            <p key={i} className="mb-3 font-serif text-sm leading-relaxed text-soot">
-              {para}
-            </p>
-          ))
+          body.split("\n\n").map((para, i) =>
+            para.startsWith(RULES_MARK) ? (
+              <p key={i} className="mb-3 border-l-2 border-gold-dim/50 pl-2 font-sans text-xs leading-relaxed text-gold-dim">
+                {para.slice(1).trim()}
+              </p>
+            ) : (
+              <p key={i} className="mb-3 font-serif text-sm leading-relaxed text-soot">
+                {para}
+              </p>
+            ),
+          )
         )}
         {toldBy === "book" && done ? (
           <p className="font-sans text-xs text-gold-dim">Contat des del llibre de la taula.</p>
@@ -720,7 +726,10 @@ function StoryPanel({
       </div>
       {!writing && !done ? (
         <div className="px-4 pb-2">
-          <button type="button" className="ml-auto block min-h-11 border border-gold-dim/40 px-3 font-sans text-xs text-soot" onClick={() => setSkip(true)}>
+          <button type="button" className="ml-auto block min-h-11 border border-gold-dim/40 px-3 font-sans text-xs text-soot" onClick={() => {
+              stopSpeaking();
+              setSkip(true);
+            }}>
             Salta la narració
           </button>
         </div>

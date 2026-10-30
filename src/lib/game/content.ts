@@ -8,6 +8,10 @@ export const PARTY: Character[] = [
     heart: 18,
     heartMax: 18,
     guard: 15,
+    abilities: { str: 15, dex: 12, con: 14, int: 10, wis: 13, cha: 11 },
+    proficient: ["str", "con"],
+    attack: "str",
+    voice: "onyx",
     portrait: "/art/calder.jpg",
   },
   {
@@ -17,6 +21,10 @@ export const PARTY: Character[] = [
     heart: 14,
     heartMax: 14,
     guard: 13,
+    abilities: { str: 10, dex: 16, con: 12, int: 12, wis: 14, cha: 10 },
+    proficient: ["dex", "wis"],
+    attack: "dex",
+    voice: "nova",
     portrait: "/art/bramble.jpg",
   },
   {
@@ -26,6 +34,10 @@ export const PARTY: Character[] = [
     heart: 12,
     heartMax: 12,
     guard: 11,
+    abilities: { str: 8, dex: 12, con: 11, int: 16, wis: 14, cha: 12 },
+    proficient: ["int", "wis"],
+    attack: "int",
+    voice: "shimmer",
     portrait: "",
     cameo: "vesper",
   },
@@ -36,20 +48,26 @@ export const PARTY: Character[] = [
     heart: 13,
     heartMax: 13,
     guard: 14,
+    abilities: { str: 11, dex: 16, con: 12, int: 13, wis: 10, cha: 14 },
+    proficient: ["dex", "cha"],
+    attack: "dex",
+    voice: "echo",
     portrait: "",
     cameo: "holt",
   },
 ];
 
 export const INVENTORY: Item[] = [
-  { id: "lantern", name: "Brass lantern", detail: "Burns clean. The glass is river-scratched.", ownerId: "calder" },
-  { id: "rope", name: "Soft rope", detail: "Ten paces, knotted every arm.", ownerId: "calder" },
-  { id: "chalk", name: "Trail chalk", detail: "White, and a stub of red.", ownerId: "bramble" },
+  { id: "lantern", name: "Brass lantern", detail: "Burns clean. The glass is river-scratched.", ownerId: "calder", effect: "edge" },
+  { id: "rope", name: "Soft rope", detail: "Ten paces, knotted every arm.", ownerId: "calder", effect: "edge" },
+  { id: "chalk", name: "Trail chalk", detail: "White, and a stub of red.", ownerId: "bramble", effect: "edge" },
   { id: "string", name: "Spare bowstring", detail: "Waxed. Also ties a splint.", ownerId: "bramble" },
-  { id: "bead", name: "Orrery bead", detail: "Warm when a true north is near.", ownerId: "vesper" },
+  { id: "bead", name: "Orrery bead", detail: "Warm when a true north is near.", ownerId: "vesper", effect: "edge" },
   { id: "circle", name: "Pocket chalk circle", detail: "For listening, not for locking doors.", ownerId: "vesper" },
-  { id: "picks", name: "Latch picks", detail: "For boxes, gates, and stubborn windows.", ownerId: "holt" },
+  { id: "picks", name: "Latch picks", detail: "For boxes, gates, and stubborn windows.", ownerId: "holt", effect: "edge" },
   { id: "knife", name: "Folding knife", detail: "Rope, fruit, and the occasional warning.", ownerId: "holt" },
+  { id: "honey", name: "Honey-cake", detail: "Dense, sweet, and kinder than it looks. Heals 4.", ownerId: "calder", effect: "heal", amount: 4, uses: 2 },
+  { id: "wrap", name: "Splint-wrap", detail: "Clean linen and a good knot. Heals 3.", ownerId: "bramble", effect: "heal", amount: 3, uses: 2 },
 ];
 
 const speak = (id: string, label: string, hint?: string): Choice => ({ id, label, hint });
@@ -60,7 +78,7 @@ export const CAMPAIGNS: Campaign[] = [
     name: "Ashpine Post",
     blurb: "A courier vanished before the pass closed. The satchel came back full of river sand.",
     chapters: "Three chapters",
-    levels: "Levels 1–2",
+    levels: "Levels 1–3",
     span: "One night",
     canon:
       "Ashpine is a snowy market under a mountain pass. A courier's satchel was found on the well rope, emptied of letters and filled with dry river sand. The coal furnace under the mountain was lit at noon, but no one claims the coal. The company is Calder, Bramble, Vesper, and Holt. The trail leads from Lantern Market to the Orrery Hall and then to the Maple Forge on the far side of the mountain. Family tone, no gore. The mystery is a displaced river-spirit using the post road to send a warning, not a villain to kill.",
@@ -163,7 +181,7 @@ export const CAMPAIGNS: Campaign[] = [
     name: "Stillwater Bell",
     blurb: "A river mystery of missing names, oaths, and a bell that still answers.",
     chapters: "Two chapters",
-    levels: "Levels 1–2",
+    levels: "Levels 1–3",
     span: "Until dusk",
     canon:
       "Stillwater Crossing is a riverside village. An innkeeper counts copper bowls when the crossing goes quiet. A stonecutter rubs a blank sign. A bell is sunk beneath a ruined arch and still rings in the shallows. The company is Calder, Bramble, Vesper, and Holt. The second place is the old toll fort upriver, where the bell's chain is anchored. The mystery resolves by restoring a name to the sign and letting the bell rest. No gore, no death. The figure in grey is a ferryman who retired and does not know how to leave.",

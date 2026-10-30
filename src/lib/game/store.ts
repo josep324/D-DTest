@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { applyTale } from "@/lib/game/logic";
-import type { DiceShow, GmResult, Tale } from "@/lib/game/types";
+import { applyTale, normalizeTale } from "@/lib/game/logic";
+import type { DiceShow, GmResult, Mechanics, RollRequest, Tale } from "@/lib/game/types";
 
 const KEY = "thornwake.v1";
 
@@ -8,7 +8,16 @@ export type ModalName = "saves" | "join" | "about" | "settings" | "chronicle" | 
 export type Screen = "gate" | "select" | "play";
 export type Mode = "move" | "look" | "strike";
 
-type Persisted = { playerName: string; tales: Tale[]; sound: boolean };
+export type Lang = "en" | "ca" | "es";
+
+type Persisted = {
+  playerName: string;
+  tales: Tale[];
+  sound: boolean;
+  voice: boolean;
+  lang: Lang;
+  partner: string;
+};
 
 type Store = {
   screen: Screen;
@@ -21,6 +30,9 @@ type Store = {
   storyOpen: boolean;
   modal: ModalName;
   sound: boolean;
+  voice: boolean;
+  lang: Lang;
+  partner: string;
   writing: boolean;
   toldBy: "live" | "book" | null;
   dice: DiceShow | null;
@@ -32,6 +44,10 @@ type Store = {
   setStoryOpen: (open: boolean) => void;
   setModal: (modal: ModalName) => void;
   setSound: (sound: boolean) => void;
+  setVoice: (voice: boolean) => void;
+  setLang: (lang: Lang) => void;
+  setPartner: (partner: string) => void;
+  setPending: (request: RollRequest | null) => void;
   setWriting: (writing: boolean) => void;
   setToldBy: (toldBy: "live" | "book" | null) => void;
   setDice: (dice: DiceShow | null) => void;
@@ -40,9 +56,22 @@ type Store = {
   addTale: (tale: Tale) => void;
   openTale: (id: string) => void;
   retireTale: (id: string) => void;
-  commit: (id: string, line: string, result: GmResult, toldBy: "live" | "book") => void;
+  commit: (id: string, line: string, result: GmResult, toldBy: "live" | "book", mech?: Mechanics) => void;
   setActive: (id: string) => void;
 };
+
+function snapshot(patch: Partial<Persisted> = {}): Persisted {
+  const s = useGame.getState();
+  return {
+    playerName: s.playerName,
+    tales: s.tales,
+    sound: s.sound,
+    voice: s.voice,
+    lang: s.lang,
+    partner: s.partner,
+    ...patch,
+  };
+}
 
 function persist(slice: Persisted) {
   try {
@@ -63,6 +92,9 @@ export const useGame = create<Store>((set, get) => ({
   storyOpen: true,
   modal: null,
   sound: false,
+  voice: true,
+  lang: "en",
+  partner: "",
   writing: false,
   toldBy: null,
   dice: null,
@@ -75,7 +107,28 @@ export const useGame = create<Store>((set, get) => ({
   setModal: (modal) => set({ modal }),
   setSound: (sound) => {
     set({ sound });
-    persist({ playerName: get().playerName, tales: get().tales, sound });
+    persist(snapshot({ sound }));
+  },
+  setVoice: (voice) => {
+    set({ voice });
+    persist(snapshot({ voice }));
+  },
+  setLang: (lang) => {
+    set({ lang });
+    persist(snapshot({ lang }));
+  },
+  setPartner: (value) => {
+    const partner = value.slice(0, 24);
+    set((s) => ({
+      partner,
+      tales: s.tales.map((t) => (t.id === s.taleId ? { ...t, partner } : t)),
+    }));
+    persist(snapshot({ partner }));
+  },
+  setPending: (request) => {
+    set((s) => ({
+      tales: s.tales.map((t) => (t.id === s.taleId ? { ...t, pendingRoll: request } : t)),
+    }));
   },
   setWriting: (writing) => set({ writing }),
   setToldBy: (toldBy) => set({ toldBy }),
@@ -86,7 +139,7 @@ export const useGame = create<Store>((set, get) => ({
       playerName: name,
       tales: s.tales.map((t) => (t.id === s.taleId ? { ...t, playerName: name || t.playerName } : t)),
     }));
-    persist({ playerName: name, tales: get().tales, sound: get().sound });
+    persist(snapshot({ playerName: name }));
   },
   hydrate: () => {
     if (get().hydrated) return;
@@ -98,32 +151,38 @@ export const useGame = create<Store>((set, get) => ({
       if (!data || !Array.isArray(data.tales)) return;
       set({
         playerName: typeof data.playerName === "string" && data.playerName ? data.playerName : "Traveler",
-        tales: data.tales,
+        tales: data.tales.map(normalizeTale),
         sound: Boolean(data.sound),
+        voice: data.voice !== false,
+        lang: data.lang === "ca" || data.lang === "es" ? data.lang : "en",
+        partner: typeof data.partner === "string" ? data.partner : "",
       });
     } catch {
       /* ignore broken saves */
     }
   },
   addTale: (tale) => {
+    tale = { ...tale, partner: tale.partner || get().partner };
     const tales = [tale, ...get().tales].slice(0, 12);
     set({ tales, taleId: tale.id, screen: "play", storyOpen: true, mode: "move", modal: null, toldBy: null });
-    persist({ playerName: tale.playerName, tales, sound: get().sound });
+    persist(snapshot({ playerName: tale.playerName, tales }));
   },
   openTale: (id) => set({ taleId: id, screen: "play", modal: null, storyOpen: true, mode: "move" }),
   retireTale: (id) => {
     const tales = get().tales.filter((t) => t.id !== id);
     set({ tales, taleId: get().taleId === id ? null : get().taleId });
-    persist({ playerName: get().playerName, tales, sound: get().sound });
+    persist(snapshot({ tales }));
   },
-  commit: (id, line, result, toldBy) => {
-    const tales = get().tales.map((t) => (t.id === id ? applyTale(t, line, result) : t));
+  commit: (id, line, result, toldBy, mech) => {
+    const tales = get().tales.map((t) => (t.id === id ? applyTale(t, line, result, mech) : t));
     set({ tales, toldBy, writing: false, dice: null });
-    persist({ playerName: get().playerName, tales, sound: get().sound });
+    persist(snapshot({ tales }));
   },
   setActive: (id) => {
     set((s) => ({
-      tales: s.tales.map((t) => (t.id === s.taleId ? { ...t, activeId: id } : t)),
+      tales: s.tales.map((t) =>
+        t.id === s.taleId && !(t.encounter && t.encounter.order[t.encounter.turn] !== id) ? { ...t, activeId: id } : t,
+      ),
     }));
   },
 }));

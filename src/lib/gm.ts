@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getCampaign, getScene } from "@/lib/game/content";
 import type { GmResult } from "@/lib/game/types";
+import { NANO_BASE, NANO_CHAT_MODEL, nanoKey } from "@/lib/nano.server";
+import { allow } from "@/lib/rate-limit.server";
 
 const Input = z.object({
   campaignId: z.string().max(40),
@@ -33,7 +35,17 @@ const Input = z.object({
       success: z.boolean(),
     })
     .optional(),
+  facts: z.array(z.string().max(300)).max(10).optional(),
+  summary: z.string().max(600).optional(),
+  level: z.number().int().min(1).max(10).optional(),
+  lang: z.enum(["en", "ca", "es"]).default("en"),
+  partner: z.string().max(40).optional(),
+  inventory: z.array(z.string().max(40)).max(20).optional(),
+  heroLine: z.string().max(160).optional(),
+  encounter: z.string().max(200).optional(),
 });
+
+const LANGUAGE = { en: "English", ca: "Catalan", es: "Spanish" } as const;
 
 const Out = z.object({
   narration: z.string().min(20).max(1400),
@@ -61,6 +73,16 @@ const Out = z.object({
   sky: z.string().max(40).optional(),
   clock: z.string().max(20).optional(),
   day: z.number().int().min(1).max(30).optional(),
+  summary: z.string().max(600).optional(),
+  rollRequest: z
+    .object({
+      heroId: z.string().max(20).optional(),
+      ability: z.enum(["str", "dex", "con", "int", "wis", "cha"]),
+      dc: z.number().int().min(8).max(18),
+      reason: z.string().max(120),
+    })
+    .nullish(),
+  endTale: z.boolean().nullish(),
 });
 
 function extractJson(text: string): unknown {
@@ -77,8 +99,9 @@ export const consultStoryteller = createServerFn({ method: "POST" })
     const scene = getScene(data.campaignId, data.sceneId);
     if (!campaign || !scene) return { ok: false, error: "Unknown tale" };
 
-    const apiKey = process.env.XAI_API_KEY;
+    const apiKey = nanoKey();
     if (!apiKey) return { ok: false, error: "The storyteller is away from the table" };
+    if (!allow("gm", 14, 60_000)) return { ok: false, error: "The storyteller needs a breath" };
 
     const spots = scene.hotspots.map((h) => `${h.id} (${h.name}): ${h.examine}`).join("\n");
     const scenes = campaign.scenes.map((s) => s.id).join(", ");
@@ -90,13 +113,17 @@ export const consultStoryteller = createServerFn({ method: "POST" })
 
     const system = `You are the storyteller at Thornwake, a family tabletop game played by adults and children together.
 Tone: wondrous, specific, sensory, mild peril. No gore, no body horror, no romance, no real-world politics, no slurs.
-Never kill a hero. Heart deltas may be -2 to +2. A hero at 1 heart is pulled back by the others.
+Never kill a hero. Hearts and dice are decided by the rules engine: the "Facts" list is true and final, so narrate it faithfully and never contradict a roll, a heart total or an initiative order.
+Put heartDelta only for peril that has no entry in Facts (-1 to +1). A hero at 1 heart is pulled back by the others.
+When a character attempts something uncertain and no dice were rolled yet, set rollRequest {"heroId":"","ability":"str|dex|con|int|wis|cha","dc":8-18,"reason":"short"} and end the narration on the moment before the outcome; do not narrate the result. Never set rollRequest when dice were already rolled.
+Set endTale true only when the quest is truly resolved and the last scene is told.
+Keep "summary" as a running memory of the story so far, under 80 words, rewritten every turn.
 Do not invent a fifth hero. Heroes are only calder, bramble, vesper, holt.
 Do not use trademarked Dungeons & Dragons creatures or settings.
-The player at the table is ${data.playerName}. Address the company as "you".
+The players at the table are ${data.playerName}${data.partner ? ` and ${data.partner}` : ""}. Address the company as "you". Write narration, choice labels, quest and chronicle text in ${LANGUAGE[data.lang]}; keep ids as short English slugs. Narration is read aloud, so keep sentences speakable.
 Reply with JSON only. No markdown.
 Schema:
-{"narration":"two short paragraphs under 130 words","choices":[{"id":"slug","label":"concrete verb phrase","hint":"optional"}],"questTitle":"","questDetail":"","heartDelta":[{"id":"calder","delta":0}],"chronicleTitle":"","chronicleBody":"one sentence if this moment matters, else empty","moveTo":"hotspot id or empty","nextSceneId":"another scene id only if they truly travel, else empty","daypart":"","weather":"","sky":"SHORT · LABEL","clock":"HH:MM","day":1}
+{"narration":"two short paragraphs under 130 words","choices":[{"id":"slug","label":"concrete verb phrase","hint":"optional"}],"questTitle":"","questDetail":"","heartDelta":[{"id":"calder","delta":0}],"chronicleTitle":"","chronicleBody":"one sentence if this moment matters, else empty","moveTo":"hotspot id or empty","nextSceneId":"another scene id only if they truly travel, else empty","daypart":"","weather":"","sky":"SHORT · LABEL","clock":"HH:MM","day":1,"summary":"","rollRequest":null,"endTale":false}
 Exactly 3 or 4 choices. Keep quest fields if the goal is unchanged. moveTo must be a hotspot id from the list or empty. nextSceneId must be one of: ${scenes} — or empty.`;
 
     const user = `Campaign: ${campaign.name}
@@ -107,13 +134,19 @@ ${spots}
 Party hearts: ${party}
 Active hero id: ${data.activeId}
 Current quest: ${scene.quest.title} — ${scene.quest.detail}
+Company level: ${data.level ?? 1}. Pack: ${(data.inventory ?? []).join(", ") || "(empty)"}
+${data.heroLine ? `Acting hero: ${data.heroLine}` : ""}
+${data.encounter ? `Encounter: ${data.encounter}` : ""}
+Story so far: ${data.summary || "(just begun)"}
 Recent:
 ${log || "(opening)"}
 ${dice}
+Facts (final):
+${(data.facts ?? []).join("\n") || "(none)"}
 The company does: ${data.action}`;
 
     try {
-      const res = await fetch("https://api.x.ai/v1/chat/completions", {
+      const res = await fetch(`${NANO_BASE}/chat/completions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -121,9 +154,9 @@ The company does: ${data.action}`;
         },
         signal: AbortSignal.timeout(22000),
         body: JSON.stringify({
-          model: "grok-4.5",
+          model: NANO_CHAT_MODEL,
           temperature: 0.8,
-          max_tokens: 800,
+          max_tokens: 900,
           messages: [
             { role: "system", content: system },
             { role: "user", content: user },
@@ -149,6 +182,9 @@ The company does: ${data.action}`;
         sky: parsed.sky || undefined,
         clock: parsed.clock || undefined,
         day: parsed.day,
+        summary: parsed.summary || undefined,
+        rollRequest: data.roll ? undefined : parsed.rollRequest ?? undefined,
+        endTale: parsed.endTale || undefined,
       };
       return { ok: true, result };
     } catch {

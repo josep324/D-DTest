@@ -1,5 +1,6 @@
 import { CAMPAIGNS, getCampaign, getScene, INVENTORY, PARTY } from "@/lib/game/content";
-import type { Choice, GmResult, Hotspot, Tale } from "@/lib/game/types";
+import { MAX_LEVEL, REST_CHARGES, xpAfter } from "@/lib/game/rules";
+import type { Choice, GmResult, Hotspot, Mechanics, Tale } from "@/lib/game/types";
 
 function uid(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
@@ -152,6 +153,7 @@ const BOOK: Record<string, GmResult> = {
     "You walk the courier back as far as the snow, which receives you without comment. The baker cries in the efficient way of someone who has pies in the oven and a person returned.\n\nThe bell stays wrapped. Somewhere downhill a river practices a name. Ashpine Post is a chapter you can close.",
     [endChoice],
     {
+      endTale: true,
       questTitle: "The post is delivered",
       questDetail: "The courier is home. The bell goes downhill another day, and that is enough.",
       chronicleTitle: "Home before the pies cool",
@@ -258,6 +260,7 @@ const BOOK: Record<string, GmResult> = {
     "The stonecutter cries, briefly, and then does the work. MAREN VOSS goes back into the sign. The ferryman stands in the rain until his shoulders darken, and he looks so relieved it is a little funny.\n\nUnder the arch, the bell rings once, on its own, and then keeps a decent silence. Stillwater can close.",
     [endChoice],
     {
+      endTale: true,
       questTitle: "The name is on the sign",
       questDetail: "Maren Voss is wet, remembered, and no longer a rumor.",
       chronicleTitle: "The sign remembers",
@@ -386,6 +389,7 @@ const BOOK: Record<string, GmResult> = {
     "The Lark waits one tide, which is a small miracle made of rope and manners. Splint Light burns. The deckhand is yelled at, fed, and put back on the watch bill. The chart goes aboard with its scar and its honest margin.\n\nDusk Harbor keeps its ship, its tender, and its story. You can close the book.",
     [endChoice],
     {
+      endTale: true,
       questTitle: "The light is lit",
       questDetail: "The ship waited. The coast is whole. The harbor is loud in a glad way.",
       chronicleTitle: "One tide",
@@ -448,12 +452,52 @@ export function createTale(campaignId: string, playerName: string): Tale {
     log: [{ role: "gm", text: scene.opening }],
     updatedAt: Date.now(),
     beat: 0,
+    level: 1,
+    xp: 0,
+    summary: "",
+    finished: false,
+    encounter: null,
+    pendingRoll: null,
+    edge: null,
+    rests: REST_CHARGES,
+    partner: "",
+  };
+}
+
+/** Fill in anything an older save or a pasted code does not know about yet. */
+export function normalizeTale(raw: Tale): Tale {
+  const base = PARTY.map((p) => ({ ...p }));
+  const party = (raw.party ?? base).map((c) => {
+    const ref = base.find((b) => b.id === c.id);
+    return ref ? { ...ref, ...c, abilities: c.abilities ?? ref.abilities, proficient: c.proficient ?? ref.proficient, attack: c.attack ?? ref.attack, voice: c.voice ?? ref.voice } : c;
+  });
+  return {
+    ...raw,
+    party,
+    level: raw.level ?? 1,
+    xp: raw.xp ?? 0,
+    summary: raw.summary ?? "",
+    finished: raw.finished ?? false,
+    encounter: raw.encounter ?? null,
+    pendingRoll: raw.pendingRoll ?? null,
+    edge: raw.edge ?? null,
+    rests: raw.rests ?? REST_CHARGES,
+    partner: raw.partner ?? "",
+    inventory: (raw.inventory ?? []).map((item) => {
+      const ref = INVENTORY.find((i) => i.id === item.id);
+      return ref ? { ...ref, uses: item.uses ?? ref.uses } : item;
+    }),
   };
 }
 
 export function localGm(
   tale: Tale,
-  action: { choiceId?: string; text: string; roll?: { total: number; dc: number; success: boolean; label: string } },
+  action: {
+    choiceId?: string;
+    text: string;
+    roll?: { total: number; dc: number; success: boolean; label: string };
+    notes?: string[];
+  },
 ): GmResult {
   const key = action.choiceId ? `${tale.sceneId}:${action.choiceId}` : "";
   if (key && BOOK[key]) return BOOK[key];
@@ -466,15 +510,13 @@ export function localGm(
     return beat(`${actor.name} waits. The table is quiet.`, choicesFor(tale.sceneId));
   }
 
-  if (action.roll) {
-    const { success, total, dc, label } = action.roll;
-    const narration = success
-      ? `${label}. ${total} against ${dc} — it turns. ${spot.examine} Nobody is hurt beyond a bruise of pride.`
-      : `${label}. ${total} against ${dc} — it slips. ${actor.name} is pulled back by the others before it becomes a wound. ${spot.examine}`;
-    return beat(narration, choicesFor(tale.sceneId).slice(0, 3), {
-      heartDelta: success ? [{ id: actor.id, delta: -1 }] : [{ id: actor.id, delta: -2 }],
-      moveTo: spot.id,
-    });
+  if (action.roll || action.notes?.length) {
+    const facts = (action.notes ?? []).join(" ");
+    const win = action.roll?.success ?? true;
+    const lead = win
+      ? `It counts. ${spot.examine}`
+      : `It slips, and the others catch the stumble before it becomes a wound. ${spot.examine}`;
+    return beat(`${lead}\n\n${facts}`.trim(), choicesFor(tale.sceneId).slice(0, 4), { moveTo: spot.id });
   }
 
   if (action.choiceId === "open-chronicle") {
@@ -488,20 +530,30 @@ export function localGm(
   );
 }
 
-export function applyTale(tale: Tale, playerLine: string, result: GmResult): Tale {
+function recap(tale: Tale, result: GmResult, chronicleBody?: string): string {
+  if (result.summary) return result.summary.slice(0, 600);
+  const line = chronicleBody ?? result.narration.split("\n\n")[0];
+  return `${tale.summary} ${line}`.trim().slice(-600);
+}
+
+export function applyTale(tale: Tale, playerLine: string, result: GmResult, mech?: Mechanics): Tale {
   const campaign = getCampaign(tale.campaignId);
   if (!campaign) return tale;
   let scene = getScene(tale.campaignId, tale.sceneId) ?? campaign.scenes[0];
   let sceneId = tale.sceneId;
   let chapter = tale.chapter;
   let positions = { ...tale.positions };
-  let day = result.day ?? tale.day;
+  const day = result.day ?? tale.day;
+  let activeId = mech?.activeId ?? tale.activeId;
+  let gained = mech?.xp ?? 0;
 
   const next = result.nextSceneId ? getScene(tale.campaignId, result.nextSceneId) : undefined;
-  if (next && next.id !== scene.id) {
+  const travelled = Boolean(next && next.id !== scene.id);
+  if (next && travelled) {
     scene = next;
     sceneId = next.id;
     chapter += 1;
+    gained += 40;
     positions = {};
     tale.party.forEach((p, i) => {
       positions[p.id] = next.hotspots[i % next.hotspots.length].id;
@@ -510,11 +562,24 @@ export function applyTale(tale: Tale, playerLine: string, result: GmResult): Tal
     positions[tale.activeId] = result.moveTo;
   }
 
-  const party = tale.party.map((c) => {
-    const delta = result.heartDelta?.find((h) => h.id === c.id)?.delta ?? 0;
+  // The rules own hearts whenever they spoke; otherwise the storyteller may nudge them a little.
+  const deltas = mech
+    ? mech.heartDelta
+    : (result.heartDelta ?? []).map((h) => ({ id: h.id, delta: Math.max(-2, Math.min(2, h.delta)) }));
+  let party = tale.party.map((c) => {
+    const delta = deltas.filter((h) => h.id === c.id).reduce((n, h) => n + h.delta, 0);
     const heart = Math.max(1, Math.min(c.heartMax, c.heart + delta));
     return heart === c.heart ? c : { ...c, heart };
   });
+
+  const finished = tale.finished || Boolean(result.endTale) || result.choices.every((c) => c.id === "open-chronicle");
+  if (finished && !tale.finished) gained += 60;
+
+  const grown = xpAfter(tale, gained);
+  if (grown.leveled && grown.level <= MAX_LEVEL) {
+    const steps = grown.level - tale.level;
+    party = party.map((c) => ({ ...c, heartMax: c.heartMax + 3 * steps, heart: c.heart + 3 * steps }));
+  }
 
   const chronicle = [...tale.chronicle];
   if (result.chronicleTitle && result.chronicleBody) {
@@ -537,6 +602,21 @@ export function applyTale(tale: Tale, playerLine: string, result: GmResult): Tal
   const log = tale.log.slice(-10);
   log.push({ role: "you", text: playerLine }, { role: "gm", text: result.narration });
 
+  let encounter = mech && "encounter" in mech ? (mech.encounter ?? null) : tale.encounter;
+  if (travelled) encounter = null;
+  if (!party.some((p) => p.id === activeId)) activeId = party[0].id;
+
+  let inventory = tale.inventory;
+  if (mech?.consume) {
+    inventory = inventory
+      .map((i) => (i.id === mech.consume ? { ...i, uses: (i.uses ?? 1) - 1 } : i))
+      .filter((i) => i.uses === undefined || i.uses > 0);
+  }
+
+  let edge = tale.edge;
+  if (mech?.edge) edge = mech.edge;
+  else if (mech?.notes.some((n) => n.includes(" rolls "))) edge = null;
+
   return {
     ...tale,
     sceneId,
@@ -546,13 +626,23 @@ export function applyTale(tale: Tale, playerLine: string, result: GmResult): Tal
     clock: result.clock || (next ? next.clock : tale.clock),
     weather: result.weather || (next ? next.weather : tale.weather),
     sky: result.sky || (next ? next.sky : tale.sky),
+    activeId,
     party,
     positions,
     quest,
     chronicle,
+    inventory,
     narration: result.narration,
     choices: result.choices.slice(0, 4),
     log,
+    level: grown.level,
+    xp: grown.xp,
+    summary: recap(tale, result, result.chronicleBody),
+    finished,
+    encounter,
+    pendingRoll: finished ? null : (result.rollRequest ?? null),
+    edge,
+    rests: mech?.rest ? Math.max(0, tale.rests - 1) : tale.rests,
     beat: tale.beat + 1,
     updatedAt: Date.now(),
   };
@@ -576,20 +666,8 @@ export function decodeTale(code: string): Tale | null {
     const tale = JSON.parse(new TextDecoder().decode(bytes)) as Tale;
     if (!getCampaign(tale.campaignId) || !getScene(tale.campaignId, tale.sceneId)) return null;
     if (!tale.narration || !Array.isArray(tale.party) || tale.party.length < 1) return null;
-    return { ...tale, id: uid(), updatedAt: Date.now() };
+    return normalizeTale({ ...tale, id: uid(), updatedAt: Date.now() });
   } catch {
     return null;
   }
-}
-
-export function skillMod(id: string): number {
-  if (id === "bramble" || id === "holt") return 4;
-  if (id === "calder") return 3;
-  return 3;
-}
-
-export function rollCheck(mod: number, dc = 13) {
-  const roll = 1 + Math.floor(Math.random() * 20);
-  const total = roll + mod;
-  return { roll, mod, total, dc, success: total >= dc };
 }

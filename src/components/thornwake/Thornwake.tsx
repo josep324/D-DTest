@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { getCampaign } from "@/lib/game/content";
-import { decodeTale, encodeTale, localGm } from "@/lib/game/logic";
-import { activeTale, useGame } from "@/lib/game/store";
-import { consultStoryteller } from "@/lib/gm";
+import { consumeItem } from "@/lib/game/actions";
+import { decodeTale, encodeTale } from "@/lib/game/logic";
+import { activeTale, useGame, type Lang } from "@/lib/game/store";
 import { Gate } from "@/components/thornwake/Gate";
 import { Play } from "@/components/thornwake/Play";
 import { Select } from "@/components/thornwake/Select";
@@ -129,7 +129,7 @@ function About() {
     <div className="space-y-3 font-serif text-sm leading-relaxed text-mist">
       <p>
         Thornwake is a table for family quests. You play one company of four — Calder, Bramble, Vesper, and Holt —
-        through three original tales.
+        through three original tales, as two players and a storyteller who speaks.
       </p>
       <p>
         An AI storyteller sits at the head when the table can reach one. If it cannot, the written book takes over,
@@ -143,11 +143,12 @@ function About() {
 function Notes() {
   return (
     <ul className="space-y-3 font-serif text-sm leading-relaxed text-mist">
-      <li>Choose who acts by tapping a portrait. The ring on the board is the one who moves.</li>
-      <li>Move, look, or strike by picking a marked place. Or write what the company does.</li>
-      <li>Dice are honest. A high roll opens a door. A low one costs a little heart, never a life.</li>
-      <li>Follow the story to read the chronicle. Tales stay in this browser until you retire them.</li>
-      <li>Join a friend by pasting their tale-code. It is long on purpose: it is the whole chapter.</li>
+      <li>Two players share the table: one takes Calder and Bramble, the other Vesper and Holt. The app is the storyteller.</li>
+      <li>Say or type what the company does. When it is uncertain, the storyteller asks for a roll: use the app’s die or a real d20 from the table, typed or spoken.</li>
+      <li>Advantage when a companion stands beside you or an item gives an edge. A natural 20 always lands, a natural 1 always stumbles.</li>
+      <li>Strike a tense place to start a scene of trouble. Roll initiative, take turns, and press the trouble back until it calms.</li>
+      <li>Nobody dies. A hero at 1 heart is pulled back. Rest twice per tale, and use the honey-cake or splint-wrap to heal.</li>
+      <li>Tales stay in this browser. Share a tale-code to continue on another device.</li>
     </ul>
   );
 }
@@ -155,21 +156,50 @@ function Notes() {
 function Settings() {
   const playerName = useGame((s) => s.playerName);
   const setName = useGame((s) => s.setName);
+  const partner = useGame((s) => s.partner);
+  const setPartner = useGame((s) => s.setPartner);
   const sound = useGame((s) => s.sound);
   const setSound = useGame((s) => s.setSound);
+  const voice = useGame((s) => s.voice);
+  const setVoice = useGame((s) => s.setVoice);
+  const lang = useGame((s) => s.lang);
+  const setLang = useGame((s) => s.setLang);
+  const input =
+    "mt-2 h-11 w-full border border-gold/40 bg-ink/40 px-3 font-serif text-base text-parchment outline-none";
   return (
     <div className="space-y-4">
       <label className="block font-sans text-xs tracking-widest text-mist">
-        NAME AT THE TABLE
-        <input
-          value={playerName}
-          onChange={(e) => setName(e.target.value)}
-          maxLength={24}
-          className="mt-2 h-11 w-full border border-gold/40 bg-ink/40 px-3 font-serif text-base text-parchment outline-none"
-        />
+        FIRST PLAYER · CALDER AND BRAMBLE
+        <input value={playerName} onChange={(e) => setName(e.target.value)} maxLength={24} className={input} />
       </label>
+      <label className="block font-sans text-xs tracking-widest text-mist">
+        SECOND PLAYER · VESPER AND HOLT (OPTIONAL)
+        <input value={partner} onChange={(e) => setPartner(e.target.value)} maxLength={24} className={input} />
+      </label>
+      <fieldset>
+        <legend className="font-sans text-xs tracking-widest text-mist">LANGUAGE OF THE STORYTELLER</legend>
+        <div className="mt-2 grid grid-cols-3 gap-2">
+          {(
+            [
+              ["en", "English"],
+              ["ca", "Català"],
+              ["es", "Español"],
+            ] as [Lang, string][]
+          ).map(([id, label]) => (
+            <TextButton key={id} tone={lang === id ? "solid" : "ghost"} onClick={() => setLang(id)}>
+              {label}
+            </TextButton>
+          ))}
+        </div>
+        <p className="mt-2 font-serif text-xs text-mist">
+          The live storyteller writes and speaks in this language. The offline table book is English only.
+        </p>
+      </fieldset>
+      <TextButton tone={voice ? "solid" : "ghost"} onClick={() => setVoice(!voice)}>
+        {voice ? "The storyteller speaks aloud" : "The storyteller is silent"}
+      </TextButton>
       <TextButton tone={sound ? "solid" : "ghost"} onClick={() => setSound(!sound)}>
-        {sound ? "Sound is on" : "Sound is off"}
+        {sound ? "Room sound is on" : "Room sound is off"}
       </TextButton>
     </div>
   );
@@ -192,7 +222,9 @@ function Saves() {
           <li key={t.id} className="border border-gold/30 p-3">
             <p className="font-serif text-parchment">{campaign?.name ?? "A tale"}</p>
             <p className="font-sans text-xs text-mist">
-              {t.playerName} · Day {t.day} · {new Date(t.updatedAt).toLocaleString()}
+              {t.playerName}
+              {t.partner ? ` & ${t.partner}` : ""} · Day {t.day} · Level {t.level}
+              {t.finished ? " · Completed" : ""} · {new Date(t.updatedAt).toLocaleString()}
             </p>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <TextButton
@@ -280,7 +312,6 @@ function Pack() {
   const tale = useGame(activeTale);
   const setModal = useGame((s) => s.setModal);
   if (!tale) return null;
-  const actor = tale.party.find((p) => p.id === tale.activeId) ?? tale.party[0];
   return (
     <ul className="space-y-2">
       {tale.inventory.map((item) => {
@@ -290,15 +321,18 @@ function Pack() {
             <div>
               <p className="font-serif text-parchment">{item.name}</p>
               <p className="font-serif text-sm text-mist">{item.detail}</p>
-              <p className="font-sans text-xs text-gold-dim">{owner?.name}</p>
+              <p className="font-sans text-xs text-gold-dim">
+                {owner?.name}
+                {item.uses ? ` · ${item.uses} left` : ""}
+                {item.effect === "edge" ? " · gives an edge" : ""}
+              </p>
             </div>
             <button
               type="button"
               className="min-h-11 shrink-0 px-2 font-sans text-xs tracking-widest text-gold"
               onClick={() => {
                 setModal(null);
-                const line = `${actor.name} uses the ${item.name.toLowerCase()}. ${item.detail}`;
-                void runLine(line);
+                consumeItem(item);
               }}
             >
               Use
@@ -394,29 +428,4 @@ function Chronicle() {
       ) : null}
     </div>
   );
-}
-
-async function runLine(line: string) {
-  const state = useGame.getState();
-  const current = activeTale(state);
-  if (!current || state.writing) return;
-  state.setWriting(true);
-  const local = localGm(current, { text: line });
-  try {
-    const res = await consultStoryteller({
-      data: {
-        campaignId: current.campaignId,
-        sceneId: current.sceneId,
-        playerName: current.playerName,
-        activeId: current.activeId,
-        action: line,
-        party: current.party.map((p) => ({ id: p.id, heart: p.heart })),
-        recent: current.log.slice(-6).map((l) => ({ role: l.role, text: l.text.slice(0, 480) })),
-      },
-    });
-    if (res.ok) state.commit(current.id, line, res.result, "live");
-    else state.commit(current.id, line, local, "book");
-  } catch {
-    state.commit(current.id, line, local, "book");
-  }
 }

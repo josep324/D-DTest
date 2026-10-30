@@ -1,10 +1,13 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Backpack,
   BookOpen,
   Dices,
   Feather,
   Footprints,
+  Mic,
+  MicOff,
+  Moon,
   Search,
   Send,
   Sword,
@@ -13,11 +16,25 @@ import {
   X,
 } from "lucide-react";
 import { getScene } from "@/lib/game/content";
-import { localGm, rollCheck, skillMod } from "@/lib/game/logic";
+import { onPlaceMove, perform, restParty, rollFor, say, stepBack, strikeAt } from "@/lib/game/actions";
+import { createTale } from "@/lib/game/logic";
+import {
+  ABILITY_NAMES,
+  LEVEL_XP,
+  MAX_LEVEL,
+  autoMode,
+  checkMod,
+  heroOf,
+} from "@/lib/game/rules";
 import { activeTale, useGame } from "@/lib/game/store";
-import { consultStoryteller } from "@/lib/gm";
-import type { DiceShow, Hotspot } from "@/lib/game/types";
+import type { Character, Hotspot, RollMode, RollRequest, Tale } from "@/lib/game/types";
 import { Mark, Ornate, Portrait, TextButton } from "@/components/thornwake/ui";
+import { canListen, listen, numberFromSpeech, speak, stopSpeaking } from "@/lib/voice";
+
+function ownerName(tale: Tale, person: Character): string {
+  const second = person.id === "vesper" || person.id === "holt";
+  return second && tale.partner ? tale.partner : tale.playerName;
+}
 
 const OFFSETS = [
   { dx: -3.2, dy: -1.5 },
@@ -40,102 +57,57 @@ export function Play() {
   const dice = useGame((s) => s.dice);
   const toldBy = useGame((s) => s.toldBy);
   const setActive = useGame((s) => s.setActive);
+  const voice = useGame((s) => s.voice);
+  const setVoice = useGame((s) => s.setVoice);
+  const lang = useGame((s) => s.lang);
   const [draft, setDraft] = useState("");
+  const [levelUp, setLevelUp] = useState<number | null>(null);
+  const lastLevel = useRef<number | null>(null);
 
   useEffect(() => {
     if (!tale) setScreen("select");
   }, [tale, setScreen]);
+
+  const taleLevel = tale?.level;
+  const taleKey = tale?.id;
+  useEffect(() => {
+    if (taleLevel === undefined) return;
+    if (lastLevel.current !== null && taleLevel > lastLevel.current) {
+      setLevelUp(taleLevel);
+      const t = window.setTimeout(() => setLevelUp(null), 4500);
+      lastLevel.current = taleLevel;
+      return () => window.clearTimeout(t);
+    }
+    lastLevel.current = taleLevel;
+  }, [taleLevel, taleKey]);
+
+  useEffect(() => () => stopSpeaking(), []);
 
   if (!tale) return null;
   const scene = getScene(tale.campaignId, tale.sceneId);
   if (!scene) return null;
   const actor = tale.party.find((p) => p.id === tale.activeId) ?? tale.party[0];
 
-  async function perform(line: string, choiceId?: string, rolled?: DiceShow) {
-    const state = useGame.getState();
-    const current = activeTale(state);
-    if (!current || state.writing) return;
-    if (choiceId === "open-chronicle") {
-      state.setModal("chronicle");
-      return;
-    }
-    state.setWriting(true);
-    if (!rolled) state.setDice(null);
-    const local = localGm(current, {
-      choiceId,
-      text: line,
-      roll: rolled
-        ? {
-            total: rolled.roll + rolled.mod,
-            dc: rolled.dc,
-            success: rolled.success,
-            label: rolled.label,
-          }
-        : undefined,
-    });
-    try {
-      const res = await consultStoryteller({
-        data: {
-          campaignId: current.campaignId,
-          sceneId: current.sceneId,
-          playerName: current.playerName,
-          activeId: current.activeId,
-          action: line,
-          party: current.party.map((p) => ({ id: p.id, heart: p.heart })),
-          recent: current.log.slice(-6).map((l) => ({ role: l.role, text: l.text.slice(0, 480) })),
-          roll: rolled
-            ? { label: rolled.label, total: rolled.roll + rolled.mod, dc: rolled.dc, success: rolled.success }
-            : undefined,
-        },
-      });
-      if (res.ok) state.commit(current.id, line, res.result, "live");
-      else state.commit(current.id, line, local, "book");
-    } catch {
-      state.commit(current.id, line, local, "book");
-    }
-  }
-
   function onPlace(spot: Hotspot) {
-    if (mode === "look") {
-      void perform(`${actor.name} looks closely at ${spot.name}.`);
-      return;
-    }
-    if (mode === "strike") {
-      if (!spot.threat) {
-        void perform(`${actor.name} searches ${spot.name} for a fight and finds only weather.`);
-        return;
-      }
-      const check = rollCheck(skillMod(actor.id), 13);
-      const shown: DiceShow = {
-        who: actor.name,
-        label: `${actor.name} presses at ${spot.name}`,
-        roll: check.roll,
-        mod: check.mod,
-        dc: check.dc,
-        success: check.success,
-      };
-      useGame.getState().setDice(shown);
-      window.setTimeout(() => void perform(shown.label, undefined, shown), 900);
-      return;
-    }
-    void perform(`${actor.name} goes to ${spot.name}.`);
+    if (tale?.pendingRoll) return;
+    if (mode === "strike") strikeAt(spot);
+    else onPlaceMove(spot, mode);
   }
 
   function onDice() {
-    const check = rollCheck(skillMod(actor.id), 12);
-    const shown: DiceShow = {
-      who: actor.name,
-      label: `${actor.name} asks the dice`,
-      roll: check.roll,
-      mod: check.mod,
-      dc: check.dc,
-      success: check.success,
-    };
-    useGame.getState().setDice(shown);
-    window.setTimeout(
-      () => void perform(`${shown.label} and gets ${check.total} against ${check.dc}.`, undefined, shown),
-      900,
-    );
+    if (!tale || writing || tale.pendingRoll || tale.finished) return;
+    const hero = heroOf(tale);
+    const best = (Object.keys(hero.abilities) as (keyof Character["abilities"])[]).sort(
+      (x, y) => checkMod(hero, y, tale.level) - checkMod(hero, x, tale.level),
+    )[0];
+    useGame.getState().setPending({
+      heroId: hero.id,
+      ability: best,
+      dc: 12,
+      reason: "Trusting a good hand",
+      kind: "check",
+      line: `${hero.name} asks the dice what the moment holds.`,
+    });
   }
 
   return (
@@ -152,7 +124,16 @@ export function Play() {
           <IconButton label="Chronicle" onClick={() => setModal("chronicle")}>
             <BookOpen className="size-4" />
           </IconButton>
-          <IconButton label={sound ? "Silence" : "Sound"} onClick={() => setSound(!sound)}>
+          <IconButton
+            label={voice ? "Silence the storyteller's voice" : "Let the storyteller speak"}
+            onClick={() => {
+              if (voice) stopSpeaking();
+              setVoice(!voice);
+            }}
+          >
+            {voice ? <Mic className="size-4" /> : <MicOff className="size-4" />}
+          </IconButton>
+          <IconButton label={sound ? "Silence the room" : "Room sound"} onClick={() => setSound(!sound)}>
             {sound ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
           </IconButton>
           <button
@@ -174,7 +155,8 @@ export function Play() {
             Day {tale.day} · {tale.daypart}
           </p>
           <p className="font-sans text-xs text-mist">
-            {tale.clock} · {scene.hotspots.length} places in view · Journey
+            {tale.clock} · Level {tale.level}
+            {tale.level < MAX_LEVEL ? ` · ${tale.xp}/${LEVEL_XP[tale.level]} XP` : " · fully grown"}
           </p>
         </div>
       </div>
@@ -244,13 +226,17 @@ export function Play() {
               <span className="min-w-0 flex-1">
                 <span className="flex items-baseline justify-between gap-2">
                   <span className="font-serif text-sm text-parchment">{person.name}</span>
-                  <span className="font-sans text-xs text-mist">{person.role}</span>
+                  <span className="font-sans text-xs text-mist">
+                    {person.role}
+                    {tale.partner ? ` · ${ownerName(tale, person)}` : ""}
+                  </span>
                 </span>
                 <span className="bar-track mt-2 block">
                   <span className="bar-fill block" style={{ width: `${(person.heart / person.heartMax) * 100}%` }} />
                 </span>
                 <span className="mt-1 block font-sans text-xs text-mist">
                   {person.heart}/{person.heartMax} · Guard {person.guard}
+                  {tale.edge === person.id ? " · edge" : ""}
                 </span>
               </span>
             </button>
@@ -275,12 +261,18 @@ export function Play() {
             toldBy={toldBy}
             draft={draft}
             setDraft={setDraft}
-            onChoice={(id, label) => void perform(label, id)}
-            onSend={() => {
-              const line = draft.trim();
+            voice={voice}
+            lang={lang}
+            heroVoice="fable"
+            finished={tale.finished}
+            blocked={Boolean(tale.pendingRoll)}
+            tale={tale}
+            onChoice={(id, label) => void perform(label, { choiceId: id })}
+            onSend={(text) => {
+              const line = (text ?? draft).trim();
               if (!line) return;
               setDraft("");
-              void perform(`${actor.name}: ${line}`);
+              say(line);
             }}
             onClose={() => setStoryOpen(false)}
           />
@@ -296,7 +288,9 @@ export function Play() {
           ? `Move ${actor.name} · choose a place`
           : mode === "look"
             ? `Look with ${actor.name} · choose a place`
-            : `Strike with ${actor.name} · choose a tense place`}
+            : tale.encounter
+              ? `Strike with ${actor.name} · press the trouble at ${tale.encounter.name}`
+              : `Strike with ${actor.name} · choose a tense place`}
       </p>
 
       <div className="sticky bottom-0 z-30 mt-auto flex justify-center px-2 py-3 lg:absolute lg:inset-x-0 lg:bottom-3 lg:mt-0">
@@ -306,6 +300,13 @@ export function Play() {
           <Act icon={<Search className="size-4" />} label="Look" on={mode === "look"} onClick={() => setMode("look")} />
           <Act icon={<Backpack className="size-4" />} label="Pack" on={false} onClick={() => setModal("pack")} />
           <Act icon={<Dices className="size-4" />} label="Dice" on={false} onClick={onDice} />
+          <Act
+            icon={<Moon className="size-4" />}
+            label={`Rest ${tale.rests}`}
+            on={false}
+            onClick={restParty}
+            disabled={tale.rests <= 0 || Boolean(tale.encounter) || tale.finished || writing}
+          />
           <button
             type="button"
             onClick={() => setModal("chronicle")}
@@ -317,13 +318,47 @@ export function Play() {
         </div>
       </div>
 
+      {tale.encounter ? <EncounterBar tale={tale} /> : null}
+
+      {tale.pendingRoll && !writing ? (
+        <RollPrompt
+          key={`${tale.pendingRoll.ability}-${tale.pendingRoll.reason}-${tale.beat}`}
+          tale={tale}
+          request={tale.pendingRoll}
+          lang={lang}
+        />
+      ) : null}
+
       {dice ? (
-        <div className="fixed bottom-28 left-1/2 z-40 w-64 -translate-x-1/2 border border-gold bg-ink/95 px-4 py-3 text-center">
-          <p className="font-display text-4xl text-gold-bright">{dice.roll}</p>
+        <div className="fixed bottom-28 left-1/2 z-40 w-72 -translate-x-1/2 border border-gold bg-ink/95 px-4 py-3 text-center">
+          <p className="font-display text-4xl text-gold-bright">
+            {dice.roll}
+            {dice.rolls.length > 1 ? (
+              <span className="ml-2 font-sans text-xs text-mist">
+                ({dice.rolls.join(" / ")} · {dice.mode === "advantage" ? "best" : "worst"})
+              </span>
+            ) : null}
+          </p>
           <p className="font-serif text-sm text-parchment">{dice.label}</p>
           <p className="font-sans text-xs text-mist">
-            +{dice.mod} = {dice.roll + dice.mod} vs {dice.dc} · {dice.success ? "it turns" : "it slips"}
+            {dice.mod >= 0 ? "+" : ""}
+            {dice.mod} = {dice.roll + dice.mod} vs {dice.dc} ·{" "}
+            {dice.crit === "hit"
+              ? "a natural 20!"
+              : dice.crit === "fumble"
+                ? "a natural 1"
+                : dice.success
+                  ? "it turns"
+                  : "it slips"}
+            {dice.physical ? " · table die" : ""}
           </p>
+        </div>
+      ) : null}
+
+      {levelUp ? (
+        <div className="pointer-events-none fixed top-24 left-1/2 z-50 -translate-x-1/2 border border-gold-bright bg-ink/95 px-5 py-3 text-center">
+          <p className="font-display text-lg tracking-widest text-gold-bright">LEVEL {levelUp}</p>
+          <p className="font-serif text-sm text-parchment">The company grows. Every heart reaches a little further.</p>
         </div>
       ) : null}
     </div>
@@ -356,22 +391,200 @@ function Act({
   label,
   on,
   onClick,
+  disabled,
 }: {
   icon: ReactNode;
   label: string;
   on: boolean;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       aria-pressed={on}
+      disabled={disabled}
       onClick={onClick}
-      className={`flex h-16 w-16 shrink-0 flex-col items-center justify-center gap-1 font-sans text-xs ${on ? "bg-gold/15 text-gold-bright" : "text-mist"}`}
+      className={`flex h-16 w-16 shrink-0 flex-col items-center justify-center gap-1 font-sans text-xs disabled:opacity-35 ${on ? "bg-gold/15 text-gold-bright" : "text-mist"}`}
     >
       {icon}
       {label}
     </button>
+  );
+}
+
+function EncounterBar({ tale }: { tale: Tale }) {
+  const enc = tale.encounter;
+  if (!enc) return null;
+  const turnId = enc.order[enc.turn];
+  return (
+    <section className="z-30 mx-3 mb-2 border border-ember/70 bg-ink/90 p-3 lg:absolute lg:top-36 lg:left-1/2 lg:mx-0 lg:w-80 lg:-translate-x-1/2">
+      <div className="flex items-baseline justify-between gap-2">
+        <h2 className="font-serif text-sm text-parchment">Trouble at {enc.name}</h2>
+        <span className="font-sans text-xs text-mist">Round {enc.round}</span>
+      </div>
+      <span className="bar-track mt-2 block" aria-label={`Resolve ${enc.resolve} of ${enc.resolveMax}`}>
+        <span className="bar-fill block" style={{ width: `${(enc.resolve / enc.resolveMax) * 100}%` }} />
+      </span>
+      <ol className="mt-2 flex flex-wrap gap-1">
+        {enc.order.map((id) => {
+          const hero = tale.party.find((p) => p.id === id);
+          const on = id === turnId;
+          return (
+            <li
+              key={id}
+              className={`px-2 py-1 font-sans text-xs ${on ? "bg-gold/25 text-gold-bright" : "text-mist"} border ${on ? "border-gold" : "border-gold/20"}`}
+            >
+              {hero ? hero.name : "Trouble"}
+            </li>
+          );
+        })}
+      </ol>
+      <button type="button" className="mt-2 min-h-11 font-sans text-xs tracking-widest text-gold" onClick={stepBack}>
+        STEP BACK
+      </button>
+    </section>
+  );
+}
+
+function RollPrompt({ tale, request, lang }: { tale: Tale; request: RollRequest; lang: "en" | "ca" | "es" }) {
+  const setPending = useGame((s) => s.setPending);
+  const hero = heroOf(tale, request.heroId);
+  const auto = autoMode(tale, hero);
+  const [mode, setMode] = useState<RollMode>(auto.mode);
+  const [num, setNum] = useState("");
+  const [hearing, setHearing] = useState(false);
+  const stop = useRef<(() => void) | null>(null);
+  const mod = checkMod(hero, request.ability, tale.level);
+  const physical = Number(num);
+  const validPhysical = Number.isInteger(physical) && physical >= 1 && physical <= 20;
+
+  useEffect(() => () => stop.current?.(), []);
+
+  const hear = () => {
+    if (hearing) {
+      stop.current?.();
+      return;
+    }
+    setHearing(true);
+    stop.current = listen(lang, {
+      onText: () => {},
+      onFinal: (t) => {
+        const n = numberFromSpeech(t);
+        if (n) rollFor(request, mode, n);
+      },
+      onEnd: () => setHearing(false),
+    });
+  };
+
+  return (
+    <div className="fixed inset-x-3 bottom-24 z-40 mx-auto max-w-md border border-gold bg-ink/95 p-4 sm:bottom-28" role="dialog" aria-label="Roll">
+      <p className="font-sans text-xs tracking-widest text-gold-dim">
+        {request.kind === "strike" ? "STRIKE" : "THE DICE ARE ASKED"}
+      </p>
+      <h2 className="mt-1 font-serif text-lg text-parchment">
+        {hero.name} · {ABILITY_NAMES[request.ability]} {mod >= 0 ? "+" : ""}
+        {mod} <span className="text-mist">vs {request.dc}</span>
+      </h2>
+      <p className="font-serif text-sm text-mist">{request.reason}</p>
+      <div className="mt-3 grid grid-cols-3 gap-1" role="group" aria-label="How the die falls">
+        {(
+          [
+            ["normal", "Plain"],
+            ["advantage", "Advantage"],
+            ["disadvantage", "Disadvantage"],
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            aria-pressed={mode === id}
+            onClick={() => setMode(id)}
+            className={`min-h-11 border px-1 font-sans text-xs ${mode === id ? "border-gold bg-gold/15 text-gold-bright" : "border-gold/25 text-mist"}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {auto.why ? <p className="mt-1 font-sans text-xs text-gold-dim">Suggested: advantage, {auto.why}.</p> : null}
+      <div className="mt-3">
+        <TextButton tone="ember" onClick={() => rollFor(request, mode)}>
+          Roll for me
+        </TextButton>
+      </div>
+      <form
+        className="mt-3 flex gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (validPhysical) rollFor(request, mode, physical);
+        }}
+      >
+        <input
+          value={num}
+          onChange={(e) => setNum(e.target.value.replace(/\D/g, "").slice(0, 2))}
+          inputMode="numeric"
+          placeholder="Or the d20 on the table"
+          aria-label="The number on the table die"
+          className="h-11 min-w-0 flex-1 border border-gold/40 bg-ink/40 px-2 font-serif text-sm text-parchment outline-none"
+        />
+        {canListen() ? (
+          <button
+            type="button"
+            onClick={hear}
+            aria-label={hearing ? "Stop listening" : "Say the number"}
+            aria-pressed={hearing}
+            className={`flex size-11 items-center justify-center border ${hearing ? "border-gold-bright text-gold-bright" : "border-gold/40 text-gold"}`}
+          >
+            <Mic className="size-4" />
+          </button>
+        ) : null}
+        <button
+          type="submit"
+          disabled={!validPhysical}
+          className="min-h-11 border border-gold/70 bg-gold/10 px-3 font-sans text-xs tracking-widest text-gold-bright disabled:opacity-40"
+        >
+          USE
+        </button>
+      </form>
+      <button type="button" className="mt-2 min-h-11 font-sans text-xs tracking-widest text-mist" onClick={() => setPending(null)}>
+        NEVER MIND
+      </button>
+    </div>
+  );
+}
+
+function EndCard({ tale }: { tale: Tale }) {
+  const setModal = useGame((s) => s.setModal);
+  const setScreen = useGame((s) => s.setScreen);
+  const addTale = useGame((s) => s.addTale);
+  return (
+    <div className="px-4 pb-3">
+      <div className="border border-gold-dim/50 bg-parchment-deep/50 p-3 text-center">
+        <p className="font-display text-sm tracking-widest text-gold-dim">THE TALE IS TOLD</p>
+        <p className="mt-1 font-serif text-sm text-soot">
+          Day {tale.day} · Level {tale.level} · {tale.xp} XP · {tale.chronicle.length} pages in the chronicle
+        </p>
+      </div>
+      <div className="mt-2 grid gap-2">
+        <button
+          type="button"
+          onClick={() => setModal("chronicle")}
+          className="min-h-11 border border-gold-dim/60 bg-parchment-deep/60 px-3 font-serif text-sm text-soot"
+        >
+          Read the chronicle
+        </button>
+        <button
+          type="button"
+          onClick={() => addTale(createTale(tale.campaignId, tale.playerName))}
+          className="min-h-11 border border-gold-dim/60 px-3 font-serif text-sm text-soot"
+        >
+          Play this tale again
+        </button>
+        <button type="button" onClick={() => setScreen("select")} className="min-h-11 border border-gold-dim/60 px-3 font-serif text-sm text-soot">
+          Choose another tale
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -385,6 +598,12 @@ function StoryPanel({
   onChoice,
   onSend,
   onClose,
+  voice,
+  lang,
+  heroVoice,
+  finished,
+  blocked,
+  tale,
 }: {
   narration: string;
   choices: { id: string; label: string; hint?: string }[];
@@ -393,11 +612,20 @@ function StoryPanel({
   draft: string;
   setDraft: (v: string) => void;
   onChoice: (id: string, label: string) => void;
-  onSend: () => void;
+  onSend: (text?: string) => void;
   onClose: () => void;
+  voice: boolean;
+  lang: "en" | "ca" | "es";
+  heroVoice: string;
+  finished: boolean;
+  blocked: boolean;
+  tale: Tale;
 }) {
   const [count, setCount] = useState(narration.length);
   const [skip, setSkip] = useState(true);
+  const [hearing, setHearing] = useState(false);
+  const stopListen = useRef<(() => void) | null>(null);
+  const spoken = useRef<string>("");
 
   useEffect(() => {
     setSkip(false);
@@ -423,16 +651,56 @@ function StoryPanel({
     return () => window.clearInterval(id);
   }, [narration, skip, writing]);
 
+  useEffect(() => {
+    if (!voice || writing || spoken.current === narration) return;
+    spoken.current = narration;
+    void speak(narration, { voice: heroVoice, lang });
+  }, [voice, writing, narration, heroVoice, lang]);
+
+  useEffect(
+    () => () => {
+      stopListen.current?.();
+    },
+    [],
+  );
+
   const done = !writing && count >= narration.length;
   const body = narration.slice(0, count);
+  const canTalk = canListen();
+
+  const talk = () => {
+    if (hearing) {
+      stopListen.current?.();
+      return;
+    }
+    setHearing(true);
+    stopListen.current = listen(lang, {
+      onText: setDraft,
+      onFinal: (text) => {
+        setDraft("");
+        onSend(text);
+      },
+      onEnd: () => setHearing(false),
+    });
+  };
 
   return (
     <Ornate variant="light" className="story-panel flex flex-col">
       <div className="flex items-center justify-between px-4 pt-4">
         <p className="font-sans text-xs tracking-widest text-gold-dim">THE STORYTELLER</p>
-        <button type="button" className="min-h-11 px-2 text-soot lg:hidden" onClick={onClose} aria-label="Hide storyteller">
-          <X className="size-4" />
-        </button>
+        <div className="flex items-center">
+          <button
+            type="button"
+            className="min-h-11 px-2 text-soot"
+            aria-label="Hear it again"
+            onClick={() => void speak(narration, { voice: heroVoice, lang })}
+          >
+            <Volume2 className="size-4" />
+          </button>
+          <button type="button" className="min-h-11 px-2 text-soot lg:hidden" onClick={onClose} aria-label="Hide storyteller">
+            <X className="size-4" />
+          </button>
+        </div>
       </div>
       <div className="scroll-thin flex-1 overflow-y-auto px-4 py-3">
         {writing ? (
@@ -457,7 +725,8 @@ function StoryPanel({
           </button>
         </div>
       ) : null}
-      {done ? (
+      {done && finished ? <EndCard tale={tale} /> : null}
+      {done && !finished && !blocked ? (
         <div className="flex flex-col gap-2 px-4 pb-2">
           {choices.map((c) => (
             <button
@@ -472,29 +741,46 @@ function StoryPanel({
           ))}
         </div>
       ) : null}
-      <form
-        className="flex gap-2 border-t border-gold-dim/30 p-3"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!writing) onSend();
-        }}
-      >
-        <input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          placeholder={`What does the company do?`}
-          maxLength={400}
-          className="h-11 min-w-0 flex-1 border border-gold-dim/40 bg-parchment/40 px-2 font-serif text-sm text-soot outline-none"
-        />
-        <button
-          type="submit"
-          disabled={writing || !draft.trim()}
-          className="flex size-11 items-center justify-center bg-ember text-parchment disabled:opacity-40"
-          aria-label="Send"
+      {done && blocked ? (
+        <p className="px-4 pb-2 font-serif text-sm text-soot">The dice are waiting on the table.</p>
+      ) : null}
+      {!finished ? (
+        <form
+          className="flex gap-2 border-t border-gold-dim/30 p-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!writing && !blocked) onSend();
+          }}
         >
-          <Send className="size-4" />
-        </button>
-      </form>
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder={hearing ? "Listening…" : "What does the company do?"}
+            maxLength={400}
+            className="h-11 min-w-0 flex-1 border border-gold-dim/40 bg-parchment/40 px-2 font-serif text-sm text-soot outline-none"
+          />
+          {canTalk ? (
+            <button
+              type="button"
+              onClick={talk}
+              disabled={writing || blocked}
+              aria-pressed={hearing}
+              aria-label={hearing ? "Stop listening" : "Speak your action"}
+              className={`flex size-11 items-center justify-center border disabled:opacity-40 ${hearing ? "border-ember bg-ember/20 text-ember" : "border-gold-dim/50 text-soot"}`}
+            >
+              <Mic className="size-4" />
+            </button>
+          ) : null}
+          <button
+            type="submit"
+            disabled={writing || blocked || !draft.trim()}
+            className="flex size-11 items-center justify-center bg-ember text-parchment disabled:opacity-40"
+            aria-label="Send"
+          >
+            <Send className="size-4" />
+          </button>
+        </form>
+      ) : null}
     </Ornate>
   );
 }

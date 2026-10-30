@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Thornwake",
+      "hasCanvas": false,
+      "bodyTextLen": 352,
+      "bodyTextHash": "eeb432fae4433391da92a13a0ecb60f0cb0e1876388ada3feb602fcf9d995c7e",
+      "bodyTextPrefix": "The western turret · at dusk A BOOK OF ADVENTURES THORNWAKE Stil",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Thornwake",
+      "hasCanvas": false,
+      "bodyTextLen": 323,
+      "bodyTextHash": "17a6ab92631f154fd568303a5ec9e0b684ae172a05908c60a93d3b25b03516dd",
+      "bodyTextPrefix": "A BOOK OF ADVENTURES THORNWAKE Stillwater Bell Your table awaits",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

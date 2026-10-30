@@ -75,9 +75,9 @@ export function Select() {
           <div className="px-5 py-6 sm:px-6">
             <h2 className="text-center font-serif text-2xl text-parchment">Tria la teva aventura</h2>
             <p className="mt-2 text-center font-serif text-sm leading-relaxed text-mist">
-              {picked ? picked.blurb : "Tres contes reposen a la taula. Tria'n un per veure'l de més a prop."}
+              {picked ? picked.blurb : "Quatre aventures reposen a la taula. Si és la primera vegada, comença per «El Cofre de la Fornera»: t'ensenya a jugar."}
             </p>
-            <div className="mt-5 grid grid-cols-3 gap-2">
+            <div className="mt-5 grid grid-cols-2 gap-2">
               {CAMPAIGNS.map((c, i) => {
                 const on = pickedId === c.id;
                 return (

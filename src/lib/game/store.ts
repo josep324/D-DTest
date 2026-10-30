@@ -17,6 +17,8 @@ type Persisted = {
   voice: boolean;
   lang: Lang;
   partner: string;
+  handsFree: boolean;
+  hardcore: boolean;
 };
 
 type Store = {
@@ -33,6 +35,8 @@ type Store = {
   voice: boolean;
   lang: Lang;
   partner: string;
+  handsFree: boolean;
+  hardcore: boolean;
   writing: boolean;
   toldBy: "live" | "book" | null;
   dice: DiceShow | null;
@@ -45,6 +49,8 @@ type Store = {
   setModal: (modal: ModalName) => void;
   setSound: (sound: boolean) => void;
   setVoice: (voice: boolean) => void;
+  setHandsFree: (on: boolean) => void;
+  setHardcore: (on: boolean) => void;
   setLang: (lang: Lang) => void;
   setPartner: (partner: string) => void;
   setPending: (request: RollRequest | null) => void;
@@ -69,6 +75,8 @@ function snapshot(patch: Partial<Persisted> = {}): Persisted {
     voice: s.voice,
     lang: s.lang,
     partner: s.partner,
+    handsFree: s.handsFree,
+    hardcore: s.hardcore,
     ...patch,
   };
 }
@@ -95,6 +103,8 @@ export const useGame = create<Store>((set, get) => ({
   voice: true,
   lang: "ca",
   partner: "",
+  handsFree: false,
+  hardcore: false,
   writing: false,
   toldBy: null,
   dice: null,
@@ -112,6 +122,14 @@ export const useGame = create<Store>((set, get) => ({
   setVoice: (voice) => {
     set({ voice });
     persist(snapshot({ voice }));
+  },
+  setHandsFree: (handsFree) => {
+    set({ handsFree });
+    persist(snapshot({ handsFree }));
+  },
+  setHardcore: (hardcore) => {
+    set({ hardcore });
+    persist(snapshot({ hardcore }));
   },
   setLang: (lang) => {
     set({ lang });
@@ -156,13 +174,15 @@ export const useGame = create<Store>((set, get) => ({
         voice: data.voice !== false,
         lang: data.lang === "en" || data.lang === "es" ? data.lang : "ca",
         partner: typeof data.partner === "string" ? data.partner : "",
+        handsFree: Boolean(data.handsFree),
+        hardcore: Boolean(data.hardcore),
       });
     } catch {
       /* ignore broken saves */
     }
   },
   addTale: (tale) => {
-    tale = { ...tale, partner: tale.partner || get().partner };
+    tale = { ...tale, partner: tale.partner || get().partner, hardcore: get().hardcore };
     const tales = [tale, ...get().tales].slice(0, 12);
     set({ tales, taleId: tale.id, screen: "play", storyOpen: true, mode: "move", modal: null, toldBy: null });
     persist(snapshot({ playerName: tale.playerName, tales }));

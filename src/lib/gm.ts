@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getCampaign, getScene } from "@/lib/game/content";
 import type { GmResult } from "@/lib/game/types";
-import { NANO_BASE, NANO_CHAT_MODEL, nanoKey } from "@/lib/nano.server";
+import { chatTarget } from "@/lib/llm.server";
 import { allow } from "@/lib/rate-limit.server";
 
 const Input = z.object({
@@ -43,6 +43,8 @@ const Input = z.object({
   inventory: z.array(z.string().max(40)).max(20).optional(),
   heroLine: z.string().max(160).optional(),
   encounter: z.string().max(200).optional(),
+  freeform: z.boolean().optional(),
+  roomNotes: z.string().max(2400).optional(),
 });
 
 const LANGUAGE = { en: "English", ca: "Catalan", es: "Spanish" } as const;
@@ -54,29 +56,29 @@ const Out = z.object({
       z.object({
         id: z.string().max(40),
         label: z.string().min(1).max(90),
-        hint: z.string().max(90).optional(),
+        hint: z.string().max(90).nullish(),
       }),
     )
-    .min(1)
+    .min(0)
     .max(4),
-  questTitle: z.string().max(90).optional(),
-  questDetail: z.string().max(240).optional(),
+  questTitle: z.string().max(90).nullish(),
+  questDetail: z.string().max(240).nullish(),
   heartDelta: z
     .array(z.object({ id: z.string().max(20), delta: z.number().int().min(-4).max(4) }))
-    .optional(),
-  chronicleTitle: z.string().max(90).optional(),
-  chronicleBody: z.string().max(400).optional(),
-  moveTo: z.string().max(40).optional(),
-  nextSceneId: z.string().max(40).optional(),
-  daypart: z.string().max(40).optional(),
-  weather: z.string().max(40).optional(),
-  sky: z.string().max(40).optional(),
-  clock: z.string().max(20).optional(),
-  day: z.number().int().min(1).max(30).optional(),
-  summary: z.string().max(600).optional(),
+    .nullish(),
+  chronicleTitle: z.string().max(90).nullish(),
+  chronicleBody: z.string().max(400).nullish(),
+  moveTo: z.string().max(40).nullish(),
+  nextSceneId: z.string().max(40).nullish(),
+  daypart: z.string().max(40).nullish(),
+  weather: z.string().max(40).nullish(),
+  sky: z.string().max(40).nullish(),
+  clock: z.string().max(20).nullish(),
+  day: z.number().int().min(1).max(30).nullish(),
+  summary: z.string().max(600).nullish(),
   rollRequest: z
     .object({
-      heroId: z.string().max(20).optional(),
+      heroId: z.string().max(20).nullish(),
       ability: z.enum(["str", "dex", "con", "int", "wis", "cha"]),
       dc: z.number().int().min(8).max(18),
       reason: z.string().max(120),
@@ -99,8 +101,8 @@ export const consultStoryteller = createServerFn({ method: "POST" })
     const scene = getScene(data.campaignId, data.sceneId);
     if (!campaign || !scene) return { ok: false, error: "Conte desconegut" };
 
-    const apiKey = nanoKey();
-    if (!apiKey) return { ok: false, error: "La narradora és lluny de la taula" };
+    const target = chatTarget();
+    if (!target) return { ok: false, error: "La narradora és lluny de la taula" };
     if (!allow("gm", 14, 60_000)) return { ok: false, error: "La narradora necessita respirar" };
 
     const spots = scene.hotspots.map((h) => `${h.id} (${h.name}): ${h.examine}`).join("\n");
@@ -111,6 +113,10 @@ export const consultStoryteller = createServerFn({ method: "POST" })
       ? `Dice already rolled. ${data.roll.label}. Total ${data.roll.total} vs DC ${data.roll.dc}. Success: ${data.roll.success}. Do not contradict the dice.`
       : "No dice were rolled.";
 
+    const dmRules = data.freeform
+      ? `
+You are now the Dungeon Master of a real tabletop adventure. The company acts freely and you improvise, but only inside the ROOM NOTES below: the places, people, foes and exits listed are all that exist. Decide like a DM: if the action is safe, say yes with no roll; if it could fail and failing is interesting, set rollRequest with the right ability and a DC (easy 10, normal 15, hard 20); if it is impossible, say no and suggest what is possible. Never invent treasure, exits or foes. Never narrate the result of an uncertain action before the dice. Do not offer a list of choices: return "choices": [].`
+      : "";
     const system = `You are the storyteller at Thornwake, a family tabletop game played by adults and children together.
 Tone: wondrous, specific, sensory, mild peril. No gore, no body horror, no romance, no real-world politics, no slurs.
 Never kill a hero. Hearts and dice are decided by the rules engine: the "Facts" list is true and final, so narrate it faithfully and never contradict a roll, a heart total or an initiative order.
@@ -124,7 +130,7 @@ The players at the table are ${data.playerName}${data.partner ? ` and ${data.par
 Reply with JSON only. No markdown.
 Schema:
 {"narration":"two short paragraphs under 130 words","choices":[{"id":"slug","label":"concrete verb phrase","hint":"optional"}],"questTitle":"","questDetail":"","heartDelta":[{"id":"calder","delta":0}],"chronicleTitle":"","chronicleBody":"one sentence if this moment matters, else empty","moveTo":"hotspot id or empty","nextSceneId":"another scene id only if they truly travel, else empty","daypart":"","weather":"","sky":"SHORT · LABEL","clock":"HH:MM","day":1,"summary":"","rollRequest":null,"endTale":false}
-Exactly 3 or 4 choices. Keep quest fields if the goal is unchanged. moveTo must be a hotspot id from the list or empty. nextSceneId must be one of: ${scenes} — or empty.`;
+Exactly 3 or 4 choices (none in freeform mode). Keep quest fields if the goal is unchanged. moveTo must be a hotspot id from the list or empty. nextSceneId must be one of: ${scenes} — or empty.${dmRules}`;
 
     const user = `Campaign: ${campaign.name}
 Canon: ${campaign.canon}
@@ -141,22 +147,27 @@ Story so far: ${data.summary || "(just begun)"}
 Recent:
 ${log || "(opening)"}
 ${dice}
+Room notes:
+${data.roomNotes ?? "(none)"}
 Facts (final):
 ${(data.facts ?? []).join("\n") || "(none)"}
 The company does: ${data.action}`;
 
     try {
-      const res = await fetch(`${NANO_BASE}/chat/completions`, {
+      const res = await fetch(target.url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
+          Authorization: `Bearer ${target.key}`,
+          ...target.headers,
         },
-        signal: AbortSignal.timeout(22000),
+        // Netlify cuts functions at 10 s on the free plan: answer cleanly before that and let the book take over.
+        signal: AbortSignal.timeout(9000),
         body: JSON.stringify({
-          model: NANO_CHAT_MODEL,
+          model: target.model,
           temperature: 0.8,
-          max_tokens: 900,
+          max_tokens: 700,
+          ...target.extra,
           messages: [
             { role: "system", content: system },
             { role: "user", content: user },
@@ -169,10 +180,10 @@ The company does: ${data.action}`;
       const parsed = Out.parse(extractJson(text));
       const result: GmResult = {
         narration: parsed.narration.trim(),
-        choices: parsed.choices,
+        choices: parsed.choices.map((c) => ({ id: c.id, label: c.label, hint: c.hint || undefined })),
         questTitle: parsed.questTitle || undefined,
         questDetail: parsed.questDetail || undefined,
-        heartDelta: parsed.heartDelta,
+        heartDelta: parsed.heartDelta ?? undefined,
         chronicleTitle: parsed.chronicleTitle || undefined,
         chronicleBody: parsed.chronicleBody || undefined,
         moveTo: parsed.moveTo || undefined,
@@ -181,9 +192,9 @@ The company does: ${data.action}`;
         weather: parsed.weather || undefined,
         sky: parsed.sky || undefined,
         clock: parsed.clock || undefined,
-        day: parsed.day,
+        day: parsed.day ?? undefined,
         summary: parsed.summary || undefined,
-        rollRequest: data.roll ? undefined : parsed.rollRequest ?? undefined,
+        rollRequest: data.roll ? undefined : parsed.rollRequest ? { ...parsed.rollRequest, heroId: parsed.rollRequest.heroId || undefined } : undefined,
         endTale: parsed.endTale || undefined,
       };
       return { ok: true, result };

@@ -144,6 +144,7 @@ function Notes() {
   return (
     <ul className="space-y-3 font-serif text-sm leading-relaxed text-mist">
       <li>Dos jugadors comparteixen la taula: un porta en Calder i la Bramble, l'altre la Vesper i en Holt. L'app és la narradora.</li>
+      <li>A les aventures de rol (com «El Cofre de la Fornera») no hi ha botons: digueu o escriviu el que fa el vostre personatge, com «parlo amb la fornera», «forço la porta» o «ataco la rata». Digueu «què puc fer?» si us encalleu.</li>
       <li>Digueu o escriviu què fa la companyia. Quan és incert, la narradora demana una tirada: feu servir el dau de l'app o un d20 real de la taula, escrit o dit en veu alta.</li>
       <li>Avantatge si un company és al costat o un objecte et dóna avantatge. Un 20 natural sempre reïx, un 1 natural sempre falla.</li>
       <li>Ataca un lloc tens per començar un problema. Tireu iniciativa, feu torns i feu recular el problema fins que es calmi.</li>
@@ -162,6 +163,10 @@ function Settings() {
   const setSound = useGame((s) => s.setSound);
   const voice = useGame((s) => s.voice);
   const setVoice = useGame((s) => s.setVoice);
+  const handsFree = useGame((s) => s.handsFree);
+  const setHandsFree = useGame((s) => s.setHandsFree);
+  const hardcore = useGame((s) => s.hardcore);
+  const setHardcore = useGame((s) => s.setHardcore);
   const input =
     "mt-2 h-11 w-full border border-gold/40 bg-ink/40 px-3 font-serif text-base text-parchment outline-none";
   return (
@@ -177,8 +182,15 @@ function Settings() {
       <TextButton tone={voice ? "solid" : "ghost"} onClick={() => setVoice(!voice)}>
         {voice ? "La narradora parla en veu alta" : "La narradora és en silenci"}
       </TextButton>
+      <TextButton tone={handsFree ? "solid" : "ghost"} onClick={() => setHandsFree(!handsFree)}>
+        {handsFree ? "Mode veu: la narradora t'escolta sola" : "Mode veu desactivat (prem el micròfon)"}
+      </TextButton>
+      <TextButton tone={hardcore ? "solid" : "ghost"} onClick={() => setHardcore(!hardcore)}>
+        {hardcore ? "Mort real: tres salvacions fallides i l'heroi cau" : "Mort suau: els companys sempre arriben a temps"}
+      </TextButton>
+      <p className="font-serif text-xs text-mist">La mort real només s'aplica a les aventures noves de rol i a les partides que comencis a partir d'ara.</p>
       <TextButton tone={sound ? "solid" : "ghost"} onClick={() => setSound(!sound)}>
-        {sound ? "So de la sala activat" : "So de la sala desactivat"}
+        {sound ? "Efectes de so i ambient activats" : "Efectes de so i ambient desactivats"}
       </TextButton>
     </div>
   );

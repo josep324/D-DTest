@@ -1,0 +1,201 @@
+import type { Campaign, Item } from "@/lib/game/types";
+
+const ITEMS: Item[] = [
+  { id: "cofre", name: "El cofre de la fornera", detail: "Pesa més per dins que per fora: receptes, i els estalvis d'una vida.", ownerId: "calder" },
+  { id: "moneda", name: "Moneda de Garrulla", detail: "Una moneda de coure amb un forat. El botí d'una nit.", ownerId: "holt" },
+];
+
+/**
+ * A short first adventure that teaches the rules by playing them. Every room lists what is in it,
+ * what it takes to open it and what happens, so the story holds together with or without an AI.
+ */
+export const TUTORIAL: Campaign = {
+  id: "cofre",
+  kind: "module",
+  name: "El Cofre de la Fornera",
+  blurb: "Aventura per aprendre. Uns lladres s'han endut el cofre de la fornera. Troba'ls, recupera'l i torna.",
+  chapters: "Sis sales",
+  levels: "Per aprendre",
+  span: "Una hora",
+  mission: "Recupera el cofre de la fornera de Pinassa i torna-l'hi.",
+  items: ITEMS,
+  canon:
+    "Aventura d'aprenentatge, tipus D&D. La fornera de Pinassa ha perdut el cofre amb les receptes i els estalvis: l'han robat uns lladres que s'amaguen a una cova vella, al bosc. La companyia és Calder, Bramble, Vesper i Holt. Sales: plaça del poble, camí del bosc, entrada de la cova, sala de les rates, pas del guarda i cau de la Garrulla, la cap dels lladres. Es pot resoldre lluitant, amb sigil o parlant. To familiar, sense sang. El DM explica cada regla la primera vegada que surt.",
+  scenes: [
+    {
+      id: "placa",
+      name: "Plaça de Pinassa",
+      image: "/art/market.jpg",
+      daypart: "Matí",
+      clock: "09:00",
+      weather: "Clar",
+      sky: "MATÍ · CLAR",
+      ambient: "Fum de forn, aroma de pa calent i un poble que avui parla baix.",
+      chronicleTitle: "Un cofre que falta",
+      opening:
+        "El poble de Pinassa fa olor de pa, però avui ningú no té gana. La fornera es retorça el davantal davant la seva parada i, quan us veu, corre cap a vosaltres.\n\n«Heu d'ajudar-me», diu. «Aquesta nit m'han robat el cofre de casa: les receptes de tres generacions i tot el que he estalviat. Han anat cap al bosc.»\n\nConsell del DM: aquí no hi ha botons. Tu decideixes què fas. Digues, per exemple, «parlo amb la fornera», «miro el pou» o «vaig al bosc». Si t'encalles, digues «què puc fer?».",
+      quest: { title: "El cofre de la fornera", detail: "Parla amb la fornera i segueix els lladres cap al bosc." },
+      choices: [],
+      hotspots: [
+        {
+          id: "fornera", kind: "npc", name: "La fornera", x: 32, y: 46, keywords: ["fornera", "dona", "forner"],
+          examine: "Té les mans enfarinades i els ulls vermells. No ha dormit.",
+          talk: [
+            { keywords: ["cofre", "robatori", "lladre", "qui", "que va passar", "passar"], say: "«Els vaig sentir de matinada. Quatre o cinc, i una veu de dona que manava. Tenien un carro, i van agafar el camí del bosc.»" },
+            { keywords: ["cova", "on", "bosc", "cami", "camí"], say: "«Al bosc hi ha una cova vella d'una farga abandonada. Allà es refugien els lladres, diuen. Jo no m'hi atreveixo.»" },
+            { keywords: ["premi", "recompensa", "pagar", "pagament"], say: "«Tinc pastissos de mel i tot el meu agraïment. I si el cofre torna sencer, una setmana de pa gratis per a tots quatre.»" },
+            { keywords: ["cofre", "tinc", "recuperat", "torno", "aqui", "aquí", "tens"], requires: "cofre", ends: true, xp: 40, say: "La fornera pren el cofre amb les dues mans i el recolza al pit. Plora i riu alhora. «Les receptes… i fins l'últim cèntim. No sé com us ho podré pagar.»\n\nAquell vespre, tot Pinassa fa cua per un trosset de pa que ningú no ha de pagar. El cofre és a casa." },
+          ],
+        },
+        { id: "pou", kind: "feature", name: "El pou", x: 48, y: 60, keywords: ["pou", "poal", "corda"], examine: "Una corda, un poal, aigua fresca. Res fora de lloc; només el poble de sempre." },
+        { id: "parada", kind: "item", name: "Pastissos de mel", x: 26, y: 52, keywords: ["pastis", "pastissos", "mel", "pa"], itemId: "honey", flag: "pastis", examine: "Un plat de pastissos de mel. «Agafeu-ne», diu la fornera. «Us aniran bé pel camí.»" },
+        { id: "cartell", kind: "feature", name: "Tauler d'avisos", x: 66, y: 34, keywords: ["tauler", "cartell", "avisos", "paper"], examine: "Preus de la fira, un cartell de gos perdut i un avís: «Cal anar amb compte al bosc. Cova vella: perill de rates i de males companyies.»" },
+        { id: "bosc", kind: "exit", name: "Camí del bosc", x: 74, y: 22, to: "bosc", keywords: ["bosc", "cami", "camí", "sortida"], examine: "Un camí de terra que s'endinsa en el bosc, més enllà de l'últim hort." },
+      ],
+    },
+    {
+      id: "bosc",
+      name: "Camí del bosc",
+      image: "/art/crossing.jpg",
+      daypart: "Matí",
+      clock: "10:20",
+      weather: "Boira baixa",
+      sky: "MATÍ · BOIRA",
+      ambient: "Fulles mullades, aigua a prop i un silenci que no sembla del tot buit.",
+      chronicleTitle: "El rastre",
+      opening:
+        "El camí es parteix en dues senderes enmig d'un bosc humit. Una porta cap al riu, l'altra puja cap als roures. No hi ha cap indicació.\n\nConsell del DM: quan el que intentes pot sortir bé o malament, et demano una tirada. Mira el terra, per exemple: «busco petjades».",
+      quest: { title: "Segueix el rastre", detail: "Troba per on han anat els lladres." },
+      choices: [],
+      hotspots: [
+        {
+          id: "petjades", kind: "feature", name: "El terra enfangat", x: 42, y: 68, keywords: ["terra", "petjades", "fang", "rastre", "carro", "marques"],
+          examine: "Fang, fulles i marques que es barregen. Potser n'hi ha, de petjades; potser no.",
+          check: {
+            ability: "wis", dc: 10, reason: "Buscar petjades al fang", flag: "rastre", xp: 15,
+            success: "Entre les fulles, una roderada de carro i botes pesades, recents, que van cap als roures. Els lladres van carregats: han deixat un solc fàcil de seguir.",
+            fail: "Només veus fang i fulles. Potser si t'hi fixes millor, o algú altre ho prova…",
+          },
+        },
+        { id: "riu", kind: "feature", name: "El riu", x: 20, y: 52, keywords: ["riu", "aigua", "gual"], examine: "L'aigua és clara i freda. No hi ha petjades que hi entrin: els lladres no han anat per aquí." },
+        { id: "roure", kind: "feature", name: "Els roures", x: 70, y: 36, keywords: ["roure", "roures", "arbres"], examine: "Roures vells. Un d'ells té una ratlla de pintura vermella a l'escorça, a l'alçada dels ulls." },
+        { id: "senda", kind: "exit", name: "Senda dels roures", x: 80, y: 26, to: "entrada", keywords: ["senda", "roures", "puja", "cova", "endavant"], requires: { flag: "rastre", hint: "No saps per on tirar. Potser val la pena mirar el terra." }, examine: "La senda puja entre els roures, seguint el solc del carro." },
+        { id: "tornar", kind: "exit", name: "Tornar a la plaça", x: 14, y: 78, to: "placa", keywords: ["placa", "plaça", "poble", "tornar", "pinassa"], examine: "El camí cap a Pinassa." },
+      ],
+    },
+    {
+      id: "entrada",
+      name: "Entrada de la cova",
+      image: "/art/forge.jpg",
+      daypart: "Migdia",
+      clock: "11:40",
+      weather: "Núvols",
+      sky: "MIGDIA · NÚVOLS",
+      ambient: "Una vella farga a la roca. Olor de fusta humida i ferro.",
+      chronicleTitle: "La porta de la farga",
+      opening:
+        "La senda acaba davant d'una vella farga excavada a la roca. La porta de fusta és tancada per dins amb una tranca. Un carro buit és al costat.\n\nConsell del DM: sovint hi ha més d'una manera de fer una cosa. Pots forçar la porta (Força) o provar de moure el forrellat amb una ganxo (Destresa). Digues què fas.",
+      quest: { title: "Entra a la cova", detail: "Obre la porta de la farga." },
+      choices: [],
+      hotspots: [
+        {
+          id: "porta", kind: "exit", name: "La porta de fusta", x: 54, y: 44, to: "rates", keywords: ["porta", "tranca", "farga", "forrellat", "entr", "obrir"],
+          examine: "Fusta vella amb una tranca per dins. Mal segellada: alguna cosa cedirà.",
+          check: {
+            ability: "str", dc: 12, reason: "Forçar la porta", flag: "porta-oberta", xp: 20,
+            alts: [{ keywords: ["ganxo", "ganxos", "forrellat", "pany", "tranca", "obre amb"], ability: "dex", dc: 13, reason: "Moure la tranca amb un ganxo" }],
+            success: "La porta cedeix amb un cruixit de fusta. Dins fa fred i es fa tard, i s'hi sent un esgarrapar suau.",
+            fail: "La porta s'hi resisteix. Fa un soroll, però no cedeix. Es pot tornar a provar.",
+          },
+        },
+        { id: "carro", kind: "feature", name: "El carro buit", x: 24, y: 64, keywords: ["carro", "rodes"], examine: "Un carro buit amb cordes soltes. Van descarregar-hi alguna cosa pesada: el cofre." },
+        { id: "marques", kind: "feature", name: "Marques a la paret", x: 76, y: 66, keywords: ["marques", "paret", "roca", "pintura", "dibuix"], examine: "Algú ha dibuixat una moneda amb un forat i, sota seu, un nom: «Garrulla». La capa dels lladres." },
+        { id: "tornar", kind: "exit", name: "Tornar al camí", x: 12, y: 22, to: "bosc", keywords: ["cami", "camí", "bosc", "tornar", "enrere"], examine: "La senda que baixa al bosc." },
+      ],
+    },
+    {
+      id: "rates",
+      name: "Sala de les rates",
+      image: "/art/fort.jpg",
+      daypart: "Migdia",
+      clock: "11:55",
+      weather: "A cobert",
+      sky: "MIGDIA · A COBERT",
+      ambient: "Una sala baixa, amb palla humida i un olor dolç i agre de cova.",
+      chronicleTitle: "Les rates de la farga",
+      opening:
+        "Dins, la llum d'un llum vell il·lumina una sala baixa plena de palla. Dos ulls brillants us segueixen, i després quatre. Dues rates gegants, grosses com gossos, es giren cap a vosaltres.\n\nConsell del DM: ha començat un combat. Tothom tira iniciativa (un d20) per saber qui juga primer. Al teu torn, ataca: tires un d20 contra la defensa del monstre. Si hi arribes, tires el dau de dany. Tria «Ataca» i toca una rata, o digues «ataco la rata».",
+      quest: { title: "Neteja la sala", detail: "Les rates barren el pas." },
+      choices: [],
+      hotspots: [
+        { id: "rates", kind: "foe", name: "Rates gegants", x: 40, y: 56, keywords: ["rata", "rates", "rosegador", "bestia"], examine: "Dues rates grosses, de pelatge brut i dents petites i molt afilades.", threat: true, foe: { name: "Rata gegant", the: "la rata gegant", hp: 5, ac: 11, atk: 3, dmg: "1d4+1", xp: 15, count: 2, ambush: true } },
+        { id: "palla", kind: "feature", name: "El munt de palla", x: 70, y: 70, keywords: ["palla", "munt", "niu"], examine: "Un niu gran, calent encara. Entre la palla, un rastre de pa d'ahir: les rates també han robat." },
+        { id: "passadis", kind: "exit", name: "Passadís del fons", x: 62, y: 28, to: "guarda", keywords: ["passadis", "fons", "endavant", "segu", "continu"], requires: { flag: "dead-rates", hint: "Les rates et barren el pas." }, examine: "Un passadís estret, amb una llum lluny." },
+        { id: "sortida", kind: "exit", name: "Sortida", x: 14, y: 50, to: "entrada", keywords: ["sortida", "tornar", "enrere", "fora"], examine: "La porta per on heu entrat." },
+      ],
+    },
+    {
+      id: "guarda",
+      name: "Pas del guarda",
+      image: "/art/harbor.jpg",
+      daypart: "Tarda",
+      clock: "12:30",
+      weather: "A cobert",
+      sky: "TARDA · A COBERT",
+      ambient: "Un passadís ample amb una foguera mig apagada. Algú ronca al fons.",
+      chronicleTitle: "El guarda adormit",
+      opening:
+        "El passadís s'obre en una sala amb una foguera que s'apaga. Un lladre gran, amb una espasa a la falda, dorm assegut contra la paret. Al fons hi ha un arc que porta més endins.\n\nConsell del DM: no tot s'ha de lluitar. Pots passar sense fer soroll (Destresa), atacar-lo per sorpresa o fins i tot parlar-hi. Digues què fas.",
+      quest: { title: "Passa el guarda", detail: "Hi ha un lladre adormit davant l'arc." },
+      choices: [],
+      hotspots: [
+        {
+          id: "bandit", kind: "foe", name: "El lladre adormit", x: 58, y: 54, keywords: ["lladre", "guarda", "home", "bandit", "dorm"], threat: true,
+          examine: "Un lladre fort, amb la barba descuidada. Respira fort i té el cinturó ple de claus.",
+          foe: { name: "Lladre", the: "el lladre", hp: 11, ac: 12, atk: 3, dmg: "1d6+1", xp: 30 },
+          check: {
+            ability: "dex", dc: 12, reason: "Passar sense despertar-lo", flag: "guarda-sortejat", xp: 25, onFail: "fight",
+            alts: [{ keywords: ["sigil", "sigilos", "passo", "passem", "colar", "colo", "pas"], ability: "dex", dc: 12, reason: "Passar sense despertar-lo" }],
+            success: "Amb passes de gat, rodeu la foguera sense fer ni un soroll. El lladre remuga alguna cosa en somnis i no es desperta.",
+            fail: "Un tauló cruix sota el peu. El lladre obre un ull, després tots dos, i s'aixeca d'un salt.",
+          },
+        },
+        { id: "foguera", kind: "feature", name: "La foguera", x: 30, y: 62, keywords: ["foguera", "foc", "brases"], examine: "Brases roges. Algú va menjar aquí fa poc: hi ha ossos de pollastre al terra." },
+        { id: "arc", kind: "exit", name: "L'arc del fons", x: 82, y: 38, to: "cau", keywords: ["arc", "fons", "cau", "endavant", "segu", "continu"], requires: { flag: "guarda-sortejat|dead-bandit", hint: "El lladre dorm just davant l'arc. Cal resoldre-ho abans de passar." }, examine: "Un arc de pedra amb una llum més càlida al fons." },
+        { id: "enrere", kind: "exit", name: "Tornar a les rates", x: 12, y: 40, to: "rates", keywords: ["enrere", "tornar", "rates"], examine: "El passadís que torna a la sala de les rates." },
+      ],
+    },
+    {
+      id: "cau",
+      name: "Cau de la Garrulla",
+      image: "/art/orrery.jpg",
+      daypart: "Tarda",
+      clock: "13:10",
+      weather: "A cobert",
+      sky: "TARDA · A COBERT",
+      ambient: "Una sala gran plena de caixes, fanals robats i un cofre que no és d'aquí.",
+      chronicleTitle: "La cap dels lladres",
+      opening:
+        "La sala del fons és plena de fanals, sacs i caixes robades. Al mig, asseguda sobre el cofre de la fornera com si fos un tron, una dona alta amb un abric de pell us mira sense moure's.\n\n«Heu fet una bona caminada per un cofre vell», diu. «Sóc la Garrulla. Què en traureu, si me'l prengueu?»\n\nConsell del DM: aquí tens opcions: convèncer-la (Encant), amenaçar-la o lluitar. Per parlar, digues, per exemple: «convenço la Garrulla de tornar el cofre».",
+      quest: { title: "Recupera el cofre", detail: "La Garrulla guarda el cofre. Convenç-la o vence-la." },
+      choices: [],
+      hotspots: [
+        {
+          id: "garrulla", kind: "foe", name: "La Garrulla", x: 52, y: 48, keywords: ["garrulla", "dona", "cap", "lladre"], threat: true,
+          examine: "Alta, forta i amb un somriure de lladre amable. La mà dreta no s'allunya mai de l'espasa.",
+          foe: { name: "Garrulla", the: "la Garrulla", hp: 22, ac: 13, atk: 4, dmg: "1d8+2", xp: 60 },
+          talk: [{ keywords: ["que", "qui", "per que", "perque", "cofre", "pretens"], say: "«Un cofre, uns pastissos, un poble que no m'ha donat mai res. No sóc tan dolenta. Només tinc gana.»" }],
+          check: {
+            ability: "cha", dc: 14, reason: "Convèncer-la de tornar el cofre", flag: "cofre-lliurat", xp: 30, onFail: "fight",
+            alts: [{ keywords: ["amenaç", "amenaca", "amenaço", "intimid", "por", "espanto"], ability: "str", dc: 15, reason: "Amenaçar-la perquè se'n vagi" }],
+            success: "La Garrulla et mira una estona llarga. Després riu, es posa dempeus i et deixa el cofre als peus. «Digues a la fornera que fa uns pastissos de pecat. I que no me'ls tornarà a prendre ningú.»",
+            fail: "La Garrulla es posa dempeus. «Massa paraules», diu, i treu l'espasa.",
+          },
+        },
+        { id: "cofre", kind: "item", name: "El cofre de la fornera", x: 54, y: 66, keywords: ["cofre", "caixa"], itemId: "cofre", flag: "cofre", requires: { flag: "cofre-lliurat|dead-garrulla", hint: "La Garrulla és asseguda damunt del cofre." }, examine: "El cofre de la fornera: la tapa gravada amb una espiga de blat." },
+        { id: "fanals", kind: "feature", name: "Fanals robats", x: 22, y: 36, keywords: ["fanals", "llums", "botí", "caixes", "sacs"], examine: "Fanals, sacs de farina i caixes de fusta. Tot robat a diferents pobles. No és cosa teva, però potser algú el vol recuperar." },
+        { id: "sortida-cova", kind: "exit", name: "Sortida de la cova", x: 84, y: 22, to: "placa", keywords: ["sortida", "sortir", "tornar", "poble", "fora", "pinassa"], requires: { flag: "cofre", hint: "No marxis sense el cofre." }, examine: "Un túnel curt i ample que surt al bosc, cap a Pinassa." },
+      ],
+    },
+  ],
+};

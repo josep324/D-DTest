@@ -307,3 +307,15 @@ export function itemMechanics(tale: Tale, item: Item, hero: Character): Mechanic
   }
   return null;
 }
+
+/** "1d6+1" → a total and the dice behind it. A critical hit doubles the dice. */
+export function rollDice(expr: string, crit = false): { total: number; text: string } {
+  const m = expr.match(/^(\d+)d(\d+)([+-]\d+)?$/);
+  if (!m) return { total: 0, text: expr };
+  const count = Number(m[1]) * (crit ? 2 : 1);
+  const sides = Number(m[2]);
+  const bonus = m[3] ? Number(m[3]) : 0;
+  const rolls = Array.from({ length: count }, () => die(sides));
+  const total = Math.max(0, rolls.reduce((a, b) => a + b, 0) + bonus);
+  return { total, text: `${rolls.join("+")}${bonus ? (bonus > 0 ? `+${bonus}` : `${bonus}`) : ""}` };
+}

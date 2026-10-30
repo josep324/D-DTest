@@ -3,6 +3,8 @@ export type Choice = { id: string; label: string; hint?: string };
 export type Ability = "str" | "dex" | "con" | "int" | "wis" | "cha";
 export type RollMode = "normal" | "advantage" | "disadvantage";
 
+export type Weapon = { name: string; dice: string; ability: Ability };
+
 export type Character = {
   id: string;
   name: string;
@@ -14,8 +16,53 @@ export type Character = {
   proficient: Ability[];
   attack: Ability;
   voice: string;
+  weapon: Weapon;
+  /** Unconscious at 0 hearts: makes death saves instead of acting. */
+  down?: boolean;
+  saves?: { ok: number; fail: number };
+  /** Only in hardcore: three failed saves. */
+  fallen?: boolean;
   portrait: string;
   cameo?: "vesper" | "holt";
+};
+
+/** A roll the player has to make to try something. Every word is authored, nothing is improvised. */
+export type Check = {
+  ability: Ability;
+  dc: number;
+  reason: string;
+  success: string;
+  fail: string;
+  /** Raised on success so doors stay open and clues stay found. */
+  flag?: string;
+  xp?: number;
+  onFail?: "fight";
+  /** Other ways to do it ("force the door" vs "pick the lock"), picked by what the player says. */
+  alts?: { keywords: string[]; ability: Ability; dc: number; reason: string }[];
+};
+
+export type FoeDef = {
+  name: string;
+  hp: number;
+  ac: number;
+  atk: number;
+  dmg: string;
+  xp: number;
+  count?: number;
+  /** "la rata gegant": how the narrator names it mid-sentence. */
+  the?: string;
+  /** Attacks as soon as the company walks in. */
+  ambush?: boolean;
+};
+
+export type Topic = {
+  keywords: string[];
+  say: string;
+  flag?: string;
+  /** Only available once this flag (or any of "a|b") is up. */
+  requires?: string;
+  ends?: boolean;
+  xp?: number;
 };
 
 export type Hotspot = {
@@ -25,6 +72,17 @@ export type Hotspot = {
   y: number;
   examine: string;
   threat?: boolean;
+  /** Module rooms only. */
+  kind?: "feature" | "npc" | "exit" | "foe" | "item";
+  keywords?: string[];
+  check?: Check;
+  to?: string;
+  requires?: { flag: string; hint: string };
+  talk?: Topic[];
+  foe?: FoeDef;
+  itemId?: string;
+  /** Raised when an item is picked up. */
+  flag?: string;
 };
 
 export type Scene = {
@@ -52,6 +110,10 @@ export type Campaign = {
   span: string;
   scenes: Scene[];
   canon: string;
+  /** "module" tales are played by free action against authored rooms, not by picking choices. */
+  kind?: "story" | "module";
+  mission?: string;
+  items?: Item[];
 };
 
 export type Item = {
@@ -69,9 +131,31 @@ export type RollRequest = {
   ability: Ability;
   dc: number;
   reason: string;
-  kind?: "check" | "strike";
+  kind?: "check" | "strike" | "attack";
   /** The player's own words, kept so the storyteller answers them once the dice are down. */
   line?: string;
+  /** Hotspot (check) or foe id (attack) this roll is for. */
+  target?: string;
+};
+
+export type FoeState = {
+  id: string;
+  spotId: string;
+  name: string;
+  hp: number;
+  hpMax: number;
+  ac: number;
+  atk: number;
+  dmg: string;
+  xp: number;
+  the: string;
+};
+
+export type Fight = {
+  foes: FoeState[];
+  order: string[];
+  turn: number;
+  round: number;
 };
 
 export type Encounter = {
@@ -129,6 +213,9 @@ export type Tale = {
   edge: string | null;
   rests: number;
   partner: string;
+  flags: string[];
+  fight: Fight | null;
+  hardcore: boolean;
 };
 
 /** Everything the rules decided this turn, before the storyteller dresses it in words. */
@@ -141,6 +228,12 @@ export type Mechanics = {
   consume?: string;
   rest?: boolean;
   notes: string[];
+  flags?: string[];
+  fight?: Fight | null;
+  give?: Item;
+  heroPatch?: Record<string, Partial<Character>>;
+  /** The company was beaten and is carried back to the start. */
+  routed?: boolean;
 };
 
 export type GmResult = {

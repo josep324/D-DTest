@@ -461,6 +461,9 @@ export function createTale(campaignId: string, playerName: string): Tale {
     edge: null,
     rests: REST_CHARGES,
     partner: "",
+    flags: [],
+    fight: null,
+    hardcore: false,
   };
 }
 
@@ -483,6 +486,9 @@ export function normalizeTale(raw: Tale): Tale {
     edge: raw.edge ?? null,
     rests: raw.rests ?? REST_CHARGES,
     partner: raw.partner ?? "",
+    flags: raw.flags ?? [],
+    fight: raw.fight ?? null,
+    hardcore: raw.hardcore ?? false,
     inventory: (raw.inventory ?? []).map((item) => {
       const ref = INVENTORY.find((i) => i.id === item.id);
       return ref ? { ...ref, uses: item.uses ?? ref.uses } : item;
@@ -546,6 +552,7 @@ export function applyTale(tale: Tale, playerLine: string, result: GmResult, mech
   const day = result.day ?? tale.day;
   let activeId = mech?.activeId ?? tale.activeId;
   let gained = mech?.xp ?? 0;
+  const isModule = campaign.kind === "module";
 
   const next = result.nextSceneId ? getScene(tale.campaignId, result.nextSceneId) : undefined;
   const travelled = Boolean(next && next.id !== scene.id);
@@ -553,7 +560,7 @@ export function applyTale(tale: Tale, playerLine: string, result: GmResult, mech
     scene = next;
     sceneId = next.id;
     chapter += 1;
-    gained += 40;
+    if (!isModule) gained += 40;
     positions = {};
     tale.party.forEach((p, i) => {
       positions[p.id] = next.hotspots[i % next.hotspots.length].id;
@@ -568,17 +575,42 @@ export function applyTale(tale: Tale, playerLine: string, result: GmResult, mech
     : (result.heartDelta ?? []).map((h) => ({ id: h.id, delta: Math.max(-2, Math.min(2, h.delta)) }));
   let party = tale.party.map((c) => {
     const delta = deltas.filter((h) => h.id === c.id).reduce((n, h) => n + h.delta, 0);
-    const heart = Math.max(1, Math.min(c.heartMax, c.heart + delta));
-    return heart === c.heart ? c : { ...c, heart };
+    // Module tales are real D&D: a hero can fall to 0 and make death saves. Story tales never go below 1.
+    const heart = Math.max(isModule ? 0 : 1, Math.min(c.heartMax, c.heart + delta));
+    const patch = mech?.heroPatch?.[c.id];
+    const merged = { ...c, ...patch, heart };
+    if (isModule) {
+      if (heart > 0 && !merged.fallen) {
+        merged.down = false;
+        merged.saves = undefined;
+      } else if (heart === 0) {
+        merged.down = true;
+      }
+    }
+    return merged;
   });
+  let routed = false;
+  if (mech?.routed && isModule) {
+    routed = true;
+    party = party.map((c) => ({ ...c, heart: Math.max(1, Math.ceil(c.heartMax / 2)), down: false, saves: undefined }));
+    sceneId = campaign.scenes[0].id;
+    scene = campaign.scenes[0];
+    positions = {};
+    party.forEach((p, i) => {
+      positions[p.id] = scene.hotspots[i % scene.hotspots.length].id;
+    });
+  }
 
-  const finished = tale.finished || Boolean(result.endTale) || result.choices.every((c) => c.id === "open-chronicle");
-  if (finished && !tale.finished) gained += 60;
+  const finished =
+    tale.finished ||
+    Boolean(result.endTale) ||
+    (result.choices.length > 0 && result.choices.every((c) => c.id === "open-chronicle"));
+  if (finished && !tale.finished && !isModule) gained += 60;
 
   const grown = xpAfter(tale, gained);
   if (grown.leveled && grown.level <= MAX_LEVEL) {
     const steps = grown.level - tale.level;
-    party = party.map((c) => ({ ...c, heartMax: c.heartMax + 3 * steps, heart: c.heart + 3 * steps }));
+    party = party.map((c) => ({ ...c, heartMax: c.heartMax + 3 * steps, heart: c.heart > 0 ? c.heart + 3 * steps : c.heart }));
   }
 
   const chronicle = [...tale.chronicle];
@@ -603,7 +635,7 @@ export function applyTale(tale: Tale, playerLine: string, result: GmResult, mech
   log.push({ role: "you", text: playerLine }, { role: "gm", text: result.narration });
 
   let encounter = mech && "encounter" in mech ? (mech.encounter ?? null) : tale.encounter;
-  if (travelled) encounter = null;
+  if (travelled || routed) encounter = null;
   if (!party.some((p) => p.id === activeId)) activeId = party[0].id;
 
   let inventory = tale.inventory;
@@ -613,13 +645,24 @@ export function applyTale(tale: Tale, playerLine: string, result: GmResult, mech
       .filter((i) => i.uses === undefined || i.uses > 0);
   }
 
+  if (mech?.give) {
+    const given = mech.give;
+    const held = inventory.find((i) => i.id === given.id);
+    inventory = held
+      ? inventory.map((i) => (i.id === given.id ? { ...i, uses: (i.uses ?? 0) + (given.uses ?? 2) } : i))
+      : [...inventory, { ...given }];
+  }
+
+  const flags = Array.from(new Set([...tale.flags, ...(mech?.flags ?? [])]));
+  const fight = routed ? null : mech && "fight" in mech ? (mech.fight ?? null) : travelled ? null : tale.fight;
+
   let edge = tale.edge;
   if (mech?.edge) edge = mech.edge;
   else if (mech?.notes.some((n) => n.includes(" tira "))) edge = null;
 
   return {
     ...tale,
-    sceneId,
+    sceneId: sceneId,
     chapter,
     day,
     daypart: result.daypart || (next ? next.daypart : tale.daypart),
@@ -640,6 +683,8 @@ export function applyTale(tale: Tale, playerLine: string, result: GmResult, mech
     summary: recap(tale, result, result.chronicleBody),
     finished,
     encounter,
+    flags,
+    fight,
     pendingRoll: finished ? null : (result.rollRequest ?? null),
     edge,
     rests: mech?.rest ? Math.max(0, tale.rests - 1) : tale.rests,

@@ -1,3 +1,4 @@
+import { TUTORIAL } from "@/lib/game/module-tutorial";
 import type { Campaign, Character, Choice, Item } from "@/lib/game/types";
 
 export const PARTY: Character[] = [
@@ -12,6 +13,7 @@ export const PARTY: Character[] = [
     proficient: ["str", "con"],
     attack: "str",
     voice: "onyx",
+    weapon: { name: "Espasa llarga", dice: "1d8", ability: "str" },
     portrait: "/art/calder.jpg",
   },
   {
@@ -25,6 +27,7 @@ export const PARTY: Character[] = [
     proficient: ["dex", "wis"],
     attack: "dex",
     voice: "nova",
+    weapon: { name: "Arc curt", dice: "1d6", ability: "dex" },
     portrait: "/art/bramble.jpg",
   },
   {
@@ -38,6 +41,7 @@ export const PARTY: Character[] = [
     proficient: ["int", "wis"],
     attack: "int",
     voice: "shimmer",
+    weapon: { name: "Raig de guspira", dice: "1d8", ability: "int" },
     portrait: "",
     cameo: "vesper",
   },
@@ -52,6 +56,7 @@ export const PARTY: Character[] = [
     proficient: ["dex", "cha"],
     attack: "dex",
     voice: "echo",
+    weapon: { name: "Daga", dice: "1d4", ability: "dex" },
     portrait: "",
     cameo: "holt",
   },
@@ -73,6 +78,7 @@ export const INVENTORY: Item[] = [
 const speak = (id: string, label: string, hint?: string): Choice => ({ id, label, hint });
 
 export const CAMPAIGNS: Campaign[] = [
+  TUTORIAL,
   {
     id: "ashpine",
     name: "El Correu de Pinassa",

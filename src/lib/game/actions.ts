@@ -1,4 +1,5 @@
 import { getScene } from "@/lib/game/content";
+import { dmAct, dmResolve, isModule, roomBrief, type Turn } from "@/lib/game/dm";
 import { localGm } from "@/lib/game/logic";
 import {
   ABILITY_NAMES,
@@ -23,7 +24,19 @@ type Opts = {
   mech?: Mechanics;
   /** The caller already holds the writing lock (a roll animation is in flight). */
   resume?: boolean;
+  /** Module tale: the engine did not understand, so an AI DM improvises inside the room. */
+  free?: boolean;
 };
+
+/** How long the die tumbles and the verdict stays on screen before the story answers. */
+const ROLL_MS = 1900;
+
+function commitTurn(line: string, turn: Turn): void {
+  const state = useGame.getState();
+  const tale = activeTale(state);
+  if (!tale) return;
+  state.commit(tale.id, line, turn.result, "book", turn.mech);
+}
 
 function encounterFacts(tale: Tale): string | undefined {
   const enc = tale.encounter;
@@ -52,7 +65,13 @@ export async function perform(line: string, opts: Opts = {}): Promise<void> {
   const roll = rolled
     ? { label: rolled.label, total: rolled.roll + rolled.mod, dc: rolled.dc, success: rolled.success }
     : undefined;
-  const local = localGm(current, { choiceId: opts.choiceId, text: line, roll, notes: mech?.notes });
+  const local = opts.free
+    ? {
+        narration:
+          "No t'he acabat d'entendre. Prova de dir-ho d'una altra manera, o digues «què puc fer?» perquè et doni idees.",
+        choices: [],
+      }
+    : localGm(current, { choiceId: opts.choiceId, text: line, roll, notes: mech?.notes });
   const actor = heroOf(current);
 
   try {
@@ -74,8 +93,11 @@ export async function perform(line: string, opts: Opts = {}): Promise<void> {
         inventory: current.inventory.map((i) => i.name),
         heroLine: `${actor.name}, ${actor.role}, ${actor.heart}/${actor.heartMax} hearts`,
         encounter: encounterFacts(current),
+        freeform: opts.free || isModule(current) || undefined,
+        roomNotes: isModule(current) ? roomBrief(current) : undefined,
       },
     });
+    if (res.ok && opts.free) delete res.result.heartDelta;
     if (res.ok) state.commit(current.id, line, res.result, "live", mech);
     else state.commit(current.id, line, local, "book", mech);
   } catch {
@@ -95,9 +117,19 @@ export function rollFor(request: RollRequest, mode?: RollMode, physical?: number
   state.setWriting(true);
   state.setPending(null);
   state.setDice(show);
-  const mech = request.kind === "strike" ? strikeMechanics(tale, show) : checkMechanics(show);
   const line = request.line ?? `${hero.name} ho intenta: ${request.reason}.`;
-  window.setTimeout(() => void perform(line, { rolled: show, mech, resume: true }), physical !== undefined ? 400 : 1000);
+  if (isModule(tale) && request.target) {
+    window.setTimeout(
+      () => {
+        const fresh = activeTale(useGame.getState());
+        if (fresh) commitTurn(line, dmResolve(fresh, request, show));
+      },
+      ROLL_MS,
+    );
+    return;
+  }
+  const mech = request.kind === "strike" ? strikeMechanics(tale, show) : checkMechanics(show);
+  window.setTimeout(() => void perform(line, { rolled: show, mech, resume: true }), ROLL_MS);
 }
 
 /** Free-form words from the table. If they sound uncertain, ask for a roll first. */
@@ -107,6 +139,12 @@ export function say(text: string): void {
   if (!tale || state.writing || tale.finished) return;
   const hero = heroOf(tale);
   const line = `${hero.name}: ${text}`;
+  if (isModule(tale)) {
+    const turn = dmAct(tale, line);
+    if (turn) commitTurn(line, turn);
+    else void perform(line, { free: true });
+    return;
+  }
   const check = tale.encounter ? null : classifyAction(text);
   if (check) {
     state.setPending({ ...check, heroId: hero.id, line, kind: "check" });
@@ -115,10 +153,26 @@ export function say(text: string): void {
   void perform(line);
 }
 
+/** Tapping a thing on the board is the same as saying what you would say about it. */
+export function tapSpot(spot: Hotspot, mode: "move" | "look" | "strike"): void {
+  const kind = spot.kind ?? "feature";
+  let verb = "mira";
+  if (mode === "strike" && kind === "foe") verb = "ataca";
+  else if (mode === "move" && kind === "exit") verb = "ves a";
+  else if (mode === "move" && kind === "npc") verb = "parla amb";
+  else if (mode === "move" && kind === "item") verb = "agafa";
+  else if (mode === "move" && kind === "foe") verb = "mira";
+  say(`${verb} ${spot.name}`);
+}
+
 export function strikeAt(spot: Hotspot): void {
   const state = useGame.getState();
   const tale = activeTale(state);
   if (!tale || state.writing || tale.finished) return;
+  if (isModule(tale)) {
+    tapSpot(spot, "strike");
+    return;
+  }
   const hero = heroOf(tale);
   const enc = tale.encounter;
 
@@ -162,7 +216,11 @@ export function stepBack(): void {
 export function restParty(): void {
   const state = useGame.getState();
   const tale = activeTale(state);
-  if (!tale || state.writing || tale.finished || tale.encounter || tale.rests <= 0) return;
+  if (!tale || state.writing || tale.finished || tale.encounter || tale.fight || tale.rests <= 0) return;
+  if (isModule(tale)) {
+    say("descansem");
+    return;
+  }
   void perform("La companyia fa campament i descansa.", { mech: restMechanics(tale) });
 }
 
@@ -171,6 +229,10 @@ export function consumeItem(item: Item): void {
   const tale = activeTale(state);
   if (!tale || state.writing || tale.finished) return;
   const hero = heroOf(tale);
+  if (isModule(tale)) {
+    say(`fes servir ${item.name}`);
+    return;
+  }
   const mech = itemMechanics(tale, item, hero) ?? undefined;
   void perform(`${hero.name} fa servir ${item.name.toLowerCase()}. ${item.detail}`, { mech });
 }
@@ -181,6 +243,10 @@ export function onPlaceMove(spot: Hotspot, mode: "move" | "look"): void {
   const hero = heroOf(tale);
   const scene = getScene(tale.campaignId, tale.sceneId);
   if (!scene) return;
+  if (isModule(tale)) {
+    tapSpot(spot, mode);
+    return;
+  }
   if (mode === "look") void perform(`${hero.name} mira de prop ${spot.name}.`);
   else void perform(`${hero.name} va a ${spot.name}.`);
 }

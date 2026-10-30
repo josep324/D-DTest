@@ -43,6 +43,8 @@ const Input = z.object({
   inventory: z.array(z.string().max(40)).max(20).optional(),
   heroLine: z.string().max(160).optional(),
   encounter: z.string().max(200).optional(),
+  freeform: z.boolean().optional(),
+  roomNotes: z.string().max(2400).optional(),
 });
 
 const LANGUAGE = { en: "English", ca: "Catalan", es: "Spanish" } as const;
@@ -57,7 +59,7 @@ const Out = z.object({
         hint: z.string().max(90).optional(),
       }),
     )
-    .min(1)
+    .min(0)
     .max(4),
   questTitle: z.string().max(90).optional(),
   questDetail: z.string().max(240).optional(),
@@ -111,6 +113,10 @@ export const consultStoryteller = createServerFn({ method: "POST" })
       ? `Dice already rolled. ${data.roll.label}. Total ${data.roll.total} vs DC ${data.roll.dc}. Success: ${data.roll.success}. Do not contradict the dice.`
       : "No dice were rolled.";
 
+    const dmRules = data.freeform
+      ? `
+You are now the Dungeon Master of a real tabletop adventure. The company acts freely and you improvise, but only inside the ROOM NOTES below: the places, people, foes and exits listed are all that exist. Decide like a DM: if the action is safe, say yes with no roll; if it could fail and failing is interesting, set rollRequest with the right ability and a DC (easy 10, normal 15, hard 20); if it is impossible, say no and suggest what is possible. Never invent treasure, exits or foes. Never narrate the result of an uncertain action before the dice. Do not offer a list of choices: return "choices": [].`
+      : "";
     const system = `You are the storyteller at Thornwake, a family tabletop game played by adults and children together.
 Tone: wondrous, specific, sensory, mild peril. No gore, no body horror, no romance, no real-world politics, no slurs.
 Never kill a hero. Hearts and dice are decided by the rules engine: the "Facts" list is true and final, so narrate it faithfully and never contradict a roll, a heart total or an initiative order.
@@ -124,7 +130,7 @@ The players at the table are ${data.playerName}${data.partner ? ` and ${data.par
 Reply with JSON only. No markdown.
 Schema:
 {"narration":"two short paragraphs under 130 words","choices":[{"id":"slug","label":"concrete verb phrase","hint":"optional"}],"questTitle":"","questDetail":"","heartDelta":[{"id":"calder","delta":0}],"chronicleTitle":"","chronicleBody":"one sentence if this moment matters, else empty","moveTo":"hotspot id or empty","nextSceneId":"another scene id only if they truly travel, else empty","daypart":"","weather":"","sky":"SHORT · LABEL","clock":"HH:MM","day":1,"summary":"","rollRequest":null,"endTale":false}
-Exactly 3 or 4 choices. Keep quest fields if the goal is unchanged. moveTo must be a hotspot id from the list or empty. nextSceneId must be one of: ${scenes} — or empty.`;
+Exactly 3 or 4 choices (none in freeform mode). Keep quest fields if the goal is unchanged. moveTo must be a hotspot id from the list or empty. nextSceneId must be one of: ${scenes} — or empty.${dmRules}`;
 
     const user = `Campaign: ${campaign.name}
 Canon: ${campaign.canon}
@@ -141,6 +147,8 @@ Story so far: ${data.summary || "(just begun)"}
 Recent:
 ${log || "(opening)"}
 ${dice}
+Room notes:
+${data.roomNotes ?? "(none)"}
 Facts (final):
 ${(data.facts ?? []).join("\n") || "(none)"}
 The company does: ${data.action}`;

@@ -7,6 +7,7 @@ import {
   Footprints,
   Mic,
   MicOff,
+  AudioLines,
   Moon,
   Search,
   Send,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 import { getScene } from "@/lib/game/content";
 import { onPlaceMove, perform, restParty, rollFor, say, stepBack, strikeAt } from "@/lib/game/actions";
+import { isModule, visibleSpots } from "@/lib/game/dm";
 import { createTale } from "@/lib/game/logic";
 import {
   ABILITY_NAMES,
@@ -60,6 +62,8 @@ export function Play() {
   const voice = useGame((s) => s.voice);
   const setVoice = useGame((s) => s.setVoice);
   const lang = useGame((s) => s.lang);
+  const handsFree = useGame((s) => s.handsFree);
+  const setHandsFree = useGame((s) => s.setHandsFree);
   const [draft, setDraft] = useState("");
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const lastLevel = useRef<number | null>(null);
@@ -87,6 +91,8 @@ export function Play() {
   const scene = getScene(tale.campaignId, tale.sceneId);
   if (!scene) return null;
   const actor = tale.party.find((p) => p.id === tale.activeId) ?? tale.party[0];
+  const module = isModule(tale);
+  const spots = module ? visibleSpots(tale) : scene.hotspots;
 
   function onPlace(spot: Hotspot) {
     if (tale?.pendingRoll) return;
@@ -121,6 +127,12 @@ export function Play() {
           </div>
         </div>
         <div className="flex items-center gap-1">
+          <IconButton
+            label={handsFree ? "Desactiva el mode veu" : "Mode veu: la narradora t'escolta sola"}
+            onClick={() => setHandsFree(!handsFree)}
+          >
+            <AudioLines className={`size-4 ${handsFree ? "text-gold-bright" : ""}`} />
+          </IconButton>
           <IconButton label="Crònica" onClick={() => setModal("chronicle")}>
             <BookOpen className="size-4" />
           </IconButton>
@@ -169,7 +181,7 @@ export function Play() {
           <div className="board-frame">
             <div className="board-stage">
               <img src={scene.image} alt={scene.name} className="absolute inset-0 size-full object-cover" />
-              {scene.hotspots.map((h) => (
+              {spots.map((h) => (
                 <button
                   key={h.id}
                   type="button"
@@ -180,7 +192,7 @@ export function Play() {
                   style={{ left: `${h.x}%`, top: `${h.y}%` }}
                 >
                   <span className="pointer-events-none absolute top-5 left-1/2 hidden -translate-x-1/2 bg-ink/80 px-1 font-sans text-xs whitespace-nowrap text-parchment group-hover:block lg:block">
-                    {mode === "move" || mode === "look" ? h.name : ""}
+                    {module || mode === "move" || mode === "look" ? h.name : ""}
                   </span>
                 </button>
               ))}
@@ -237,6 +249,7 @@ export function Play() {
                 <span className="mt-1 block font-sans text-xs text-mist">
                   {person.heart}/{person.heartMax} · Defensa {person.guard}
                   {tale.edge === person.id ? " · avantatge" : ""}
+                  {person.fallen ? " · caigut" : person.down ? ` · a terra (${person.saves?.ok ?? 0}✓ ${person.saves?.fail ?? 0}✗)` : ""}
                 </span>
               </span>
             </button>
@@ -256,7 +269,9 @@ export function Play() {
         <div className="z-30 mx-3 mb-2 lg:absolute lg:top-20 lg:right-4 lg:bottom-28 lg:mx-0 lg:w-96">
           <StoryPanel
             narration={tale.narration}
-            choices={tale.choices}
+            choices={module ? [] : tale.choices}
+            module={module}
+            handsFree={handsFree}
             writing={writing}
             toldBy={toldBy}
             draft={draft}
@@ -274,6 +289,7 @@ export function Play() {
               setDraft("");
               say(line);
             }}
+            onHelp={() => say("què puc fer?")}
             onClose={() => setStoryOpen(false)}
           />
         </div>
@@ -288,7 +304,9 @@ export function Play() {
           ? `Mou ${actor.name} · tria un lloc`
           : mode === "look"
             ? `Mira amb ${actor.name} · tria un lloc`
-            : tale.encounter
+            : tale.fight
+              ? `Ataca amb ${actor.name} · toca un enemic o digues «ataco…»`
+              : tale.encounter
               ? `Ataca amb ${actor.name} · fes recular el problema de ${tale.encounter.name}`
               : `Ataca amb ${actor.name} · tria un lloc tens`}
       </p>
@@ -305,7 +323,7 @@ export function Play() {
             label={`Descans ${tale.rests}`}
             on={false}
             onClick={restParty}
-            disabled={tale.rests <= 0 || Boolean(tale.encounter) || tale.finished || writing}
+            disabled={tale.rests <= 0 || Boolean(tale.encounter) || Boolean(tale.fight) || tale.finished || writing}
           />
           <button
             type="button"
@@ -319,6 +337,7 @@ export function Play() {
       </div>
 
       {tale.encounter ? <EncounterBar tale={tale} /> : null}
+      {tale.fight ? <FightBar tale={tale} /> : null}
 
       {tale.pendingRoll && !writing ? (
         <RollPrompt
@@ -447,6 +466,52 @@ function EncounterBar({ tale }: { tale: Tale }) {
   );
 }
 
+function FightBar({ tale }: { tale: Tale }) {
+  const fight = tale.fight;
+  if (!fight) return null;
+  const turnId = fight.order[fight.turn];
+  const foes = fight.foes.filter((f) => f.hp > 0);
+  return (
+    <section className="z-30 mx-3 mb-2 border border-ember/70 bg-ink/90 p-3 lg:absolute lg:top-36 lg:left-1/2 lg:mx-0 lg:w-80 lg:-translate-x-1/2">
+      <div className="flex items-baseline justify-between gap-2">
+        <h2 className="font-serif text-sm text-parchment">Combat</h2>
+        <span className="font-sans text-xs text-mist">Ronda {fight.round}</span>
+      </div>
+      <ul className="mt-2 space-y-2">
+        {foes.map((f) => (
+          <li key={f.id}>
+            <div className="flex items-baseline justify-between font-sans text-xs text-parchment">
+              <span>{f.name}</span>
+              <span className="text-mist">
+                {f.hp}/{f.hpMax} · Defensa {f.ac}
+              </span>
+            </div>
+            <span className="bar-track mt-1 block" aria-label={`${f.name}: ${f.hp} de ${f.hpMax}`}>
+              <span className="bar-fill block" style={{ width: `${(f.hp / f.hpMax) * 100}%` }} />
+            </span>
+          </li>
+        ))}
+      </ul>
+      <ol className="mt-2 flex flex-wrap gap-1">
+        {fight.order.map((id) => {
+          const hero = tale.party.find((p) => p.id === id);
+          const foe = fight.foes.find((f) => f.id === id);
+          if (foe && foe.hp <= 0) return null;
+          const on = id === turnId;
+          return (
+            <li
+              key={id}
+              className={`border px-2 py-1 font-sans text-xs ${on ? "border-gold bg-gold/25 text-gold-bright" : "border-gold/20 text-mist"} ${hero?.down ? "line-through" : ""}`}
+            >
+              {hero ? hero.name : foe?.name}
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
 function RollPrompt({ tale, request, lang }: { tale: Tale; request: RollRequest; lang: "en" | "ca" | "es" }) {
   const setPending = useGame((s) => s.setPending);
   const hero = heroOf(tale, request.heroId);
@@ -480,7 +545,7 @@ function RollPrompt({ tale, request, lang }: { tale: Tale; request: RollRequest;
   return (
     <div className="fixed inset-x-3 bottom-24 z-40 mx-auto max-w-md border border-gold bg-ink/95 p-4 sm:bottom-28" role="dialog" aria-label="Tirada">
       <p className="font-sans text-xs tracking-widest text-gold-dim">
-        {request.kind === "strike" ? "ATAC" : "ES DEMANEN ELS DAUS"}
+        {request.kind === "strike" || request.kind === "attack" ? "ATAC" : "ES DEMANEN ELS DAUS"}
       </p>
       <h2 className="mt-1 font-serif text-lg text-parchment">
         {hero.name} · {ABILITY_NAMES[request.ability]} {mod >= 0 ? "+" : ""}
@@ -604,6 +669,9 @@ function StoryPanel({
   finished,
   blocked,
   tale,
+  module,
+  handsFree,
+  onHelp,
 }: {
   narration: string;
   choices: { id: string; label: string; hint?: string }[];
@@ -620,6 +688,9 @@ function StoryPanel({
   finished: boolean;
   blocked: boolean;
   tale: Tale;
+  module: boolean;
+  handsFree: boolean;
+  onHelp: () => void;
 }) {
   const [count, setCount] = useState(narration.length);
   const [skip, setSkip] = useState(true);
@@ -654,8 +725,15 @@ function StoryPanel({
   useEffect(() => {
     if (!voice || writing || spoken.current === narration) return;
     spoken.current = narration;
-    void speak(narration, { voice: heroVoice, lang });
-  }, [voice, writing, narration, heroVoice, lang]);
+    void speak(narration, {
+      voice: heroVoice,
+      lang,
+      onEnd: () => {
+        const now = activeTale(useGame.getState());
+        if (handsFree && now && !now.finished && !useGame.getState().writing) talkRef.current();
+      },
+    });
+  }, [voice, writing, narration, heroVoice, lang, handsFree]);
 
   useEffect(
     () => () => {
@@ -678,11 +756,21 @@ function StoryPanel({
       onText: setDraft,
       onFinal: (text) => {
         setDraft("");
+        // A roll is waiting: the table says the number on the die, or asks the app to roll.
+        const pending = activeTale(useGame.getState())?.pendingRoll;
+        if (pending) {
+          const n = numberFromSpeech(text);
+          if (n) rollFor(pending, undefined, n);
+          else if (/tir|dau|per mi|endavant/i.test(text)) rollFor(pending);
+          return;
+        }
         onSend(text);
       },
       onEnd: () => setHearing(false),
     });
   };
+  const talkRef = useRef(talk);
+  talkRef.current = talk;
 
   return (
     <Ornate variant="light" className="story-panel flex flex-col">
@@ -720,7 +808,7 @@ function StoryPanel({
             ),
           )
         )}
-        {toldBy === "book" && done ? (
+        {toldBy === "book" && done && !module ? (
           <p className="font-sans text-xs text-gold-dim">Contat des del llibre de la taula.</p>
         ) : null}
       </div>
@@ -731,6 +819,13 @@ function StoryPanel({
               setSkip(true);
             }}>
             Salta la narració
+          </button>
+        </div>
+      ) : null}
+      {module && done && !finished && !blocked ? (
+        <div className="px-4 pb-1">
+          <button type="button" className="min-h-11 font-sans text-xs tracking-widest text-gold-dim" onClick={onHelp}>
+            QUÈ PUC FER?
           </button>
         </div>
       ) : null}
@@ -764,7 +859,7 @@ function StoryPanel({
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder={hearing ? "Escoltant…" : "Què fa la companyia?"}
+            placeholder={hearing ? "Escoltant…" : module ? "Què fa el teu personatge? Parla, mira, ves a…" : "Què fa la companyia?"}
             maxLength={400}
             className="h-11 min-w-0 flex-1 border border-gold-dim/40 bg-parchment/40 px-2 font-serif text-sm text-soot outline-none"
           />

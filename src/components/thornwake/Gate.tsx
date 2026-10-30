@@ -34,12 +34,12 @@ export function Gate() {
             <Mark className="mb-3 size-10 text-gold" />
             <p className="font-sans text-xs tracking-widest text-mist">UN LLIBRE D'AVENTURES</p>
             <h1 className="gold-title mt-3 font-display text-4xl tracking-widest sm:text-5xl">THORNWAKE</h1>
-            <p className="mt-2 font-serif text-sm text-gold-bright/90">La Campana d'Aiguaquieta</p>
+            <p className="mt-2 font-serif text-sm text-gold-bright/90">Rol de taula per a dos jugadors</p>
             <div className="my-4 h-px w-16 bg-gold/40" />
             <p className="font-serif text-lg text-parchment">La teva taula t'espera.</p>
             <p className="mt-3 max-w-sm font-serif text-sm leading-relaxed text-mist">
-              Un joc de rol de taula amb una narradora d'IA que parla. Una companyia, tres contes, perill suau.
-              Seu i tria, o tasta el conte del riu.
+              Un joc de rol de taula estil D&D amb una narradora que parla. Digues què fa el teu personatge, tira els daus i descobreix què passa.
+              Si no has jugat mai, comença per l'aventura d'aprenentatge.
             </p>
             <div className="mt-6 flex w-full flex-col gap-2">
               <TextButton tone="solid" onClick={() => setScreen("select")}>
@@ -50,14 +50,14 @@ export function Gate() {
               <TextButton
                 onClick={() => {
                   const { playerName, addTale } = useGame.getState();
-                  addTale(createTale("stillwater", playerName));
+                  addTale(createTale("cofre", playerName));
                 }}
               >
-                Tasta un conte
+                Aprèn a jugar
               </TextButton>
             </div>
             <p className="mt-4 font-sans text-xs leading-relaxed text-mist">
-              El tast obre Aiguaquieta. Qui vulgui pot seure; els contes es queden en aquest dispositiu.
+              «Aprèn a jugar» obre una aventura curta que t'explica les regles mentre jugues. Els contes es queden en aquest dispositiu.
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 font-sans text-xs tracking-widest text-gold-dim">
               <button type="button" className="min-h-11" onClick={() => setModal("notes")}>

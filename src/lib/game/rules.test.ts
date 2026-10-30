@@ -23,6 +23,7 @@ const hero = (id: string, heart: number, dex = 14): Character => ({
   proficient: ["dex"],
   attack: "dex",
   voice: "fable",
+  weapon: { name: "x", dice: "1d4", ability: "dex" },
   portrait: "",
 });
 

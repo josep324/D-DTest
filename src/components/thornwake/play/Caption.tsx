@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Lightbulb, Volume2 } from "lucide-react";
 import { createTale } from "@/lib/game/logic";
 import { say } from "@/lib/game/actions";
@@ -13,25 +13,37 @@ function Paragraphs({ text, dim = false }: { text: string; dim?: boolean }) {
       {text.split("\n\n").map((para, i) => {
         if (para.startsWith(RULES_MARK)) {
           return (
-            <p key={i} className="mb-2 border-l-2 border-gold-dim/60 pl-2 font-sans text-xs leading-relaxed text-gold-dim">
+            <p
+              key={i}
+              className="mb-2 border-l-2 border-gold-dim/60 pl-2 font-sans text-xs leading-relaxed text-gold-dim"
+            >
               {para.slice(1).trim()}
             </p>
           );
         }
         if (para.startsWith("Consell del DM:")) {
           return (
-            <p key={i} className="mb-3 flex gap-2 border border-gold/30 bg-gold/10 p-2.5 font-serif text-sm leading-relaxed text-gold-bright">
+            <p
+              key={i}
+              className="mb-3 flex gap-2 border border-gold/30 bg-gold/10 p-2.5 font-serif text-sm leading-relaxed text-gold-bright"
+            >
               <Lightbulb className="mt-0.5 size-4 shrink-0" aria-hidden />
               <span>
                 <strong className="font-sans text-xs tracking-widest">CONSELL DEL DM</strong>
                 <br />
-                {para.replace("Consell del DM:", "").trim().replace(/^./, (c) => c.toUpperCase())}
+                {para
+                  .replace("Consell del DM:", "")
+                  .trim()
+                  .replace(/^./, (c) => c.toUpperCase())}
               </span>
             </p>
           );
         }
         return (
-          <p key={i} className={`mb-3 font-serif text-base leading-relaxed ${dim ? "text-mist/80" : "text-parchment"}`}>
+          <p
+            key={i}
+            className={`mb-3 font-serif text-base leading-relaxed ${dim ? "text-mist/80" : "text-parchment"}`}
+          >
             {para}
           </p>
         );
@@ -44,18 +56,26 @@ function EndCard({ tale }: { tale: Tale }) {
   const setModal = useGame((s) => s.setModal);
   const setScreen = useGame((s) => s.setScreen);
   const addTale = useGame((s) => s.addTale);
-  const btn = "min-h-11 border border-gold/50 bg-gold/10 px-3 font-serif text-sm text-gold-bright hover:bg-gold/20";
+  const btn =
+    "min-h-11 border border-gold/50 bg-gold/10 px-3 font-serif text-sm text-gold-bright hover:bg-gold/20";
   return (
     <div className="rise mt-2 space-y-2 border border-gold/40 bg-ink/60 p-3">
-      <p className="text-center font-display text-sm tracking-widest text-gold">EL CONTE ÉS CONTAT</p>
+      <p className="text-center font-display text-sm tracking-widest text-gold">
+        EL CONTE ÉS CONTAT
+      </p>
       <p className="text-center font-serif text-sm text-mist">
-        Dia {tale.day} · Nivell {tale.level} · {tale.xp} XP · {tale.chronicle.length} pàgines a la crònica
+        Dia {tale.day} · Nivell {tale.level} · {tale.xp} XP · {tale.chronicle.length} pàgines a la
+        crònica
       </p>
       <div className="grid gap-2">
         <button type="button" className={btn} onClick={() => setModal("chronicle")}>
           Llegeix la crònica
         </button>
-        <button type="button" className={btn} onClick={() => addTale(createTale(tale.campaignId, tale.playerName))}>
+        <button
+          type="button"
+          className={btn}
+          onClick={() => addTale(createTale(tale.campaignId, tale.playerName))}
+        >
           Torna a jugar aquest conte
         </button>
         <button type="button" className={btn} onClick={() => setScreen("select")}>
@@ -70,10 +90,12 @@ function EndCard({ tale }: { tale: Tale }) {
 export function Caption({
   tale,
   module,
+  banner,
   onChoice,
 }: {
   tale: Tale;
   module: boolean;
+  banner?: ReactNode;
   onChoice: (id: string, label: string) => void;
 }) {
   const writing = useGame((s) => s.writing);
@@ -189,7 +211,12 @@ export function Caption({
             <Paragraphs text={narration.slice(0, count)} />
           </div>
         )}
-        {blocked && done ? <p className="font-serif text-sm text-gold">Els daus esperen a la taula.</p> : null}
+        {blocked && done ? (
+          <p className="font-serif text-sm text-gold">Els daus esperen a la taula.</p>
+        ) : null}
+        {done && !blocked && !tale.finished && banner ? (
+          <div className="-mx-4 mt-2">{banner}</div>
+        ) : null}
         {done && tale.finished ? <EndCard tale={tale} /> : null}
       </div>
 

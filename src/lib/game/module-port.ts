@@ -35,7 +35,7 @@ export const PORT: Campaign = {
       chronicleTitle: "Petjades que s'aturen",
       back: "Torneu al Moll de Vidre-sal. La marea puja sense pressa però sense aturar-se.",
       opening:
-        "Cinc dies de l'any només obre la comporta la marea alta. Aquesta nit n'és un, i el vaixell llogat, l'Alosa, salparà sense la seva carta nocturna si ningú no adoba el robatori. La campana de la capitana del port és esquerdada de dalt a baix i encara la toquen, per orgull.\n\nPetjades mullades creuen el moll i s'aturen enmig de taulons secs, com si qui caminava recordés que no havia de ser aigua. A l'altra banda de l'aigua, el Far de l'Estella hauria de brillar. No ho fa.\n\nConsell del DM: aquí tens moltes coses a fer i cap d'obligatòria al principi. Parla amb la capitana i amb l'escrivent, mira les petjades i la campana, obre la caixa de l'estrella. Digues «què puc fer?» si t'encalles.",
+        "Només cinc dies a l'any la marea és prou alta per obrir la comporta. Aquesta nit n'és un, i el vaixell llogat, l'Alosa, salparà sense la seva carta nocturna si ningú no resol el robatori. La campana de la capitana del port és esquerdada de dalt a baix i encara la toquen, per orgull.\n\nPetjades mullades creuen el moll i s'aturen enmig de taulons secs, com si qui caminava recordés que no havia de ser aigua. A l'altra banda de l'aigua, el Far de l'Estella hauria de brillar. No ho fa.\n\nConsell del DM: aquí tens moltes coses a fer i cap d'obligatòria al principi. Parla amb la capitana i amb l'escrivent, mira les petjades i la campana, obre la caixa de l'estrella. Digues «què puc fer?» si t'encalles.",
       quest: { title: "La carta abans de la marea", detail: "Parla amb la capitana i investiga les petjades, la campana i la caixa." },
       choices: [],
       hotspots: [
@@ -63,7 +63,7 @@ export const PORT: Campaign = {
           check: {
             ability: "wis", dc: 10, reason: "Seguir les petjades fins al final", flag: "empremtes", xp: 15,
             alts: [{ keywords: ["estiro", "ajupo", "ajupim", "de gairell", "gairell", "tombo"], ability: "wis", dc: 9, reason: "Ajupir-se i mirar de gairell" }],
-            success: "T'estires sobre els taulons i mires de gairell, que és com les escoltes fan confessar els bassals. L'aigua de la petjada apunta, molt lleugerament, cap a una caixa marcada amb una estrella de guix.",
+            success: "T'estires sobre els taulons i mires de gairell, que és com els exploradors fan confessar els bassals. L'aigua de la petjada apunta, molt lleugerament, cap a una caixa marcada amb una estrella de guix.",
             fail: "Només veus taulons mullats i secs. Potser amb més temps, o ajupint-te, ho veuries.",
           },
         },
@@ -130,7 +130,7 @@ export const PORT: Campaign = {
       back: "Torneu a la torre. Les cartes continuen clavades sobre els estels.",
       opening:
         "La sala de cartes fa olor de tinta i de taronges. Algú ha tallat la costa de la carta nocturna en una mitja lluna curosa, no estripada, tallada, i ha deixat un nus de mariner al telescopi. Pel finestral s'albira el Far de l'Estella, i és fosc.\n\nClavada sota l'armil·lar, hi ha una nota.\n\nConsell del DM: no cal que ho resolguis tot aquí. Llegeix la nota, mira el telescopi i, si hi veus alguna cosa, decideix si vols pujar al terrat. Hi ha corbs, i alguna d'aquestes proves pot sortir malament.",
-      quest: { title: "Mendra la costa", detail: "Llegeix la nota i busca el retall que falta." },
+      quest: { title: "Adoba la costa", detail: "Llegeix la nota i busca el retall que falta." },
       choices: [],
       hotspots: [
         {
@@ -224,7 +224,7 @@ export const PORT: Campaign = {
             fail: "«No ho tinc clar», diu l'Ona, i es creua més els braços. «La carta és incompleta. I els plans dolents no es fan millors parlant.» Pots provar de nou, amb altres paraules.",
           },
           talk: [
-            { keywords: ["torna", "far", "encesa", "llum", "gracies", "gràcies", "salpar", "salpem"], requires: "senyal", ends: true, xp: 70, say: "Des de la comporta es veu l'esquif del fanaler arribar amb una vela remendada. Una llum petita respon des de l'esquif, i després una de més forta des de la roca, quan en Quim aconsegueix pujar al far i encendre'l.\n\nL'Alosa espera una marea, que és un petit miracle fet de corda i bones maneres. En Biel és renyat, alimentat i tornat a la llista de guàrdies. La carta puja a bord amb la seva cicatriu i el seu marge honest.\n\nLa campana esquerdada del port sona igualment. Algú és feliç. El Port del Crepuscle conserva el seu vaixell, el seu fanaler i la seva història." },
+            { keywords: ["torna", "far", "encesa", "llum", "gracies", "gràcies", "salpar", "salpem"], requires: "senyal", ends: true, xp: 70, say: "Des de la comporta es veu l'esquif del fanaler arribar amb una vela adobada. Una llum petita respon des de l'esquif, i després una de més forta des de la roca, quan en Quim aconsegueix pujar al far i encendre'l.\n\nL'Alosa espera una marea, que és un petit miracle fet de corda i bones maneres. En Biel és renyat, alimentat i tornat a la llista de guàrdies. La carta puja a bord amb la seva cicatriu i el seu marge honest.\n\nLa campana esquerdada del port sona igualment. Algú és feliç. El Port del Crepuscle conserva el seu vaixell, el seu fanaler i la seva història." },
             { keywords: ["marea", "esperar", "espera", "temps", "carta", "salpa"], say: "«La marea no espera. Jo tampoc, però avui puc fer una excepció si em doneu una raó que no sigui una excusa.»" },
           ],
         },
@@ -245,11 +245,11 @@ export const PORT: Campaign = {
           requires: { flag: "carta-reparada", hint: "No toca encara fer senyals al far: primer cal que la carta sigui bona." },
           check: {
             ability: "dex", dc: 10, reason: "Fer senyals amb el fanal: tres llums lentes, el patró de la capitana per a «aguanteu»", flag: "senyal", xp: 20,
-            success: "El fanal encaixa a la ranura com si hagués estat sol. Tres mostres lentes. Lluny, una llumeta respon, després una altra de més forta des de la roca: el far torna a respirar.",
+            success: "El fanal encaixa a la ranura com si hagués estat sol. Tres senyals lents. Lluny, una llumeta respon, després una altra de més forta des de la roca: el far torna a respirar.",
             fail: "La llum balla massa. El patró no queda net. Reprova-ho amb la mà més ferma.",
           },
         },
-        { id: "caixes", kind: "feature", name: "Caixes de l'equipatge", x: 72, y: 42, keywords: ["caixes", "equipatge", "sacs"], examine: "Caixes de la tripulació: ropa, sal, i un manxe de ferrer que ningú sap perquè porten." },
+        { id: "caixes", kind: "feature", name: "Caixes de l'equipatge", x: 72, y: 42, keywords: ["caixes", "equipatge", "sacs"], examine: "Caixes de la tripulació: roba, sal, i un manxe de ferrer que ningú sap perquè porten." },
         { id: "portal", kind: "exit", name: "El camí al moll", x: 80, y: 32, to: "moll", keywords: ["moll", "port", "tornar", "camí", "cami"], examine: "El camí de llosetes que torna al moll de Vidre-sal." },
       ],
     },
@@ -289,7 +289,7 @@ export const PORT: Campaign = {
           },
         },
         { id: "far", kind: "feature", name: "El Far de l'Estella (apagat)", x: 92, y: 18, keywords: ["far", "estella", "llum", "torre"], examine: "A l'altra roca, un far de pedra amb la llanterna apagada. Seria visible des de tot el port, si estigués encès." },
-        { id: "rem", kind: "feature", name: "El rem trencat", x: 18, y: 38, keywords: ["rem", "trencat", "fusta"], examine: "Un rem partit en dues parts, amb una taca de sang vella. Un nus de mariner fa de curiós empalme provisional." },
+        { id: "rem", kind: "feature", name: "El rem trencat", x: 18, y: 38, keywords: ["rem", "trencat", "fusta"], examine: "Un rem partit en dues parts, amb una taca de pega vella. Un nus de mariner fa de curiós empalme provisional." },
         { id: "tornar", kind: "exit", name: "L'esquif cap al moll", x: 9, y: 78, to: "moll", keywords: ["esquif", "moll", "tornar", "port", "remar", "enrere"], examine: "L'esquif us espera, amarrat entre dues roques." },
       ],
     },

@@ -19,6 +19,26 @@ export const TUTORIAL: Campaign = {
   span: "Una hora",
   mission: "Recupera el cofre de la fornera de Pinassa i torna-l'hi.",
   items: ITEMS,
+  guide: [
+    { id: "parla", title: "Parla amb algú", text: "Aquí no hi ha botons: ho dius tu, amb les teves paraules. Per parlar amb algú, digues-ho com ho diries a la taula.", phrase: "parlo amb la fornera del cofre", done: "parlat-fornera", target: "fornera" },
+    { id: "mira", title: "Mira una cosa", text: "Per veure què hi ha en un lloc o en un objecte, digues que el mires. El DM t'ho descriu.", phrase: "miro el pou", done: "vist-pou", target: "pou" },
+    { id: "agafa", title: "Agafa un objecte", text: "Els objectes que veus amb una mà es poden agafar. Van a la teva motxilla.", phrase: "agafo els pastissos de mel", done: "pastis", target: "parada" },
+    { id: "ves", title: "Vés a un altre lloc", text: "Per moure't, digues on vas. Les portes i els camins surten amb una icona de porta.", phrase: "vaig al bosc", done: "visited-bosc", target: "bosc" },
+    { id: "tira", title: "La teva primera tirada", text: "Quan una cosa pot sortir bé o malament, es tira un dau de 20 cares. Sortirà una finestra: prem «Tira per mi», o escriu el número d'un dau de veritat que hagis tirat a la taula.", phrase: "busco petjades al terra", done: "rastre", target: "petjades" },
+    { id: "avanca", title: "Segueix el rastre", text: "Ja saps per on han anat els lladres. Segueix-los.", phrase: "vaig per la senda dels roures", done: "visited-entrada", target: "senda" },
+    { id: "heroi", title: "Actua amb un altre heroi", text: "Cadascú és bo en una cosa. Per forçar una porta cal Força, i en Calder és el més fort. Digues el seu nom al principi i actuarà ell; també pots tocar el seu retrat a baix.", phrase: "Calder, forço la porta", done: "porta-oberta", target: "porta" },
+    { id: "entra", title: "Entra a la cova", text: "La porta ja és oberta. Quan entris, podria passar alguna cosa.", phrase: "entro per la porta", done: "visited-rates", target: "porta" },
+    { id: "combat", title: "El teu primer combat", text: "En combat, cadascú juga al seu torn (la barra de dalt i la de baix ho marquen). Els atacs et surten sols quan et toca: només has de tirar el dau. Si arribes a la defensa del monstre, el copeges i en treus vida. Pots dir «ataco les rates» per començar.", phrase: "ataco les rates", done: "dead-rates", target: "rates" },
+    { id: "descans", title: "Recupera forces", text: "Després de lluitar, els herois poden descansar i recuperar vida. Ho pots fer dues vegades per aventura, i mai en un lloc amb perill.", phrase: "descansem", done: "descans" },
+    { id: "objecte", title: "Fes servir un objecte", text: "A la motxilla tens coses que curen o que ajuden. Digues quin fas servir.", phrase: "faig servir el pastís de mel", done: "usat-objecte" },
+    { id: "endavant", title: "Continua", text: "El passadís del fons continua. Hi ha algú que vigila.", phrase: "vaig pel passadís del fons", done: "visited-guarda", target: "passadis" },
+    { id: "sigil", title: "Hi ha més d'una manera", text: "Un lladre dorm davant l'arc. Pots lluitar, però també passar sense fer soroll (Destresa). Prova el sigil: si falla, es desperta i hi haurà combat.", phrase: "passo sense fer soroll pel costat del lladre", done: "guarda-sortejat|dead-bandit", target: "bandit" },
+    { id: "arc", title: "Entra a la sala del fons", text: "Aquí és on s'amaga la cap dels lladres.", phrase: "vaig a l'arc del fons", done: "visited-cau", target: "arc" },
+    { id: "convenc", title: "Una conversa també és una arma", text: "L'última paraula sovint no és un cop, sinó una conversa. Intenta convèncer la Garrulla (Encant). Si falla, hi haurà lluita.", phrase: "convenço la Garrulla de tornar el cofre", done: "cofre-lliurat|dead-garrulla", target: "garrulla" },
+    { id: "cofre", title: "Agafa el cofre", text: "Ja el pots agafar.", phrase: "agafo el cofre", done: "cofre", target: "cofre" },
+    { id: "surt", title: "Torna a casa", text: "Surt de la cova i porta el cofre a la fornera.", phrase: "surto de la cova", done: "visited-placa", target: "sortida-cova" },
+    { id: "final", title: "Lliura el cofre", text: "Parla amb la fornera. És l'últim pas.", phrase: "parlo amb la fornera", done: "__fi", target: "fornera" },
+  ],
   canon:
     "Aventura d'aprenentatge, tipus D&D. La fornera de Pinassa ha perdut el cofre amb les receptes i els estalvis: l'han robat uns lladres que s'amaguen a una cova vella, al bosc. La companyia és Calder, Bramble, Vesper i Holt. Sales: plaça del poble, camí del bosc, entrada de la cova, sala de les rates, pas del guarda i cau de la Garrulla, la cap dels lladres. Es pot resoldre lluitant, amb sigil o parlant. To familiar, sense sang. El DM explica cada regla la primera vegada que surt.",
   scenes: [
@@ -73,7 +93,7 @@ export const TUTORIAL: Campaign = {
           examine: "Fang, fulles i marques que es barregen. Potser n'hi ha, de petjades; potser no.",
           check: {
             ability: "wis", dc: 10, reason: "Buscar petjades al fang", flag: "rastre", xp: 15,
-            success: "Entre les fulles, una roderada de carro i botes pesades, recents, que van cap als roures. Els lladres van carregats: han deixat un solc fàcil de seguir.",
+            success: "Entre les fulles, una rodera de carro i botes pesades, recents, que van cap als roures. Els lladres van carregats: han deixat un solc fàcil de seguir.",
             fail: "Només veus fang i fulles. Potser si t'hi fixes millor, o algú altre ho prova…",
           },
         },
@@ -94,22 +114,22 @@ export const TUTORIAL: Campaign = {
       ambient: "Una vella farga a la roca. Olor de fusta humida i ferro.",
       chronicleTitle: "La porta de la farga",
       opening:
-        "La senda acaba davant d'una vella farga excavada a la roca. La porta de fusta és tancada per dins amb una tranca. Un carro buit és al costat.\n\nConsell del DM: sovint hi ha més d'una manera de fer una cosa. Pots forçar la porta (Força) o provar de moure el forrellat amb una ganxo (Destresa). Digues què fas.",
+        "La senda acaba davant d'una vella farga excavada a la roca. La porta de fusta és tancada per dins amb una barra. Un carro buit és al costat.\n\nConsell del DM: sovint hi ha més d'una manera de fer una cosa. Pots forçar la porta (Força) o provar de moure el forrellat amb una ganxo (Destresa). Digues què fas.",
       quest: { title: "Entra a la cova", detail: "Obre la porta de la farga." },
       choices: [],
       hotspots: [
         {
           id: "porta", kind: "exit", name: "La porta de fusta", x: 54, y: 44, to: "rates", keywords: ["porta", "tranca", "farga", "forrellat", "entr", "obrir"],
-          examine: "Fusta vella amb una tranca per dins. Mal segellada: alguna cosa cedirà.",
+          examine: "Fusta vella amb una barra per dins. Mal segellada: alguna cosa cedirà.",
           check: {
             ability: "str", dc: 12, reason: "Forçar la porta", flag: "porta-oberta", xp: 20,
-            alts: [{ keywords: ["ganxo", "ganxos", "forrellat", "pany", "tranca", "obre amb"], ability: "dex", dc: 13, reason: "Moure la tranca amb un ganxo" }],
+            alts: [{ keywords: ["ganxo", "ganxos", "forrellat", "pany", "tranca", "obre amb"], ability: "dex", dc: 13, reason: "Moure la barra amb un ganxo" }],
             success: "La porta cedeix amb un cruixit de fusta. Dins fa fred i es fa tard, i s'hi sent un esgarrapar suau.",
             fail: "La porta s'hi resisteix. Fa un soroll, però no cedeix. Es pot tornar a provar.",
           },
         },
         { id: "carro", kind: "feature", name: "El carro buit", x: 24, y: 64, keywords: ["carro", "rodes"], examine: "Un carro buit amb cordes soltes. Van descarregar-hi alguna cosa pesada: el cofre." },
-        { id: "marques", kind: "feature", name: "Marques a la paret", x: 76, y: 66, keywords: ["marques", "paret", "roca", "pintura", "dibuix"], examine: "Algú ha dibuixat una moneda amb un forat i, sota seu, un nom: «Garrulla». La capa dels lladres." },
+        { id: "marques", kind: "feature", name: "Marques a la paret", x: 76, y: 66, keywords: ["marques", "paret", "roca", "pintura", "dibuix"], examine: "Algú ha dibuixat una moneda amb un forat i, sota seu, un nom: «Garrulla». La marca dels lladres." },
         { id: "tornar", kind: "exit", name: "Tornar al camí", x: 12, y: 22, to: "bosc", keywords: ["cami", "camí", "bosc", "tornar", "enrere"], examine: "La senda que baixa al bosc." },
       ],
     },
@@ -177,7 +197,7 @@ export const TUTORIAL: Campaign = {
       chronicleTitle: "La cap dels lladres",
       opening:
         "La sala del fons és plena de fanals, sacs i caixes robades. Al mig, asseguda sobre el cofre de la fornera com si fos un tron, una dona alta amb un abric de pell us mira sense moure's.\n\n«Heu fet una bona caminada per un cofre vell», diu. «Sóc la Garrulla. Què en traureu, si me'l prengueu?»\n\nConsell del DM: aquí tens opcions: convèncer-la (Encant), amenaçar-la o lluitar. Per parlar, digues, per exemple: «convenço la Garrulla de tornar el cofre».",
-      quest: { title: "Recupera el cofre", detail: "La Garrulla guarda el cofre. Convenç-la o vence-la." },
+      quest: { title: "Recupera el cofre", detail: "La Garrulla guarda el cofre. Convenç-la o venç-la." },
       choices: [],
       hotspots: [
         {

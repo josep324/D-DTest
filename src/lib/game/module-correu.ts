@@ -54,7 +54,7 @@ export const CORREU: Campaign = {
           check: {
             ability: "wis", dc: 10, reason: "Buscar entre la sorra i les costures", flag: "targeta", xp: 15,
             alts: [{ keywords: ["buido", "buida", "tombo", "buido la", "buidem", "escampo"], ability: "dex", dc: 9, reason: "Buidar la saca sobre les pedres" }],
-            success: "A la costura hi ha una carta que ha sobreviscut amagada. És una targeta de ruta: «Pinassa, sota la sala, sortida a l'auroneda». La tinta ha corregut cap amunt per la pàgina. Al peu, amb una lletra que no és d'en Jan: «porteu la campana cap a l'altre costat».",
+            success: "A la costura hi ha una carta que ha sobreviscut amagada. És una targeta de ruta: «Pinassa, sota la sala, sortida a l'arbreda dels aurons». La tinta ha corregut cap amunt per la pàgina. Al peu, amb una lletra que no és d'en Jan: «porteu la campana cap a l'altre costat».",
             fail: "Només hi ha sorra, una engruna de pastís i el cuir fred. Potser ho pots provar un altre cop, o d'una altra manera.",
           },
         },
@@ -121,7 +121,7 @@ export const CORREU: Campaign = {
           examine: "Una filera de cartes velles, cada una amb un còdol de riu al damunt perquè el vent no se les endugui.",
           check: {
             ability: "int", dc: 11, reason: "Llegir les cartes amb cura i desfer els pesos", flag: "cartes-llegides", xp: 15,
-            success: "Les cartes són corrents i insuportables, com ho són les coses corrents: un aniversari, un deute perdonat, una recepta de pastís que pot viatjar. Una, escrita amb una mà humida, diu només: «porteu-ho avall». Cada còdol és una bona manera.",
+            success: "Les cartes són corrents i, justament per això, entranyables: un aniversari, un deute perdonat, una recepta de pastís que pot viatjar. Una, escrita amb una mà humida, diu només: «porteu-ho avall». Cada còdol és una bona manera.",
             fail: "Els còdols rellisquen i les cartes es barregen. No en treus res, però les tornes a posar tal com eren.",
           },
         },
@@ -172,7 +172,7 @@ export const CORREU: Campaign = {
       chronicleTitle: "La farga que va beure un riu",
       back: "Torneu a la Farga de l'Auró. El rierol segueix pujant pels carrils, educat com un convidat.",
       opening:
-        "L'escala mullada us deixa sota uns auros del color de les brases. La farga del cingle és encesa, i el que hi crema són còdols llisos. Un rierol baixet puja pels carrils del carro cap al foc, sense pressa i amb cortesia. Al costat d'una tenda, assegut sobre una caixa, hi ha un home sec, avergonyit, amb una campaneta a l'abast: en Jan, el missatger.\n\nLes pedres de la farga es mouen una mica, quan ningú no les mira.\n\nConsell del DM: aquí hi ha tres converses importants: amb en Jan, amb el rierol i la farga. No tothom vol lluitar. Parla amb el rierol quan tinguis la campana.",
+        "L'escala mullada us deixa sota uns aurons del color de les brases. La farga del cingle és encesa, i el que hi crema són còdols llisos. Un rierol baixet puja pels carrils del carro cap al foc, sense pressa i amb cortesia. Al costat d'una tenda, assegut sobre una caixa, hi ha un home sec, avergonyit, amb una campaneta a l'abast: en Jan, el missatger.\n\nLes pedres de la farga es mouen una mica, quan ningú no les mira.\n\nConsell del DM: aquí hi ha tres converses importants: amb en Jan, amb el rierol i la farga. No tothom vol lluitar. Parla amb el rierol quan tinguis la campana.",
       quest: { title: "Porta-ho cap avall", detail: "Parla amb en Jan i amb el rierol. La campana ha d'anar cap al mar." },
       choices: [],
       hotspots: [
@@ -192,7 +192,7 @@ export const CORREU: Campaign = {
         },
         {
           id: "rierol", kind: "npc", name: "El rierol que puja", x: 52, y: 56, keywords: ["rierol", "riu", "aigua", "voz", "veu", "corrent", "carrils"],
-          examine: "Un fil d'aigua clara que puja pels carrils com si fos el més natural del món. Quan us acosteu, l'aigua fa una onadeta cap a vosaltres.",
+          examine: "Un fil d'aigua clara que puja pels carrils com si fos el més natural del món. Quan us acosteu, l'aigua fa una petita onada cap a vosaltres.",
           talk: [
             { keywords: ["promet", "prometo", "porto", "portem", "mar", "avall", "campana", "baixar"], requires: "campana", say: "«Porteu-la. Fins a l'aigua gran, on cap carta no s'ha de tornar a pujar. I que el foc es refredi: les pedres no són d'aquí.» El rierol us toca els peus amb una carícia freda. Darrere vostre, els còdols de la farga es desperten, miren al voltant, i tornen a ser pedres.", flag: "promesa,foc-calmat,dead-pedres", xp: 50 },
             { keywords: ["codol", "còdol", "segell", "pedra", "correu", "cartes"], requires: "codol", say: "El rierol agafa el còdol amb una onada i el fa girar a l'aigua. Es posa tebi. «Això és el meu correu. Cada carta és una veu. Em vau portar un tros de casa.»", flag: "riu-confia", xp: 20 },

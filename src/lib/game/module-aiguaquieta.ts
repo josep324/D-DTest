@@ -175,7 +175,7 @@ export const AIGUAQUIETA: Campaign = {
           examine: "Dues armadures buides, de colls estrets i genolls grossos. Fan un tic-tac de metall cada cop que es mouen, com un rellotge molt vell.",
           foe: { name: "Armadura buida", the: "l'armadura buida", hp: 11, ac: 13, atk: 3, dmg: "1d6+1", xp: 25, count: 2 },
           talk: [
-            { keywords: ["moneda", "pago", "pagar", "paguem", "dono", "doni", "dona", "pago", "peatge"], requires: "moneda", say: "Poses la moneda de coure a la mà del guantelet. Les armadures la fan girar a la llum, la tasten, i, amb un cop sec, es fan a un costat. «Pagat. Pot passar.»", flag: "peatge-pagat", xp: 20 },
+            { keywords: ["moneda", "pago", "pagar", "paguem", "dono", "doni", "dona", "pago", "peatge"], requires: "moneda", say: "Poses la moneda de coure a la mà del guantellet. Les armadures la fan girar a la llum, la tasten, i, amb un cop sec, es fan a un costat. «Pagat. Pot passar.»", flag: "peatge-pagat", xp: 20 },
             { keywords: ["nom", "formula", "fórmula", "diu", "recit", "recito", "dic", "llibre", "barquer", "voss"], requires: "llibre", say: "Obres el llibre per la pàgina del peatge i llegeixes en veu alta: «Qui passa, deixa un nom o una moneda. Qui no té cap de les dues, deixa la veritat.» Les armadures s'immobilitzen. Llavors diuen, a l'uníson, «És veritat». I es fan a un costat.", flag: "peatge-pagat", xp: 25 },
           ],
           check: {

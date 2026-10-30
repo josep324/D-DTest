@@ -42,6 +42,7 @@ export function Stage({
   spots,
   locked,
   onPin,
+  guideTarget,
   children,
 }: {
   tale: Tale;
@@ -49,6 +50,7 @@ export function Stage({
   spots: Hotspot[];
   locked: boolean;
   onPin: (spot: Hotspot) => void;
+  guideTarget?: string;
   children: ReactNode;
 }) {
   const fx = weatherFx(scene.weather);
@@ -76,7 +78,7 @@ export function Stage({
                   aria-label={h.name}
                   disabled={locked}
                   onClick={() => onPin(h)}
-                  className={`pin ${h.kind === "foe" ? "foe" : ""} disabled:opacity-50`}
+                  className={`pin ${h.kind === "foe" ? "foe" : ""} ${h.id === guideTarget ? "guide" : ""} disabled:opacity-50`}
                   style={{ left: `${h.x}%`, top: `${h.y}%` }}
                 >
                   <span className="pin-dot">

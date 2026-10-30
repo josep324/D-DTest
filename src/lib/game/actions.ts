@@ -7,6 +7,7 @@ import {
   beginEncounter,
   checkMechanics,
   classifyAction,
+  heroNamed,
   heroOf,
   itemMechanics,
   makeCheck,
@@ -135,8 +136,14 @@ export function rollFor(request: RollRequest, mode?: RollMode, physical?: number
 /** Free-form words from the table. If they sound uncertain, ask for a roll first. */
 export function say(text: string): void {
   const state = useGame.getState();
-  const tale = activeTale(state);
+  let tale = activeTale(state);
   if (!tale || state.writing || tale.finished) return;
+  // Saying a hero's name hands them the action; in a fight the turn order decides instead.
+  const named = heroNamed(tale, text);
+  if (named && !tale.fight && named.id !== tale.activeId && named.heart > 0 && !named.down && !named.fallen) {
+    state.setActive(named.id);
+    tale = activeTale(useGame.getState()) ?? tale;
+  }
   const hero = heroOf(tale);
   const line = `${hero.name}: ${text}`;
   if (isModule(tale)) {

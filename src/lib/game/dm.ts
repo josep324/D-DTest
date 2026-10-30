@@ -2,6 +2,7 @@ import { getCampaign, getScene, INVENTORY } from "@/lib/game/content";
 import {
   ABILITY_NAMES,
   abilityMod,
+  betterHero,
   describeRoll,
   die,
   heroOf,
@@ -392,6 +393,12 @@ function askRoll(tale: Tale, spot: Hotspot, check: Check, text: string, lead: st
     }
   }
   const lines = [lead];
+  const better = check.alts?.length ? null : betterHero(tale, ability, hero.id);
+  if (better) {
+    lines.push(
+      `${art(better.hero.name, true)} seria qui ho faria millor (${ABILITY_NAMES[ability]} ${better.mod >= 0 ? "+" : ""}${better.mod}). Si prefereixes que ho provi ell o ella, digues-ho.`,
+    );
+  }
   const adv = tip(
     tale,
     "tip-roll",

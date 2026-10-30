@@ -1,4 +1,5 @@
 import { Shield } from "lucide-react";
+import { ofHero } from "@/lib/game/rules";
 import type { Tale } from "@/lib/game/types";
 import { useFloats } from "@/components/thornwake/play/useFloats";
 
@@ -24,6 +25,7 @@ export function Foes({ tale }: { tale: Tale }) {
   }
   if (!fight) return null;
   const turn = fight.order[fight.turn];
+  const turnName = tale.party.find((p) => p.id === turn)?.name ?? null;
   const foes = fight.foes.filter((f) => f.hp > 0);
   return (
     <div className="pointer-events-none absolute inset-x-0 top-20 z-10 flex flex-col items-center gap-2 px-3">
@@ -60,6 +62,7 @@ export function Foes({ tale }: { tale: Tale }) {
       </ul>
       <p className="bg-ink/70 px-3 py-1 font-sans text-xs tracking-widest text-mist">
         COMBAT · RONDA {fight.round}
+        {turnName ? ` · TORN ${ofHero(turnName).toUpperCase()}` : ""}
       </p>
     </div>
   );

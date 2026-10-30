@@ -39,7 +39,18 @@ export function Hud({ tale }: { tale: Tale }) {
                 <Portrait person={p} />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-serif text-xs text-parchment sm:text-sm">{p.name}</span>
+                <span className="flex items-center gap-1">
+                  <span className="truncate font-serif text-xs text-parchment sm:text-sm">{p.name}</span>
+                  {turn === p.id ? (
+                    <span className="shrink-0 border border-gold-bright bg-gold/20 px-1 font-sans text-xs tracking-widest text-gold-bright">
+                      TORN
+                    </span>
+                  ) : on && !turn ? (
+                    <span className="hidden shrink-0 border border-gold/40 px-1 font-sans text-xs tracking-widest text-gold sm:inline">
+                      PARLA
+                    </span>
+                  ) : null}
+                </span>
                 <span className="mt-1 hidden bar-track sm:block">
                   <span
                     className={`block h-full transition-[width] duration-500 ${low ? "bg-ember" : "bar-fill"}`}

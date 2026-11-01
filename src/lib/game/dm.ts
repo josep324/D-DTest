@@ -405,7 +405,7 @@ function beginFight(tale: Tale, scene: Scene, lead: string[], mech: Mechanics): 
 
 function askRoll(tale: Tale, spot: Hotspot, check: Check, text: string, lead: string, mech: Mechanics): Turn {
   const hero = heroOf(tale);
-  const t = norm(text);
+  let { ability, dc, reason } = check;
   for (const alt of check.alts ?? []) {
     if (mentions(text, alt.keywords)) {
       ability = alt.ability;

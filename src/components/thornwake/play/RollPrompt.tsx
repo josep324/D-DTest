@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Mic } from "lucide-react";
 import { Portrait } from "@/components/thornwake/ui";
 import { rollFor } from "@/lib/game/actions";
@@ -14,18 +14,12 @@ export function RollPrompt({ tale, request }: { tale: Tale; request: RollRequest
   const hearing = useTalk((s) => s.hearing);
   const hero = heroOf(tale, request.heroId);
   const auto = autoMode(tale, hero);
-  const [mode, setMode] = useState<RollMode>(auto.mode);
+  const mode: RollMode = auto.mode;
   const [num, setNum] = useState("");
   const mod = checkMod(hero, request.ability, tale.level);
   const physical = Number(num);
   const validPhysical = Number.isInteger(physical) && physical >= 1 && physical <= 20;
   const attack = request.kind === "strike" || request.kind === "attack";
-
-  // Choosing someone else changes who rolls, with their own bonus and their own edge.
-  useEffect(() => {
-    setMode(autoMode(tale, heroOf(tale, request.heroId)).mode);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [request.heroId]);
 
   const standing = tale.party.filter((p) => p.heart > 0 && !p.down && !p.fallen);
   const best = standing.reduce(
@@ -100,28 +94,39 @@ export function RollPrompt({ tale, request }: { tale: Tale; request: RollRequest
           </p>
         </div>
       ) : null}
-      <div className="mt-3 grid grid-cols-3 gap-1" role="group" aria-label="Com cau el dau">
-        {(
-          [
-            ["normal", "Normal"],
-            ["advantage", "Avantatge"],
-            ["disadvantage", "Desavantatge"],
-          ] as const
-        ).map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            aria-pressed={mode === id}
-            onClick={() => setMode(id)}
-            className={`min-h-11 border px-1 font-sans text-xs ${mode === id ? "border-gold bg-gold/15 text-gold-bright" : "border-gold/25 text-mist"}`}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="mt-3 border border-gold/25 bg-gold/5 p-2.5 font-serif text-sm leading-relaxed text-parchment">
+        {mode === "advantage" ? (
+          <p>
+            <strong className="font-sans text-xs tracking-widest text-gold-bright">
+              AVANTATGE
+            </strong>
+            <br />
+            {auto.why ? `${auto.why.charAt(0).toUpperCase()}${auto.why.slice(1)}. ` : ""}
+            Tires <strong>dos daus</strong> de 20 cares i et quedes <strong>el millor</strong>. Si
+            tires un dau de veritat, tira&apos;n dos i escriu el més alt.
+          </p>
+        ) : mode === "disadvantage" ? (
+          <p>
+            <strong className="font-sans text-xs tracking-widest text-blood">DESAVANTATGE</strong>
+            <br />
+            Tires <strong>dos daus</strong> de 20 cares i et quedes <strong>el pitjor</strong>. Si
+            tires un dau de veritat, tira&apos;n dos i escriu el més baix.
+          </p>
+        ) : (
+          <p>
+            <strong className="font-sans text-xs tracking-widest text-gold-bright">
+              TIRADA NORMAL
+            </strong>
+            <br />
+            Tires <strong>un sol dau</strong> de 20 cares.
+          </p>
+        )}
+        <p className="mt-1 text-mist">
+          Al dau hi sumes el bonus ({mod >= 0 ? "+" : "−"}
+          {Math.abs(mod)}) i cal arribar a <strong className="text-parchment">{request.dc}</strong>{" "}
+          o més. Un 20 sempre reïx i un 1 sempre falla.
+        </p>
       </div>
-      {auto.why ? (
-        <p className="mt-1 font-sans text-xs text-gold-dim">Suggeriment: avantatge, {auto.why}.</p>
-      ) : null}
       <button
         type="button"
         onClick={() => rollFor(request, mode)}

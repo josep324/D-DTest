@@ -5,6 +5,7 @@ import { consumeItem } from "@/lib/game/actions";
 import { decodeTale, encodeTale } from "@/lib/game/logic";
 import { activeTale, useGame } from "@/lib/game/store";
 import { Gate } from "@/components/thornwake/Gate";
+import { Sheet } from "@/components/thornwake/play/Sheet";
 import { Play } from "@/components/thornwake/Play";
 import { Select } from "@/components/thornwake/Select";
 import { Ornate, TextButton } from "@/components/thornwake/ui";
@@ -83,10 +84,17 @@ function Modals() {
       >
         <Ornate variant={modal === "chronicle" ? "light" : "dark"} className="p-5 sm:p-6">
           <div className="mb-3 flex items-start justify-between gap-3">
-            <h2 className={`font-serif text-2xl ${modal === "chronicle" ? "text-soot" : "text-parchment"}`}>
+            <h2
+              className={`font-serif text-2xl ${modal === "chronicle" ? "text-soot" : "text-parchment"}`}
+            >
               {titleFor(modal)}
             </h2>
-            <button type="button" aria-label="Tanca" className="flex size-11 items-center justify-center" onClick={() => setModal(null)}>
+            <button
+              type="button"
+              aria-label="Tanca"
+              className="flex size-11 items-center justify-center"
+              onClick={() => setModal(null)}
+            >
               <X className="size-4" />
             </button>
           </div>
@@ -96,6 +104,7 @@ function Modals() {
           {modal === "saves" ? <Saves /> : null}
           {modal === "join" ? <Join /> : null}
           {modal === "pack" && tale ? <Pack /> : null}
+          {modal === "sheet" && tale ? <Sheet /> : null}
           {modal === "chronicle" && tale ? <Chronicle /> : null}
         </Ornate>
       </div>
@@ -117,6 +126,8 @@ function titleFor(modal: string) {
       return "Continua un conte";
     case "pack":
       return "La motxilla";
+    case "sheet":
+      return "Fitxes dels herois";
     case "chronicle":
       return "La teva crònica";
     default:
@@ -128,14 +139,19 @@ function About() {
   return (
     <div className="space-y-3 font-serif text-sm leading-relaxed text-mist">
       <p>
-        Thornwake és una taula per a aventures en família. Jugueu una companyia de quatre — Calder, Bramble, Vesper i
-        Holt — a través de tres contes originals, dos jugadors i una narradora que parla.
+        Thornwake és una taula per a aventures en família. Jugueu una companyia de quatre — Calder,
+        Bramble, Vesper i Holt — a través de tres contes originals, dos jugadors i una narradora que
+        parla.
       </p>
       <p>
-        Una narradora d'IA seu al capdavant quan la taula pot arribar-hi. Si no, el llibre escrit pren el relleu i el
-        capítol segueix avançant. Perill suau, sense sang, i a aquesta taula no es mor ningú.
+        Una narradora d'IA seu al capdavant quan la taula pot arribar-hi. Si no, el llibre escrit
+        pren el relleu i el capítol segueix avançant. Perill suau, sense sang, i a aquesta taula no
+        es mor ningú.
       </p>
-      <p>Els contes són El Correu de Pinassa, La Campana d'Aiguaquieta i Port del Crepuscle. Cap no és la masmorra de ningú altre.</p>
+      <p>
+        Els contes són El Correu de Pinassa, La Campana d'Aiguaquieta i Port del Crepuscle. Cap no
+        és la masmorra de ningú altre.
+      </p>
     </div>
   );
 }
@@ -143,13 +159,35 @@ function About() {
 function Notes() {
   return (
     <ul className="space-y-3 font-serif text-sm leading-relaxed text-mist">
-      <li>Dos jugadors comparteixen la taula: un porta en Calder i la Bramble, l'altre la Vesper i en Holt. L'app és la narradora.</li>
-      <li>A les aventures de rol (com «El Cofre de la Fornera») no hi ha botons: digueu o escriviu el que fa el vostre personatge, com «parlo amb la fornera», «forço la porta» o «ataco la rata». Digueu «què puc fer?» si us encalleu.</li>
-      <li>Digueu o escriviu què fa la companyia. Quan és incert, la narradora demana una tirada: feu servir el dau de l'app o un d20 real de la taula, escrit o dit en veu alta.</li>
-      <li>Avantatge si un company és al costat o un objecte et dóna avantatge. Un 20 natural sempre reïx, un 1 natural sempre falla.</li>
-      <li>Ataca un lloc tens per començar un problema. Tireu iniciativa, feu torns i feu recular el problema fins que es calmi.</li>
-      <li>No es mor ningú. Un heroi amb 1 cor és retirat pels altres. Descanseu dues vegades per conte i feu servir el pastís de mel o l'embenat per curar.</li>
-      <li>Els contes es queden en aquest navegador. Compartiu un codi de conte per continuar en un altre dispositiu.</li>
+      <li>
+        Dos jugadors comparteixen la taula: un porta en Calder i la Bramble, l'altre la Vesper i en
+        Holt. L'app és la narradora.
+      </li>
+      <li>
+        A les aventures de rol (com «El Cofre de la Fornera») no hi ha botons: digueu o escriviu el
+        que fa el vostre personatge, com «parlo amb la fornera», «forço la porta» o «ataco la rata».
+        Digueu «què puc fer?» si us encalleu.
+      </li>
+      <li>
+        Digueu o escriviu què fa la companyia. Quan és incert, la narradora demana una tirada: feu
+        servir el dau de l'app o un d20 real de la taula, escrit o dit en veu alta.
+      </li>
+      <li>
+        Avantatge si un company és al costat o un objecte et dóna avantatge. Un 20 natural sempre
+        reïx, un 1 natural sempre falla.
+      </li>
+      <li>
+        Ataca un lloc tens per començar un problema. Tireu iniciativa, feu torns i feu recular el
+        problema fins que es calmi.
+      </li>
+      <li>
+        No es mor ningú. Un heroi amb 1 cor és retirat pels altres. Descanseu dues vegades per conte
+        i feu servir el pastís de mel o l'embenat per curar.
+      </li>
+      <li>
+        Els contes es queden en aquest navegador. Compartiu un codi de conte per continuar en un
+        altre dispositiu.
+      </li>
     </ul>
   );
 }
@@ -173,22 +211,39 @@ function Settings() {
     <div className="space-y-4">
       <label className="block font-sans text-xs tracking-widest text-mist">
         PRIMER JUGADOR · CALDER I BRAMBLE
-        <input value={playerName} onChange={(e) => setName(e.target.value)} maxLength={24} className={input} />
+        <input
+          value={playerName}
+          onChange={(e) => setName(e.target.value)}
+          maxLength={24}
+          className={input}
+        />
       </label>
       <label className="block font-sans text-xs tracking-widest text-mist">
         SEGON JUGADOR · VESPER I HOLT (OPCIONAL)
-        <input value={partner} onChange={(e) => setPartner(e.target.value)} maxLength={24} className={input} />
+        <input
+          value={partner}
+          onChange={(e) => setPartner(e.target.value)}
+          maxLength={24}
+          className={input}
+        />
       </label>
       <TextButton tone={voice ? "solid" : "ghost"} onClick={() => setVoice(!voice)}>
         {voice ? "La narradora parla en veu alta" : "La narradora és en silenci"}
       </TextButton>
       <TextButton tone={handsFree ? "solid" : "ghost"} onClick={() => setHandsFree(!handsFree)}>
-        {handsFree ? "Mode veu: la narradora t'escolta sola" : "Mode veu desactivat (prem el micròfon)"}
+        {handsFree
+          ? "Mode veu: la narradora t'escolta sola"
+          : "Mode veu desactivat (prem el micròfon)"}
       </TextButton>
       <TextButton tone={hardcore ? "solid" : "ghost"} onClick={() => setHardcore(!hardcore)}>
-        {hardcore ? "Mort real: tres salvacions fallides i l'heroi cau" : "Mort suau: els companys sempre arriben a temps"}
+        {hardcore
+          ? "Mort real: tres salvacions fallides i l'heroi cau"
+          : "Mort suau: els companys sempre arriben a temps"}
       </TextButton>
-      <p className="font-serif text-xs text-mist">La mort real només s'aplica a les aventures noves de rol i a les partides que comencis a partir d'ara.</p>
+      <p className="font-serif text-xs text-mist">
+        La mort real només s'aplica a les aventures noves de rol i a les partides que comencis a
+        partir d'ara.
+      </p>
       <TextButton tone={sound ? "solid" : "ghost"} onClick={() => setSound(!sound)}>
         {sound ? "Efectes de so i ambient activats" : "Efectes de so i ambient desactivats"}
       </TextButton>
@@ -203,7 +258,11 @@ function Saves() {
   const setModal = useGame((s) => s.setModal);
   const [armed, setArmed] = useState<string | null>(null);
   if (tales.length === 0) {
-    return <p className="font-serif text-sm text-mist">Encara no hi ha cap conte. Tria'n un i comença.</p>;
+    return (
+      <p className="font-serif text-sm text-mist">
+        Encara no hi ha cap conte. Tria'n un i comença.
+      </p>
+    );
   }
   return (
     <ul className="space-y-3">
@@ -261,7 +320,8 @@ function Join() {
   return (
     <div className="space-y-3">
       <p className="font-serif text-sm leading-relaxed text-mist">
-        Enganxa un codi de conte d'una altra taula, o copia'n un de les teves partides per passar-lo. No es puja res enlloc.
+        Enganxa un codi de conte d'una altra taula, o copia'n un de les teves partides per
+        passar-lo. No es puja res enlloc.
       </p>
       <textarea
         value={code}
@@ -308,7 +368,10 @@ function Pack() {
       {tale.inventory.map((item) => {
         const owner = tale.party.find((p) => p.id === item.ownerId);
         return (
-          <li key={item.id} className="flex items-start justify-between gap-3 border border-gold/25 p-3">
+          <li
+            key={item.id}
+            className="flex items-start justify-between gap-3 border border-gold/25 p-3"
+          >
             <div>
               <p className="font-serif text-parchment">{item.name}</p>
               <p className="font-serif text-sm text-mist">{item.detail}</p>
@@ -377,7 +440,9 @@ function Chronicle() {
                       {entry.sceneName} · Dia {entry.day}
                     </p>
                     <h4 className="font-serif text-lg text-soot">{entry.title}</h4>
-                    <p className="font-serif text-sm leading-relaxed whitespace-pre-wrap text-soot">{entry.body}</p>
+                    <p className="font-serif text-sm leading-relaxed whitespace-pre-wrap text-soot">
+                      {entry.body}
+                    </p>
                   </article>
                 ))}
               </div>
@@ -388,13 +453,16 @@ function Chronicle() {
       {tab === "scenes" ? (
         <ul className="space-y-2">
           {(campaign?.scenes ?? []).map((scene) => {
-            const seen = tale.chronicle.some((c) => c.sceneName === scene.name) || tale.sceneId === scene.id;
+            const seen =
+              tale.chronicle.some((c) => c.sceneName === scene.name) || tale.sceneId === scene.id;
             return (
               <li key={scene.id} className="flex items-center gap-3 border border-gold-dim/30 p-2">
                 <img src={scene.image} alt="" className="size-14 object-cover" />
                 <div>
                   <p className="font-serif text-soot">{scene.name}</p>
-                  <p className="font-sans text-xs text-gold-dim">{seen ? "Visitada" : "Encara no"}</p>
+                  <p className="font-sans text-xs text-gold-dim">
+                    {seen ? "Visitada" : "Encara no"}
+                  </p>
                 </div>
               </li>
             );

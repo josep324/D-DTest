@@ -1,4 +1,4 @@
-import { Heart, Zap } from "lucide-react";
+import { Heart, Info, Zap } from "lucide-react";
 import { Portrait } from "@/components/thornwake/ui";
 import { useFloats } from "@/components/thornwake/play/useFloats";
 import { useGame } from "@/lib/game/store";
@@ -11,6 +11,7 @@ function ownerName(tale: Tale, person: Character): string {
 
 export function Hud({ tale, guideHero }: { tale: Tale; guideHero?: string }) {
   const setActive = useGame((s) => s.setActive);
+  const setModal = useGame((s) => s.setModal);
   const sound = useGame((s) => s.sound);
   const hearts = Object.fromEntries(tale.party.map((p) => [p.id, p.heart]));
   const floats = useFloats(hearts, sound);
@@ -82,6 +83,14 @@ export function Hud({ tale, guideHero }: { tale: Tale; guideHero?: string }) {
                   </span>
                 ) : null}
               </span>
+            </button>
+            <button
+              type="button"
+              aria-label={`Fitxa de ${p.name}`}
+              onClick={() => setModal("sheet")}
+              className="absolute top-1 right-1 hidden size-6 items-center justify-center text-mist hover:text-gold-bright sm:flex"
+            >
+              <Info className="size-3.5" />
             </button>
             {mine.map((f) => (
               <span

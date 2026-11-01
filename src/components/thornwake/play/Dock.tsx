@@ -1,5 +1,16 @@
 import { useState } from "react";
-import { Backpack, BookOpen, Dices, Eye, Footprints, Mic, Moon, Send, Sword } from "lucide-react";
+import {
+  Backpack,
+  BookOpen,
+  Dices,
+  Eye,
+  Footprints,
+  Mic,
+  Moon,
+  Send,
+  Sword,
+  Users,
+} from "lucide-react";
 import { restParty, say } from "@/lib/game/actions";
 import { ofHero } from "@/lib/game/rules";
 import { useGame } from "@/lib/game/store";
@@ -135,6 +146,11 @@ export function Dock({
             />
           </>
         ) : null}
+        <Tool
+          icon={<Users className="size-4" />}
+          label="Fitxes"
+          onClick={() => setModal("sheet")}
+        />
         <Tool
           icon={<Backpack className="size-4" />}
           label="Motxilla"

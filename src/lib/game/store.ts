@@ -5,7 +5,7 @@ import type { DiceShow, GmResult, Mechanics, RollRequest, Tale } from "@/lib/gam
 
 const KEY = "thornwake.v1";
 
-export type ModalName = "saves" | "join" | "about" | "settings" | "chronicle" | "pack" | "notes" | null;
+export type ModalName = "saves" | "join" | "about" | "settings" | "chronicle" | "pack" | "notes" | "sheet" | null;
 export type Screen = "gate" | "select" | "play";
 export type Mode = "move" | "look" | "strike";
 

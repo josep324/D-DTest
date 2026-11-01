@@ -34,7 +34,7 @@ export const AIGUAQUIETA: Campaign = {
       chronicleTitle: "Joncs a Aiguaquieta",
       back: "Tornes al Pas d'Aiguaquieta. La pluja no ha parat i el poble us espera.",
       opening:
-        "Arribeu a Aiguaquieta amb la pluja de l'hora baixa. El poble és bonic, però té un aire d'estar escoltant alguna cosa. A la porta de l'hostal, una dona recompta bols de coure; al rètol de la plaça, un picapedrer fa passar el polze per una pedra completament en blanc. I als joncs, a la riba, hi ha un home amb abric gris que mira l'aigua sense atrevir-s'hi.\n\nA l'arc en ruïnes, riu amunt, quelcom ha fet una nota greu i curta. Ningú no s'ha girat: aquí tothom la sent cada nit.\n\nConsell del DM: aquí no hi ha botons. Parla amb la gent, mira el que et crida l'atenció i decideix on anar. Si t'encalles, digues «què puc fer?».",
+        "Arribeu a Aiguaquieta amb l'última llum del dia i una pluja fina. El poble és bonic, però té un aire d'estar escoltant alguna cosa. A la porta de l'hostal, una dona recompta bols de coure; al rètol de la plaça, un picapedrer fa passar el polze per una pedra completament en blanc. I als joncs, a la riba, hi ha un home amb abric gris que mira l'aigua sense atrevir-s'hi.\n\nA l'arc en ruïnes, riu amunt, quelcom ha fet una nota greu i curta. Ningú no s'ha girat: aquí tothom la sent cada nit.\n\nConsell del DM: aquí no hi ha botons. Parla amb la gent, mira el que et crida l'atenció i decideix on anar. Si t'encalles, digues «què puc fer?».",
       quest: { title: "Una campana sota l'aigua", detail: "Parla amb el poble: l'hostalera, el picapedrer i l'home de gris." },
       choices: [],
       hotspots: [
@@ -42,8 +42,8 @@ export const AIGUAQUIETA: Campaign = {
           id: "odilia", kind: "npc", name: "Odília, l'hostalera", x: 77, y: 20, keywords: ["odilia", "hostalera", "dona", "hostal", "bols"],
           examine: "Una dona forta, amb un davantal vell i un bol de coure sempre a la mà. Recompta les peces cada cop que passes.",
           talk: [
-            { keywords: ["bol", "bols", "deute", "nom", "riu", "campana"], say: "«Cada nit, quan sona la campana, els bols caminen fins a la vora de la taula i s'aturen allà, com si volguessin saltar. El riu es va endur un nom i va deixar el deute. No estem encantats, estem inacabats.»", flag: "odilia-parla", xp: 10 },
-            { keywords: ["barquer", "maren", "gris", "home", "qui"], say: "«L'home dels joncs? Va arribar fa anys. Té les botes seques i mai no s'hi acosta ningú. Crec que va ser barquer, abans del peatge. Tinc el llibre de passatges, si en voleu veure la lletra.»", flag: "llibre-disponible" },
+            { keywords: ["bol", "bols", "deute", "nom", "riu", "campana"], opener: true, say: "«Cada nit, quan sona la campana, els bols caminen fins a la vora de la taula i s'aturen allà, com si volguessin saltar. El riu es va endur un nom i va deixar el deute. No estem encantats, estem inacabats.»", flag: "odilia-parla", xp: 10 },
+            { keywords: ["barquer", "maren", "gris", "home", "qui"], say: "«L'home dels joncs? Va arribar fa anys. Té les botes seques i ningú no s'hi acosta mai. Crec que va ser barquer, abans del peatge. Tinc el llibre de passatges, si en voleu veure la lletra.»", flag: "llibre-disponible" },
             { keywords: ["llibre", "registre", "passatges", "lletra", "veure"], requires: "odilia-parla", say: "«El tinc sota el taulell. Agafeu-lo, però porteu-lo de tornada.» Es posa a comptar bols per no mirar-vos.", flag: "llibre-disponible", xp: 5 },
             { keywords: ["peatge", "fortí", "fort", "armadura", "moneda", "pagar", "pago"], say: "«Al fortí del peatge hi ha armadures buides que demanen un nom o una moneda. Jo no hi aniria, però si ho feu, agafeu un dels meus bols: tinc monedes velles enganxades al fons de la taula.»", flag: "moneda-disponible" },
           ],
@@ -62,9 +62,9 @@ export const AIGUAQUIETA: Campaign = {
           id: "teodor", kind: "npc", name: "Teodor, el picapedrer", x: 87, y: 72, keywords: ["teodor", "picapedrer", "home", "cisell"],
           examine: "Un home alt, amb les mans plenes de pols i els ulls cansats. Té un cisell a la mà dreta i no se'n separa.",
           talk: [
-            { keywords: ["maren", "voss", "nom", "ajuda", "gravar", "escriure", "cisell", "torna", "retol", "rètol", "posar"], requires: "nom-trobat", say: "En Teodor es queda quiet. «Maren Voss. Dues paraules. Dues. Sempre que ho vaig sentir, era això.» Alça el cisell, el mira, i el torna a baixar. «Aniré al rètol. Que ho vegi el poble. M'ha d'ajudar algú perquè no tremolin les mans.»", flag: "picapedrer-ajuda", xp: 40 },
-            { keywords: ["retol", "rètol", "nom", "buit", "blanc", "que", "passat"], say: "«Era un nom amb una V. Dues síl·labes. El vaig omplir perquè la campana el cridava de nit i els bols s'acostaven a la vora. Ara en tinc un de buit i no sé quin era. Em fa por una paraula.»", flag: "teodor-parla", xp: 10 },
-            { keywords: ["por", "pors", "campana", "arc", "nit"], say: "«La campana crida a les nits. Fa un so com si volgués una resposta. Jo no sé donar-la.»" },
+            { keywords: ["maren", "voss", "nom", "ajuda", "gravar", "escriure", "cisell", "torna", "retol", "rètol", "posar"], requires: "nom-trobat", say: "En Teodor es queda quiet. «Maren Voss. Dues paraules. Sempre que la campana cridava de nit, era això.» Alça el cisell, el mira, i el torna a baixar. «Aniré al rètol. Que ho vegi el poble. Que algú m'ajudi, que em tremolen les mans.»", flag: "picapedrer-ajuda", xp: 40 },
+            { keywords: ["retol", "rètol", "nom", "buit", "blanc", "que", "passat"], opener: true, say: "«Era un nom amb una V. Dues síl·labes. El vaig omplir perquè la campana el cridava de nit i els bols s'acostaven a la vora. Ara tinc un rètol buit i no recordo quin nom hi posava. Em fan por les paraules.»", flag: "teodor-parla", xp: 10 },
+            { keywords: ["por", "pors", "campana", "arc", "nit"], say: "«La campana crida de nit. Fa un so com si volgués una resposta, i jo no sé donar-la.»" },
           ],
         },
         {
@@ -74,7 +74,7 @@ export const AIGUAQUIETA: Campaign = {
             { keywords: ["maren", "voss", "nom", "recordes", "sap", "tu"], requires: "picapedrer-ajuda", ends: true, xp: 60, say: "Al rètol de la plaça, el cisell de Teodor mossega la pedra. Cada lletra cau com una gota: M, A, R, E, N. V, O, S, S.\n\nL'home de gris mira com es va omplint el rètol. Quan l'últim traç és fet, respira fort, com qui ha aguantat massa temps l'alè. Fa un pas a la pluja, i un altre, i es mulla. Riu, sorprès, i llavors plora.\n\nSota l'arc, la campana sona una vegada, suau, i ja no torna a cridar. Aquella nit, els bols de l'hostal es queden quiets sobre la taula. Aiguaquieta dorm sencera per primera vegada en anys." },
             { keywords: ["maren", "voss", "nom"], requires: "nom-trobat", say: "«Maren.» Ho diu amb una veu que no és seva. «Voss. Sí. Era una veu que ho deia. M'ho diran quan torni, oi? Digueu-ho al picapedrer, que ho posi al rètol i me'l faci veure.»", flag: "maren-recorda", xp: 20 },
             { keywords: ["campana", "arc", "nit", "per que", "perque"], say: "«La vaig posar jo sota l'arc perquè deixés de cridar-me pel nom equivocat. En va guardar un. M'agradaria recuperar-lo, però no puc entrar a l'aigua. He oblidat com es mulla un.»", flag: "maren-parla", xp: 10 },
-            { keywords: ["qui", "ets", "barquer", "que", "fas", "home"], say: "«Un barquer, segurament. Em van dir que ho era. Però no recordo el meu nom, ni la meva barca, ni l'última travessia.»" },
+            { keywords: ["qui", "ets", "barquer", "que", "fas", "home"], opener: true, say: "«Un barquer, segurament. Em van dir que ho era. Però no recordo el meu nom, ni la meva barca, ni l'última travessia.»" },
           ],
         },
         {
@@ -127,7 +127,7 @@ export const AIGUAQUIETA: Campaign = {
         },
         {
           id: "cadena", kind: "feature", name: "La cadena", x: 32, y: 44, keywords: ["cadena", "ferro", "anelles"],
-          examine: "Una cadena gruixuda amb anelles del gruix d'un puny. Cobreix la vora com una serp, entra al riu i el tens es nota en cada anella: algú, molt lluny, l'estira cap amunt.",
+          examine: "Una cadena gruixuda amb anelles del gruix d'un puny. Cobreix la vora com una serp, entra al riu, i la tensió es nota en cada anella: algú, molt lluny, l'estira cap amunt.",
         },
         {
           id: "campana", kind: "feature", name: "La campana submergida", x: 38, y: 68, keywords: ["campana", "aigua", "fons", "lletres", "bronze", "vadejar", "nedar"],
@@ -194,7 +194,7 @@ export const AIGUAQUIETA: Campaign = {
           check: {
             ability: "dex", dc: 11, reason: "Pujar per les roques mullades", flag: "sirga-passada", xp: 10,
             success: "Peu ferm, peu ferm, mà. Arribes a dalt amb les botes plenes de fang i un somriure prudent.",
-            fail: "La roca llisca. Cau un genoll, una mà, un cop sec. Perds un cor, però continues.",
+            fail: "La roca rellisca. Es doblega un genoll, una mà toca terra, un cop sec. Perds un cor, però continues.",
             hurt: 1,
             go: true,
           },
@@ -233,7 +233,7 @@ export const AIGUAQUIETA: Campaign = {
           examine: "Un carro sense rodes ple de cordes velles. En Holt reconeix els nusos al primer cop d'ull: són nusos de barquer, de gent que treballa a l'aigua.",
         },
         { id: "cadena-tapa", kind: "feature", name: "La tapa de la cadena", x: 46, y: 60, keywords: ["tapa", "pou", "cadena", "ferro"], examine: "Una tapa de ferro on la cadena entra a terra. Si hi poses la mà, sents la campana, molt lluny, preguntar alguna cosa." },
-        { id: "caixes", kind: "feature", name: "Caixes del peatge", x: 72, y: 42, keywords: ["caixes", "peatge", "monedes", "diners", "pagament"], examine: "Caixes buides. Algú va emportar-se les monedes fa molt temps; només queden un parell de claus penjades." },
+        { id: "caixes", kind: "feature", name: "Caixes del peatge", x: 72, y: 42, keywords: ["caixes", "peatge", "monedes", "diners", "pagament"], examine: "Caixes buides. Algú es va emportar les monedes fa molt temps; només queden un parell de claus penjades." },
         { id: "baixar", kind: "exit", name: "Porta del fortí", x: 62, y: 75, to: "cami", keywords: ["porta", "baixar", "enrere", "sirga", "cami", "camí"], examine: "La porta per on heu entrat: l'altre cantó del pas de la sirga." },
         {
           id: "poble", kind: "exit", name: "Camí de tornada al poble", x: 80, y: 32, to: "pas", keywords: ["poble", "aiguaquieta", "tornar", "pas", "torno"],

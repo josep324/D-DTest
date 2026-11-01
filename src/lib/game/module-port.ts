@@ -41,9 +41,9 @@ export const PORT: Campaign = {
       hotspots: [
         {
           id: "capitana", kind: "npc", name: "La capitana del port", x: 67, y: 38, keywords: ["capitana", "marga", "port", "dona"],
-          examine: "Té sal a les celles i cap paciència amb misteris que retarden marees, és a dir, una mica en té.",
+          examine: "Té sal a les celles i poca paciència amb els misteris que retarden les marees. Només una mica, vaja.",
           talk: [
-            { keywords: ["carta", "nocturna", "tallada", "robatori", "qui", "que", "passat", "ajuda"], say: "«La carta nocturna era sencera al migdia. Al vespre, la costa era tallada i un mariner havia desaparegut. L'Alosa no navega a cegues. Teniu fins a la marea, i jo tinc una campana esquerdada i una reputació. Arregleu el problema més amable dels dos.»", flag: "capitana-parla", xp: 10 },
+            { keywords: ["carta", "nocturna", "tallada", "robatori", "qui", "que", "passat", "ajuda"], opener: true, say: "«La carta nocturna era sencera al migdia. Al vespre, la costa era tallada i un mariner havia desaparegut. L'Alosa no navega a cegues. Teniu fins a la marea, i jo tinc una campana esquerdada i una reputació. Arregleu el problema més amable dels dos.»", flag: "capitana-parla", xp: 10 },
             { keywords: ["far", "fanaler", "estella", "llum", "fosc", "quim"], say: "«El Far de l'Estella hauria d'estar encès des del vespre. Em preocupa en Quim, el fanaler: sempre torna abans de l'últim sol. Si us hi voleu acostar, teniu l'esquif del moll.»", flag: "far-explicat", xp: 10 },
             { keywords: ["torre", "cartes", "clau", "estrella", "caixa"], say: "«La torre de les cartes és sempre tancada. La clau l'ha de tenir l'escrivent, però no la tinc a la vista. Aquella caixa de l'estrella de guix no és meva.»", flag: "torre-explicada" },
           ],
@@ -52,7 +52,7 @@ export const PORT: Campaign = {
           id: "pau", kind: "npc", name: "Pau, l'escrivent", x: 82, y: 30, keywords: ["pau", "escrivent", "magatzem", "home"],
           examine: "Un home prim amb mànigues de tinta i una ploma a l'orella. Mira l'hora a cada instant.",
           talk: [
-            { keywords: ["torre", "escala", "cartes", "clau", "pujar", "sala"], say: "«La torre de les cartes és amunt per aquella escala. Les cartes viuen allà, excepte la que no. Si busqueu la clau, jo no la tinc: algú me la va prendre, i va deixar en el seu lloc una taronja.»", flag: "torre-explicada", xp: 5 },
+            { keywords: ["torre", "escala", "cartes", "clau", "pujar", "sala"], opener: true, say: "«La torre de les cartes és amunt per aquella escala. Les cartes viuen allà, excepte la que no. Si busqueu la clau, jo no la tinc: algú me la va treure, i va deixar en el seu lloc una taronja.»", flag: "torre-explicada", xp: 5 },
             { keywords: ["mariner", "biel", "desaparegut", "qui", "mosso", "marinero"], say: "«En Biel, un dels mariners de l'Alosa. Fa tres dies que no mou ni un pal. L'últim cop que el vaig veure, era a la comporta, assegut, amb una camisa neta embolicada als genolls.»", flag: "biel-sabut", xp: 10 },
             { keywords: ["vaixell", "alosa", "salpar", "marea", "temps", "hora"], say: "«Salpen amb la marea alta. La contramestra no fa tard: és la seva única superstició.»" },
           ],
@@ -63,13 +63,13 @@ export const PORT: Campaign = {
           check: {
             ability: "wis", dc: 10, reason: "Seguir les petjades fins al final", flag: "empremtes", xp: 15,
             alts: [{ keywords: ["estiro", "ajupo", "ajupim", "de gairell", "gairell", "tombo"], ability: "wis", dc: 9, reason: "Ajupir-se i mirar de gairell" }],
-            success: "T'estires sobre els taulons i mires de gairell, que és com els exploradors fan confessar els bassals. L'aigua de la petjada apunta, molt lleugerament, cap a una caixa marcada amb una estrella de guix.",
+            success: "T'estires sobre els taulons i mires de gairell, com fan els bons rastrejadors. L'aigua de la petjada apunta, molt lleugerament, cap a una caixa marcada amb una estrella de guix.",
             fail: "Només veus taulons mullats i secs. Potser amb més temps, o ajupint-te, ho veuries.",
           },
         },
         {
           id: "campana", kind: "feature", name: "La campana esquerdada", x: 62, y: 52, keywords: ["campana", "batall", "tela", "nus", "esquerda"],
-          examine: "Una campana de bronze amb una esquerda llarga. Se sent quan sona i, ara, no sona.",
+          examine: "Una campana de bronze amb una esquerda llarga. Es nota quan sona; ara calla.",
           check: {
             ability: "int", dc: 11, reason: "Examinar el batall embolicat", flag: "nus-vist", xp: 15,
             success: "L'esquerda és vella; el batall, nou, embolicat amb tela de vela perquè no desperti el port. Dins la tela, un nus que en Holt coneix: feina de mariner, curosa i avergonyida d'ella mateixa. Qui ho va fer no volia escàndol, volia un retard.",
@@ -159,12 +159,12 @@ export const PORT: Campaign = {
             ability: "dex", dc: 12, reason: "Pujar al terrat i agafar el retall", flag: "terrat", xp: 25, hurt: 1, onFail: "fight",
             alts: [{ keywords: ["corda", "lligat", "assegut", "ajudo", "ajuda"], ability: "str", dc: 11, reason: "Pujar amb ajuda d'una corda" }],
             success: "Surts al terrat amb el cor a la boca. Els corbs miren de lluny i es queden quiets. Sota una teula, ben tapat amb una peça de roba, el retall: net, sec, tallat amb una mà ferma. El poses a la bossa.",
-            fail: "Una teula llisca i dos corbs s'aixequen del terrat, enfadats. Un cor de menys i un parell de becs davant teu.",
+            fail: "Una teula rellisca i dos corbs s'aixequen del terrat, enfadats. Un cor de menys i un parell de becs davant teu.",
           },
         },
         {
           id: "corbs", kind: "foe", name: "Els corbs de la torre", x: 70, y: 34, keywords: ["corbs", "corb", "ocells", "ales"], threat: true,
-          examine: "Dos corbs grassos observen la trapa amb ulls de joiell. No són dolents; són posseïdors.",
+          examine: "Dos corbs grassos observen la trapa amb ulls de joiell. No són dolents: només els agrada guardar coses.",
           foe: { name: "Corb de la torre", the: "el corb de la torre", hp: 5, ac: 12, atk: 3, dmg: "1d4", xp: 10, count: 2 },
         },
         {
@@ -190,7 +190,7 @@ export const PORT: Campaign = {
       chronicleTitle: "Aguanta la porta",
       back: "Torneu a la comporta. El vent segueix assajant amb les banderes.",
       opening:
-        "La comporta és un fortí que va decidir convertir-se en porta. La tripulació de l'Alosa ja enrotlla cordes al pati. En un racó, assegut sobre una caixa, hi ha un mariner amb una camisa neta embolicada al genoll: en Biel. A la porta, amb els braços creuats, la contramestra Ona us mira arribar.\n\nNo hi ha més pressa que la que es fa un mateix.\n\nConsell del DM: aquí no hi ha cap monstre, només gent. Hi ha dues converses difícils: la d'en Biel i la de la contramestra. Pots convèncer-los, amb sinceritat o amb el que has trobat. No et cal pressa; però sí paraules.",
+        "La comporta és un fortí que va decidir convertir-se en porta. La tripulació de l'Alosa ja enrotlla cordes al pati. En un racó, assegut sobre una caixa, hi ha un mariner amb una camisa neta embolicada al genoll: en Biel. A la porta, amb els braços creuats, la contramestra Ona us mira arribar.\n\nTothom té pressa, però ningú no diu res.\n\nConsell del DM: aquí no hi ha cap monstre, només gent. Hi ha dues converses difícils: la d'en Biel i la de la contramestra. Pots convèncer-los, amb sinceritat o amb el que has trobat. No et cal pressa; però sí paraules.",
       quest: { title: "Una marea de paciència", detail: "Parla amb en Biel i amb la contramestra. El vaixell ha d'esperar." },
       choices: [],
       hotspots: [
@@ -204,8 +204,8 @@ export const PORT: Campaign = {
             fail: "En Biel mira cap a una altra banda. «No sé de què parleu.» Però se li escapa una mirada a la camisa.",
           },
           talk: [
-            { keywords: ["retall", "costa", "carta", "camisa", "donar", "dona", "dono"], requires: "biel-confessa", say: "En Biel us allarga la camisa neta, i dins el retall de la costa, ben cuidat. «Per favor, que ningú no es perdi», murmura.", xp: 10 },
-            { keywords: ["quim", "fanaler", "far", "estella", "tender", "per que", "perque", "per què", "qui"], say: "«En Quim és el fanaler del far. Sempre torna abans de l'últim sol. Avui no. I el vaixell salpa sense llum. M'he espantat.»", flag: "tender-perdut", xp: 10 },
+            { keywords: ["retall", "costa", "carta", "camisa", "donar", "dona", "dono"], requires: "biel-confessa", say: "En Biel us allarga la camisa neta. Dins hi ha el retall de la costa, ben cuidat. «Per favor, que ningú no es perdi», murmura.", xp: 10 },
+            { keywords: ["quim", "fanaler", "far", "estella", "tender", "per que", "perque", "per què", "qui"], opener: true, say: "«En Quim és el fanaler del far. Sempre torna abans de l'últim sol. Avui no. I el vaixell salpa sense llum. M'he espantat.»", flag: "tender-perdut", xp: 10 },
           ],
         },
         {
@@ -225,7 +225,7 @@ export const PORT: Campaign = {
           },
           talk: [
             { keywords: ["torna", "far", "encesa", "llum", "gracies", "gràcies", "salpar", "salpem"], requires: "senyal", ends: true, xp: 70, say: "Des de la comporta es veu l'esquif del fanaler arribar amb una vela adobada. Una llum petita respon des de l'esquif, i després una de més forta des de la roca, quan en Quim aconsegueix pujar al far i encendre'l.\n\nL'Alosa espera una marea, que és un petit miracle fet de corda i bones maneres. En Biel és renyat, alimentat i tornat a la llista de guàrdies. La carta puja a bord amb la seva cicatriu i el seu marge honest.\n\nLa campana esquerdada del port sona igualment. Algú és feliç. El Port del Crepuscle conserva el seu vaixell, el seu fanaler i la seva història." },
-            { keywords: ["marea", "esperar", "espera", "temps", "carta", "salpa"], say: "«La marea no espera. Jo tampoc, però avui puc fer una excepció si em doneu una raó que no sigui una excusa.»" },
+            { keywords: ["marea", "esperar", "espera", "temps", "carta", "salpa"], opener: true, say: "«La marea no espera. Jo tampoc, però avui puc fer una excepció si em doneu una raó que no sigui una excusa.»" },
           ],
         },
         {
@@ -245,7 +245,7 @@ export const PORT: Campaign = {
           requires: { flag: "carta-reparada", hint: "No toca encara fer senyals al far: primer cal que la carta sigui bona." },
           check: {
             ability: "dex", dc: 10, reason: "Fer senyals amb el fanal: tres llums lentes, el patró de la capitana per a «aguanteu»", flag: "senyal", xp: 20,
-            success: "El fanal encaixa a la ranura com si hagués estat sol. Tres senyals lents. Lluny, una llumeta respon, després una altra de més forta des de la roca: el far torna a respirar.",
+            success: "El fanal encaixa a la ranura com si fa temps que l'esperés. Tres senyals lents. Lluny, una llumeta respon, després una altra de més forta des de la roca: el far torna a respirar.",
             fail: "La llum balla massa. El patró no queda net. Reprova-ho amb la mà més ferma.",
           },
         },
@@ -265,7 +265,7 @@ export const PORT: Campaign = {
       chronicleTitle: "L'esquif a la nit",
       back: "Torneu a les roques. El mar no s'ha calmat.",
       opening:
-        "L'esquif s'acosta a les roques amb el soroll sec dels rems i l'aigua negra. Al cim d'una d'elles, un home us fa senyals amb els braços. Té un rem trencat al costat i la cama d'una manera estranya: és en Quim, el fanaler del Far de l'Estella.\n\nEntre vosaltres i ell, uns crancs de roca grossos com gossos estan a punt de decidir què pensen de vosaltres.\n\nConsell del DM: pots passar-los sense fer soroll (Destresa), distreure'ls amb menjar (Encant) o lluitar. Tria. En Quim espera.",
+        "L'esquif s'acosta a les roques amb el soroll sec dels rems i l'aigua negra. Al cim d'una d'elles, un home us fa senyals amb els braços. Té un rem trencat al costat i la cama mal posada: és en Quim, el fanaler del Far de l'Estella.\n\nEntre vosaltres i ell, uns crancs de roca grossos com gossos estan a punt de decidir què pensen de vosaltres.\n\nConsell del DM: pots passar-los sense fer soroll (Destresa), distreure'ls amb menjar (Encant) o lluitar. Tria. En Quim espera.",
       quest: { title: "Rescata el fanaler", detail: "Arriba fins a en Quim i porta'l a bord." },
       choices: [],
       hotspots: [
@@ -274,7 +274,7 @@ export const PORT: Campaign = {
           examine: "Un home amb la cara cremada pel vent i la cama mal posada. Té els ulls ben oberts i l'humor a prova de nit.",
           talk: [
             { keywords: ["pugeu", "pujar", "puja", "esquif", "barca", "portem", "porto", "ajudo", "ajuda", "tornem", "marxem", "a bord"], requires: "crancs-passats|dead-crancs", say: "Entre tots, aixequeu en Quim fins a l'esquif. Ell riu entre dents de dolor. «Aneu amb compte amb la marca del far: l'he guardada a la butxaca.» Us la dóna: un segell de llautó amb una estrella. «Sense això, la carta no val res.» Remeu cap al port amb el far darrere, encara apagat.", flag: "fanaler-salvat", xp: 50 },
-            { keywords: ["far", "llum", "estella", "apagat", "fosc", "que", "passat", "qui", "per que", "perque"], say: "«Em vaig trencar el rem anant per una llum d'una barca que no tenia. Em va agafar la nit. El far és apagat perquè l'oli és dins, i jo, aquí fora. Pugeu-me, si podeu: tinc la marca del far a la butxaca, la que fa vàlida la carta.»", flag: "quim-parla", xp: 10 },
+            { keywords: ["far", "llum", "estella", "apagat", "fosc", "que", "passat", "qui", "per que", "perque"], opener: true, say: "«Em vaig trencar el rem anant darrere d'una llum que em va semblar una barca. Em va agafar la nit. El far és apagat perquè l'oli és dins, i jo sóc aquí fora. Pugeu-me, si podeu: tinc a la butxaca la marca del far, la que fa vàlida la carta.»", flag: "quim-parla", xp: 10 },
           ],
         },
         {
@@ -289,7 +289,7 @@ export const PORT: Campaign = {
           },
         },
         { id: "far", kind: "feature", name: "El Far de l'Estella (apagat)", x: 92, y: 18, keywords: ["far", "estella", "llum", "torre"], examine: "A l'altra roca, un far de pedra amb la llanterna apagada. Seria visible des de tot el port, si estigués encès." },
-        { id: "rem", kind: "feature", name: "El rem trencat", x: 18, y: 38, keywords: ["rem", "trencat", "fusta"], examine: "Un rem partit en dues parts, amb una taca de pega vella. Un nus de mariner fa de curiós empalme provisional." },
+        { id: "rem", kind: "feature", name: "El rem trencat", x: 18, y: 38, keywords: ["rem", "trencat", "fusta"], examine: "Un rem partit en dues parts, amb una taca de pega vella. Un nus de mariner l'uneix de manera provisional." },
         { id: "tornar", kind: "exit", name: "L'esquif cap al moll", x: 9, y: 78, to: "moll", keywords: ["esquif", "moll", "tornar", "port", "remar", "enrere"], examine: "L'esquif us espera, amarrat entre dues roques." },
       ],
     },

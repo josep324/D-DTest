@@ -45,6 +45,29 @@ function tokens(text: string): string[] {
   return norm(text).split(" ").filter(Boolean);
 }
 
+/**
+ * How well a keyword matches the words said. A whole word beats a stem ("convenc" in "convenço"),
+ * and a keyword never matches inside a longer unrelated word.
+ */
+function kwScore(words: string[], joined: string, kw: string): number {
+  const k = norm(kw);
+  if (!k) return 0;
+  if (k.includes(" ")) return joined.includes(` ${k} `) ? k.length * 2 : 0;
+  let best = 0;
+  for (const w of words) {
+    if (w === k) best = Math.max(best, k.length * 2);
+    else if (k.length >= 4 && w.startsWith(k)) best = Math.max(best, k.length);
+    else if (k.length >= 4 && w.length >= 4 && k.startsWith(w)) best = Math.max(best, w.length);
+  }
+  return best;
+}
+
+function mentions(text: string, keywords: string[]): boolean {
+  const words = tokens(text);
+  const joined = ` ${words.join(" ")} `;
+  return keywords.some((k) => kwScore(words, joined, k) > 0);
+}
+
 function art(name: string, capital = false): string {
   const table: Record<string, string> = { Calder: "en Calder", Holt: "en Holt", Bramble: "la Bramble", Vesper: "la Vesper" };
   const out = table[name] ?? name;
@@ -385,7 +408,7 @@ function askRoll(tale: Tale, spot: Hotspot, check: Check, text: string, lead: st
   let { ability, dc, reason } = check;
   const t = norm(text);
   for (const alt of check.alts ?? []) {
-    if (alt.keywords.some((k) => t.includes(norm(k)))) {
+    if (mentions(text, alt.keywords)) {
       ability = alt.ability;
       dc = alt.dc;
       reason = alt.reason;
@@ -599,10 +622,24 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
     }
     const topics = (spot.talk ?? []).filter((tp) => !tp.requires || has(tale, tp.requires));
     const ender = topics.find((tp) => tp.ends);
-    const hit = ender ?? topics.find((tp) => tp.keywords.some((k) => t.includes(norm(k))));
+    // What was said about *them* ("la fornera", "l'hostalera") must not pick a topic by itself.
+    const nameWords = tokens(spot.name).filter((w) => w.length >= 3);
+    const rest = tokens(text).filter((w) => !nameWords.some((n) => w === n || (n.length >= 4 && w.startsWith(n))));
+    const joined = ` ${rest.join(" ")} `;
+    const scored = topics
+      .map((tp, i) => ({ tp, i, score: tp.keywords.reduce((n, k) => n + kwScore(rest, joined, k), 0) }))
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score || a.i - b.i);
+    const heard = (i: number) => has(tale, `ouit-${spot.id}-${spot.talk?.indexOf(topics[i]) ?? i}`);
+    let hit = ender ?? scored[0]?.tp;
+    if (!hit) {
+      // Just "parlo amb ella": the conversation opens, then moves on to what has not been said yet.
+      const unheard = topics.map((tp, i) => ({ tp, i })).filter((x) => !heard(x.i));
+      hit = (unheard.find((x) => x.tp.opener) ?? unheard[0])?.tp;
+    }
     if (hit) {
       mech.xp = hit.xp ?? 0;
-      mech.flags = [`parlat-${spot.id}`, ...(hit.flag ? hit.flag.split(",") : [])];
+      mech.flags = [`parlat-${spot.id}`, `ouit-${spot.id}-${spot.talk?.indexOf(hit) ?? 0}`, ...(hit.flag ? hit.flag.split(",") : [])];
       if (hit.ends) {
         const campaign = getCampaign(tale.campaignId);
         return plain(narrate([hit.say]), mech, {
@@ -619,7 +656,10 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
     if (spot.check) {
       return plain(narrate([spot.examine, "Podries provar de convèncer-lo, amenaçar-lo o buscar una altra sortida."]), mech);
     }
-    return plain(narrate([spot.examine, topics.length ? "Prova de preguntar-li per alguna cosa concreta: pel que ha passat, per un lloc o per una persona." : ""]), mech);
+    return plain(
+      narrate([spot.examine, topics.length ? "Ja t'ha dit el que sap. Prova de preguntar-li per una cosa concreta: un lloc, una persona o un objecte." : ""]),
+      mech,
+    );
   }
 
   if (intent === "go") {
@@ -631,6 +671,8 @@ export function dmAct(tale: Tale, raw: string): Turn | null {
       const other = named;
       const lockedOther = other ? lockedHint(tale, other) : null;
       if (other && lockedOther) return plain(narrate([other.examine, lockedOther]), mech);
+      // Walking up to someone is the start of a conversation.
+      if (other?.kind === "npc") return dmAct(tale, `parlo amb ${other.name}`);
       if (other?.check && !(other.check.flag && has(tale, other.check.flag))) {
         return askRoll(tale, other, other.check, raw, other.examine, mech);
       }

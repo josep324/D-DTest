@@ -65,6 +65,8 @@ export type Topic = {
   flag?: string;
   /** Only available once this flag (or any of "a|b") is up. */
   requires?: string;
+  /** What this person says first, when you simply talk to them without asking about anything. */
+  opener?: boolean;
   ends?: boolean;
   xp?: number;
 };

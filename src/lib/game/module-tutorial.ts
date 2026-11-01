@@ -65,7 +65,7 @@ export const TUTORIAL: Campaign = {
           id: "fornera", kind: "npc", name: "La fornera", x: 32, y: 46, keywords: ["fornera", "dona", "forner"],
           examine: "Té les mans enfarinades i els ulls vermells. No ha dormit.",
           talk: [
-            { keywords: ["cofre", "robatori", "lladre", "qui", "que va passar", "passar"], say: "«Els vaig sentir de matinada. Quatre o cinc, i una veu de dona que manava. Tenien un carro, i van agafar el camí del bosc.»" },
+            { keywords: ["cofre", "robatori", "lladre", "qui", "que va passar", "passar"], opener: true, say: "«Els vaig sentir de matinada. Quatre o cinc, i una veu de dona que manava. Tenien un carro, i van agafar el camí del bosc.»" },
             { keywords: ["cova", "on", "bosc", "cami", "camí"], say: "«Al bosc hi ha una cova vella d'una farga abandonada. Allà es refugien els lladres, diuen. Jo no m'hi atreveixo.»" },
             { keywords: ["premi", "recompensa", "pagar", "pagament"], say: "«Tinc pastissos de mel i tot el meu agraïment. I si el cofre torna sencer, una setmana de pa gratis per a tots quatre.»" },
             { keywords: ["cofre", "tinc", "recuperat", "torno", "aqui", "aquí", "tens"], requires: "cofre", ends: true, xp: 40, say: "La fornera pren el cofre amb les dues mans i el recolza al pit. Plora i riu alhora. «Les receptes… i fins l'últim cèntim. No sé com us ho podré pagar.»\n\nAquell vespre, tot Pinassa fa cua per un trosset de pa que ningú no ha de pagar. El cofre és a casa." },
@@ -118,7 +118,7 @@ export const TUTORIAL: Campaign = {
       ambient: "Una vella farga a la roca. Olor de fusta humida i ferro.",
       chronicleTitle: "La porta de la farga",
       opening:
-        "La senda acaba davant d'una vella farga excavada a la roca. La porta de fusta és tancada per dins amb una barra. Un carro buit és al costat.\n\nConsell del DM: sovint hi ha més d'una manera de fer una cosa. Pots forçar la porta (Força) o provar de moure el forrellat amb una ganxo (Destresa). Digues què fas.",
+        "La senda acaba davant d'una vella farga excavada a la roca. La porta de fusta és tancada per dins amb una barra. Un carro buit és al costat.\n\nConsell del DM: sovint hi ha més d'una manera de fer una cosa. Pots forçar la porta (Força) o provar de moure el forrellat amb un ganxo (Destresa). Digues què fas.",
       quest: { title: "Entra a la cova", detail: "Obre la porta de la farga." },
       choices: [],
       hotspots: [
@@ -128,7 +128,7 @@ export const TUTORIAL: Campaign = {
           check: {
             ability: "str", dc: 12, reason: "Forçar la porta", flag: "porta-oberta", xp: 20,
             alts: [{ keywords: ["ganxo", "ganxos", "forrellat", "pany", "tranca", "obre amb"], ability: "dex", dc: 13, reason: "Moure la barra amb un ganxo" }],
-            success: "La porta cedeix amb un cruixit de fusta. Dins fa fred i es fa tard, i s'hi sent un esgarrapar suau.",
+            success: "La porta cedeix amb un cruixit de fusta. Dins fa fred i és fosc, i s'hi sent un esgarrapar suau.",
             fail: "La porta s'hi resisteix. Fa un soroll, però no cedeix. Es pot tornar a provar.",
           },
         },
@@ -148,7 +148,7 @@ export const TUTORIAL: Campaign = {
       ambient: "Una sala baixa, amb palla humida i un olor dolç i agre de cova.",
       chronicleTitle: "Les rates de la farga",
       opening:
-        "Dins, la llum d'un llum vell il·lumina una sala baixa plena de palla. Dos ulls brillants us segueixen, i després quatre. Dues rates gegants, grosses com gossos, es giren cap a vosaltres.\n\nConsell del DM: ha començat un combat. Tothom tira iniciativa (un d20) per saber qui juga primer. Al teu torn, ataca: tires un d20 contra la defensa del monstre. Si hi arribes, tires el dau de dany. Tria «Ataca» i toca una rata, o digues «ataco la rata».",
+        "Dins, la llum d'un llum vell il·lumina una sala baixa plena de palla. Dos ulls brillants us segueixen, i després quatre. Dues rates gegants, grosses com gossos, es giren cap a vosaltres.\n\nConsell del DM: ha començat un combat. Tothom tira iniciativa (un d20) per saber qui juga primer. Al teu torn, ataca: tires un d20 contra la defensa del monstre. Si hi arribes, tires el dau de dany. Els atacs et surten sols quan et toca: només has de prémer «Tira per mi».",
       quest: { title: "Neteja la sala", detail: "Les rates barren el pas." },
       choices: [],
       hotspots: [

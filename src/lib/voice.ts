@@ -83,7 +83,7 @@ export async function speak(
   const parts = raw
     .split(/\n\s*\n/)
     .map(clean)
-    .filter((p) => p && !p.startsWith(RULES_MARK));
+    .filter((p) => p && !p.startsWith(RULES_MARK) && !p.startsWith("Consell del DM:"));
   if (!parts.length) return;
   stopSpeaking();
   const mine = ticket;

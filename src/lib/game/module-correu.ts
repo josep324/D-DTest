@@ -30,22 +30,22 @@ export const CORREU: Campaign = {
       clock: "08:40",
       weather: "Neu",
       sky: "MATÍ · NEU",
-      ambient: "La neu cus les parades. Els fanals resten encesos perquè el sol mai no acaba d'arribar.",
+      ambient: "La neu ha tancat les parades. Els fanals continuen encesos perquè el sol mai no acaba d'arribar.",
       chronicleTitle: "Sorra a la saca",
       back: "Torneu al Mercat dels Fanals. La neu continua caient, mandrosa.",
       opening:
-        "La neu ha cosit el mercat, tret del pou i d'una parada de pastissos tossuda. La saca del missatger penja de la corda del pou, buida de cartes, pesant de sorra seca de riu, i el coll no és un riu.\n\nLa fornera us fa senyals amb una mà enfarinada. Una mica més enllà, uns sacs de carbó, sense carreter, treuen fum blau. I al fons, entre dues cases, hi ha una escala que el mercat fa servir per recolzar pales.\n\nConsell del DM: aquest conte té un misteri. No et cal lluitar res. Parla amb la gent, mira els objectes i investiga. Quan una cosa és incerta, et demano una tirada. Si t'encalles, digues «què puc fer?».",
+        "La neu ha deixat el mercat quasi tancat: només hi ha el pou i una parada de pastissos que s'hi nega. La saca del missatger penja de la corda del pou, buida de cartes i pesant de sorra seca de riu. I allà dalt, al coll, no hi ha cap riu.\n\nLa fornera us fa senyals amb una mà enfarinada. Una mica més enllà, uns sacs de carbó que ningú no ha portat treuen un fum blavós. I al fons, entre dues cases, hi ha una escala que el mercat fa servir per recolzar pales.\n\nConsell del DM: aquesta aventura és un misteri. No cal que lluitis. Parla amb la gent, mira els objectes i investiga. Quan una cosa és incerta, et demano una tirada. Si t'encalles, digues «què puc fer?».",
       quest: { title: "La sorra de la saca", detail: "Pregunta a la fornera i busca pistes: el pou, la saca i els sacs de carbó." },
       choices: [],
       hotspots: [
         {
           id: "fornera", kind: "npc", name: "La fornera", x: 32, y: 46, keywords: ["fornera", "dona", "forn", "parada"],
-          examine: "Té les mans enfarinades i la veu baixa, que és innecessari: el mercat ja escolta.",
+          examine: "Té les mans enfarinades i parla baix, tot i que el mercat ja l'escolta.",
           talk: [
             { keywords: ["escala", "orrery", "sala", "baix", "sota", "pales"], say: "«Al fons, entre aquelles dues cases, hi ha una escala. La fem servir per tenir pales i no hi baixa ningú. Però des de fa dos dies fa olor de carbó i s'hi sent un tic-tac. Si busqueu el missatger, jo hi baixaria.»", flag: "escala-coneguda", xp: 10 },
-            { keywords: ["carbo", "carbó", "forn", "migdia", "foc", "sacs", "blau"], say: "«El forn de sota la muntanya es va encendre al migdia i ningú el reclama. Els sacs van arribar sense carreter i criden blau a les vores quan els poses a la foguera. No hi deixo ni un nen a prop.»", flag: "carbo-explicat", xp: 5 },
+            { keywords: ["carbo", "carbó", "forn", "migdia", "foc", "sacs", "blau"], say: "«El forn de sota la muntanya es va encendre al migdia i ningú el reclama. Els sacs van arribar sense carreter i, quan els poses a la foguera, la flama es torna blava a les vores. No hi deixo ni un nen a prop.»", flag: "carbo-explicat", xp: 5 },
             { keywords: ["pou", "aigua", "calenta", "tebia", "tèbia", "corda"], say: "«L'aigua del pou és tèbia, no hauria de ser-ho. I el poal fa olor de riba. El missatger no hi va caure, juraria: la saca penjava de la corda com un abric.»", flag: "pou-explicat" },
-            { keywords: ["missatger", "jan", "desaparegut", "saca", "sorra", "qui", "que", "passat", "pas"], say: "«En Jan va sortir fa tres dies cap al coll, amb el correu de tot el poble. Va aparèixer només la saca, penjada del pou, buida de cartes i plena de sorra seca de riu. I el coll no és un riu. Busqueu-lo, si us plau: és un bon noi.»", flag: "fornera-parla", xp: 10 },
+            { keywords: ["missatger", "jan", "desaparegut", "saca", "sorra", "qui", "que", "passat", "pas"], opener: true, say: "«En Jan va sortir fa tres dies cap al coll, amb el correu de tot el poble. Va aparèixer només la saca, penjada del pou, buida de cartes i plena de sorra seca de riu. I el coll no és un riu. Busqueu-lo, si us plau: és un bon noi.»", flag: "fornera-parla", xp: 10 },
           ],
         },
         {
@@ -63,17 +63,17 @@ export const CORREU: Campaign = {
           examine: "Una vora de pedra, una corda i un fil d'aigua tèbia que puja de baix. No olora a pedra: olora a riba de riu.",
           check: {
             ability: "str", dc: 11, reason: "Baixar pel pou amb la corda", flag: "pou-llegit", xp: 25, hurt: 1,
-            success: "Deu passes avall, l'aire es torna amable. L'aigua és tèbia i clara i plena de còdols corrents, però arranjats com una frase. Els llegeixes des de dalt: no és una trampa, és una petició. El riu de sota la muntanya vol que el seu correu es lliuri cap al mar, i va agafar un missatger prestat per dir-ho.",
+            success: "Baixes deu passes i l'aire es torna més suau. L'aigua és tèbia i clara, i el fons és ple de còdols col·locats de manera que formen una frase. Els llegeixes: no és una trampa, és una petició. El riu de sota la muntanya vol que el seu correu es lliuri cap al mar, i va agafar un missatger prestat per dir-ho.",
             fail: "La corda et crema les mans i el poal et pica el braç. Perds el pas i has de pujar a mitges. Es pot provar de nou, amb més cura.",
           },
         },
         {
           id: "sacs", kind: "feature", name: "Els sacs de carbó", x: 70, y: 52, keywords: ["sacs", "sac", "carbo", "carbó", "fum", "blau", "pedres"],
-          examine: "Tres sacs amb el segell del correu, sense carreter. Fan un fum blau a les vores, com un carbó que no vol cremar.",
+          examine: "Tres sacs amb el segell del correu, sense carreter. Treuen un fum blavós a les vores, com un carbó que no vol cremar.",
           check: {
             ability: "dex", dc: 10, reason: "Obrir un sac amb cura", flag: "sacs-oberts", xp: 10,
-            success: "El sac pesa més que el carbó i fa menys soroll. Dins hi ha còdols de riu, tots marcats amb un segell de correu minúscul. Quan en tries un, la foguera s'hi inclina. Res no ataca: són cartes perdudes, esperant que algú les escalfi.",
-            fail: "El sac se't escapa de les mans i el carbó roda sobre la neu. No passa res, però fa un soroll que atrau mirades.",
+            success: "El sac pesa més que el carbó, però no fa cap soroll. Dins hi ha còdols de riu, tots marcats amb un segell de correu molt petit. Quan en agafes un, la flama de la foguera s'hi inclina. No passa res: són cartes perdudes que esperen que algú les escalfi.",
+            fail: "El sac et rellisca de les mans i el carbó roda per la neu. No passa res, però fa un soroll que atrau mirades.",
           },
         },
         {
@@ -81,7 +81,7 @@ export const CORREU: Campaign = {
           requires: { flag: "sacs-oberts", hint: "Primer caldria obrir un dels sacs." },
           examine: "Un còdol llis, calent al tacte, amb un segell de correu esquerdat.",
         },
-        { id: "foguera", kind: "feature", name: "La foguera", x: 54, y: 66, keywords: ["foguera", "foc", "flames", "brases"], examine: "Una foguera que els viatgers van deixar tapada. Algú hi ha afegit carbó que crema blau a les vores i s'estira cap als sacs, com un gat." },
+        { id: "foguera", kind: "feature", name: "La foguera", x: 54, y: 66, keywords: ["foguera", "foc", "flames", "brases"], examine: "Una foguera que els viatgers van deixar tapada. Algú hi ha afegit carbó que crema amb una flama blava a les vores, i la flama s'estira cap als sacs com un gat." },
         { id: "tauler", kind: "feature", name: "Tauler d'avisos", x: 66, y: 34, keywords: ["tauler", "cartell", "avisos", "paper"], examine: "Un cartell de gos perdut, el preu del gra i un avís escrit a mà: «Qui vegi el missatger Jan, que avisi la fornera». Algú l'ha subratllat dues vegades." },
         {
           id: "escala", kind: "exit", name: "L'escala del carbó", x: 84, y: 34, to: "orrery", keywords: ["escala", "orrery"],
@@ -102,7 +102,7 @@ export const CORREU: Campaign = {
       chronicleTitle: "Sota l'armil·lar",
       back: "Torneu a la Sala de l'Orrery. El tic-tac us rep com un vell conegut.",
       opening:
-        "La sala era una oficina de correus abans de ser una sala de cel. Els anells de llautó d'un armil·lar gegant giren sense que cap mà els toqui, i al terra una incrustació d'estels blaus brilla amb la lentitud d'una marea. Dos autòmats de llautó vigilen l'armil·lar amb els braços creuats. Un home amb davantal i ulleres rellisca per darrere dels anells amb una clau a la mà.\n\nLa perla de la Vesper s'escalfa. L'armil·lar no segueix els estels: segueix un corrent.\n\nConsell del DM: aquí hi ha un obstacle de veritat, els anells. Hi ha tres maneres de resoldre'l: presentar-s'hi amb educació (Encant), esbrinar com funcionen (Intel·lecte) o atacar els guardians. Parla amb en Anselm per saber què conviu.",
+        "La sala era una oficina de correus abans de ser una sala de cel. Els anells de llautó d'un armil·lar gegant giren sense que cap mà els toqui, i al terra una incrustació d'estels blaus brilla amb la lentitud d'una marea. Dos autòmats de llautó vigilen l'armil·lar amb els braços creuats. Un home amb davantal i ulleres es belluga entre els anells amb una clau a la mà.\n\nLa perla de la Vesper s'escalfa. L'armil·lar no segueix els estels: segueix un corrent.\n\nConsell del DM: aquí hi ha un obstacle de veritat, els anells. Hi ha tres maneres de resoldre'l: presentar-s'hi amb educació (Encant), esbrinar com funcionen (Intel·lecte) o atacar els guardians. Parla amb en Anselm per saber què conviu.",
       quest: { title: "El corrent al llautó", detail: "Aturar els anells i seguir el corrent que sent la sala." },
       choices: [],
       hotspots: [
@@ -110,10 +110,10 @@ export const CORREU: Campaign = {
           id: "anselm", kind: "npc", name: "Anselm, el rellotger", x: 22, y: 46, keywords: ["anselm", "rellotger", "home", "ulleres", "davantal"],
           examine: "Un home petit, amb ulleres gruixudes i dits tacats d'oli. Porta tres dies sense dormir, i això es nota més a les mans que a la cara.",
           talk: [
-            { keywords: ["anells", "aturar", "aturo", "armillar", "armil·lar", "parar", "presentar", "presento"], say: "«Els anells no es manen: s'hi parla. Cal presentar-s'hi, dir qui sou i què busqueu, amb veu clara i sense pressa. Els autòmats són bons, però de molt mal geni si les coses s'enreden.»", flag: "anells-coneguts", xp: 10 },
-            { keywords: ["cartes", "pedres", "pesos", "carta", "sobres"], say: "«Les pedres que pesen les cartes no són panys. Són bones maneres. Qui obri una carta ha de desfer-ho amb la mateixa cura.»", flag: "cartes-explicades" },
+            { keywords: ["anells", "aturar", "aturo", "armillar", "armil·lar", "parar", "presentar", "presento"], say: "«Els anells no es manen: s'hi parla. Cal presentar-s'hi, dir qui sou i què busqueu, amb veu clara i sense pressa. Els autòmats són pacífics, però tenen molt mal geni si algú toca els anells a la brava.»", flag: "anells-coneguts", xp: 10 },
+            { keywords: ["cartes", "pedres", "pesos", "carta", "sobres"], say: "«Les pedres que hi ha sobre les cartes no les tanquen: només eviten que el vent se les endugui. Qui les aixequi, que ho faci amb molta cura.»", flag: "cartes-explicades" },
             { keywords: ["riu", "corrent", "aigua", "terra", "estels"], say: "«Sota el terra hi ha aigua que no hauria de ser aquí. L'armil·lar la segueix. Si pareu els anells, la incrustació d'estels us mostrarà per on va. Jo no m'hi atreveixo: no sé nedar.»", flag: "corrent-explicat", xp: 5 },
-            { keywords: ["qui", "ets", "que", "fas", "sala", "anselm", "aquí"], say: "«Sóc el rellotger de la sala. Vaig venir a posar a punt l'armil·lar i fa tres dies que no segueix cap estel. I això, entre els de la meva professió, és una vergonya.»", flag: "anselm-parla", xp: 5 },
+            { keywords: ["qui", "ets", "que", "fas", "sala", "anselm", "aquí"], opener: true, say: "«Sóc el rellotger de la sala. Vaig venir a posar a punt l'armil·lar i fa tres dies que no segueix cap estel. I això, entre els de la meva professió, és una vergonya.»", flag: "anselm-parla", xp: 5 },
           ],
         },
         {
@@ -121,7 +121,7 @@ export const CORREU: Campaign = {
           examine: "Una filera de cartes velles, cada una amb un còdol de riu al damunt perquè el vent no se les endugui.",
           check: {
             ability: "int", dc: 11, reason: "Llegir les cartes amb cura i desfer els pesos", flag: "cartes-llegides", xp: 15,
-            success: "Les cartes són corrents i, justament per això, entranyables: un aniversari, un deute perdonat, una recepta de pastís que pot viatjar. Una, escrita amb una mà humida, diu només: «porteu-ho avall». Cada còdol és una bona manera.",
+            success: "Són cartes corrents i, justament per això, entranyables: una felicitació d'aniversari, un deute perdonat, una recepta de pastís pensada per viatjar. Una, escrita amb una mà humida, diu només: «porteu-ho avall». Els còdols no eren panys, sinó una manera de tenir cura de les cartes.",
             fail: "Els còdols rellisquen i les cartes es barregen. No en treus res, però les tornes a posar tal com eren.",
           },
         },
@@ -133,7 +133,7 @@ export const CORREU: Campaign = {
             alts: [
               { keywords: ["entenc", "mecanisme", "engranatge", "estudio", "esbrino", "calculo", "rellotge"], ability: "int", dc: 12, reason: "Entendre i frenar el mecanisme" },
             ],
-            success: "Dius qui sou i què busqueu, sense pressa. Els anells dubten i alenteixen, avergonyits. Un buit s'obre al mig i la incrustació d'estels es torna humida, com una finestra sobre un riu. «Moltes gràcies», murmura en Anselm.",
+            success: "Dieu qui sou i què busqueu, sense pressa. Els anells dubten i alenteixen, avergonyits. S'obre un buit al mig, i el terra d'estels es torna humit, com una finestra oberta sobre un riu. «Moltes gràcies», murmura en Anselm.",
             fail: "Els anells s'acceleren i fan un soroll de ferros. Els dos autòmats descreuen els braços.",
           },
         },
@@ -172,7 +172,7 @@ export const CORREU: Campaign = {
       chronicleTitle: "La farga que va beure un riu",
       back: "Torneu a la Farga de l'Auró. El rierol segueix pujant pels carrils, educat com un convidat.",
       opening:
-        "L'escala mullada us deixa sota uns aurons del color de les brases. La farga del cingle és encesa, i el que hi crema són còdols llisos. Un rierol baixet puja pels carrils del carro cap al foc, sense pressa i amb cortesia. Al costat d'una tenda, assegut sobre una caixa, hi ha un home sec, avergonyit, amb una campaneta a l'abast: en Jan, el missatger.\n\nLes pedres de la farga es mouen una mica, quan ningú no les mira.\n\nConsell del DM: aquí hi ha tres converses importants: amb en Jan, amb el rierol i la farga. No tothom vol lluitar. Parla amb el rierol quan tinguis la campana.",
+        "L'escala mullada us deixa sota uns aurons del color de les brases. La farga del cingle és encesa, i el que hi crema són còdols llisos. Un rierol petit puja pels carrils del carro cap al foc, a poc a poc i com qui demana permís. Al costat d'una tenda, assegut sobre una caixa, hi ha un home eixut i avergonyit, amb una campaneta a prop: és en Jan, el missatger.\n\nLes pedres de la farga es mouen una mica quan ningú les mira.\n\nConsell del DM: aquí hi ha tres coses importants: parlar amb en Jan, parlar amb el rierol i decidir què fas amb les pedres de la farga. No tothom vol lluitar. Parla amb el rierol quan tinguis la campana.",
       quest: { title: "Porta-ho cap avall", detail: "Parla amb en Jan i amb el rierol. La campana ha d'anar cap al mar." },
       choices: [],
       hotspots: [
@@ -180,9 +180,9 @@ export const CORREU: Campaign = {
           id: "jan", kind: "npc", name: "Jan, el missatger", x: 26, y: 70, keywords: ["jan", "missatger", "home", "noi", "caixa"],
           examine: "Un noi de poc més de vint anys, amb els cabells enganxats i les botes seques. Mira la campaneta com qui mira una promesa.",
           talk: [
-            { keywords: ["torna", "casa", "acompanyo", "acompanyem", "tornem", "portem", "marxem"], requires: "promesa", ends: true, xp: 70, say: "Acompanyeu en Jan fins a la neu, que us rep sense fer cap comentari. La fornera plora a la manera eficient de qui té pastissos al forn i una persona que ha tornat.\n\nLa campana va embolicada: baixarà cap al mar quan el riu pugui. Al rierol de la farga, mentrestant, l'aigua es posa a córrer en el sentit correcte. Una fulla d'auró hi flota la direcció bona.\n\nEl misteri de Pinassa és un capítol que podeu tancar." },
-            { keywords: ["campana", "campaneta", "porto", "agafo", "quina", "riu", "veu"], say: "«La campana és seva, no meva. Una veu al pou em va demanar un favor: portar-la cap avall, cap a un riu que ha oblidat un nom. Ho vaig intentar. Vaig prendre-la i vaig pujar, perquè la farga era a prop, i el camí cap amunt era més curt. El riu no podia pujar amb mi.» Dubta. «Preneu-la, si la porteu avall.»", flag: "jan-confia", xp: 10 },
-            { keywords: ["sorra", "saca", "pastis", "pastís", "qui", "ets", "que", "passat", "per que", "perque"], say: "«Sóc en Jan. Em va agafar el pànic i vaig omplir la saca amb el primer sec que vaig trobar: sorra. Vaig deixar el correu a la farga i vaig seure a esperar que algú vingués. Em sap greu l'olor de pastís.»", flag: "jan-parla", xp: 10 },
+            { keywords: ["torna", "casa", "acompanyo", "acompanyem", "tornem", "portem", "marxem"], requires: "promesa", ends: true, xp: 70, say: "Acompanyeu en Jan fins a la neu, que us rep sense fer cap comentari. La fornera plora a la manera eficient de qui té pastissos al forn i una persona que ha tornat.\n\nLa campana va embolicada: baixarà cap al mar quan el riu pugui. Al rierol de la farga, mentrestant, l'aigua es posa a córrer en el sentit correcte. Una fulla d'auró hi flota en la direcció bona.\n\nEl misteri de Pinassa és un capítol que podeu tancar." },
+            { keywords: ["campana", "campaneta", "porto", "agafo", "quina", "riu", "veu"], say: "«La campana és seva, no meva. Una veu del pou em va demanar un favor: portar-la cap avall, fins a un riu que ha oblidat el seu nom. Ho vaig intentar, però el camí em va portar cap amunt, a la farga, i el riu va venir darrere meu. Ara no sé com baixar-la.» Dubta. «Preneu-la vosaltres, si la porteu avall.»", flag: "jan-confia", xp: 10 },
+            { keywords: ["sorra", "saca", "pastis", "pastís", "qui", "ets", "que", "passat", "per que", "perque"], opener: true, say: "«Sóc en Jan. Em va agafar el pànic i vaig omplir la saca amb el primer que vaig trobar de sec: sorra. Vaig deixar el correu a la farga i vaig seure a esperar que algú vingués. I em sap greu que la saca fes olor de pastís.»", flag: "jan-parla", xp: 10 },
           ],
         },
         {
@@ -194,9 +194,9 @@ export const CORREU: Campaign = {
           id: "rierol", kind: "npc", name: "El rierol que puja", x: 52, y: 56, keywords: ["rierol", "riu", "aigua", "voz", "veu", "corrent", "carrils"],
           examine: "Un fil d'aigua clara que puja pels carrils com si fos el més natural del món. Quan us acosteu, l'aigua fa una petita onada cap a vosaltres.",
           talk: [
-            { keywords: ["promet", "prometo", "porto", "portem", "mar", "avall", "campana", "baixar"], requires: "campana", say: "«Porteu-la. Fins a l'aigua gran, on cap carta no s'ha de tornar a pujar. I que el foc es refredi: les pedres no són d'aquí.» El rierol us toca els peus amb una carícia freda. Darrere vostre, els còdols de la farga es desperten, miren al voltant, i tornen a ser pedres.", flag: "promesa,foc-calmat,dead-pedres", xp: 50 },
-            { keywords: ["codol", "còdol", "segell", "pedra", "correu", "cartes"], requires: "codol", say: "El rierol agafa el còdol amb una onada i el fa girar a l'aigua. Es posa tebi. «Això és el meu correu. Cada carta és una veu. Em vau portar un tros de casa.»", flag: "riu-confia", xp: 20 },
-            { keywords: ["qui", "ets", "que", "voleu", "vols", "nom", "per que", "perque", "riu"], say: "«Em vaig quedar sense nom quan van tancar el pas. Porto cartes al mar des de fa mil anys: el correu ha de baixar, no pujar. Un missatger de les terres altes em va fer de veu. No volia espantar ningú.»", flag: "riu-parla", xp: 15 },
+            { keywords: ["promet", "prometo", "porto", "portem", "mar", "avall", "campana", "baixar"], requires: "campana", say: "«Porteu-la fins a l'aigua gran, on cap carta no hagi de pujar mai més. I que el foc es refredi: les pedres no són d'aquí.» El rierol us toca els peus amb una carícia freda. Darrere vostre, els còdols de la farga es desperten, miren al voltant, i tornen a ser pedres.", flag: "promesa,foc-calmat,dead-pedres", xp: 50 },
+            { keywords: ["codol", "còdol", "segell", "pedra", "correu", "cartes"], requires: "codol", say: "El rierol agafa el còdol amb una onada i el fa girar a l'aigua. Es torna tèbia. «Això és el meu correu. Cada carta és una veu. Em vau portar un tros de casa.»", flag: "riu-confia", xp: 20 },
+            { keywords: ["qui", "ets", "que", "voleu", "vols", "nom", "per que", "perque", "riu"], opener: true, say: "«Em vaig quedar sense nom quan van tancar el pas. Porto cartes al mar des de fa mil anys: el correu ha de baixar, no pujar. Un missatger de les terres altes em va fer de veu. No volia espantar ningú.»", flag: "riu-parla", xp: 15 },
           ],
         },
         {
@@ -210,7 +210,7 @@ export const CORREU: Campaign = {
             fail: "La pala rebota en una pedra, que se t'obre a l'esquena. Les pedres s'incorporen amb un cruixit.",
           },
         },
-        { id: "carrils", kind: "feature", name: "Els carrils del carro", x: 56, y: 52, keywords: ["carrils", "carro", "rails", "vagons"], examine: "Carrils mullats de dalt a baix. L'aigua puja: ho fa, com un fil, a favor de la costa." },
+        { id: "carrils", kind: "feature", name: "Els carrils del carro", x: 56, y: 52, keywords: ["carrils", "carro", "rails", "vagons"], examine: "Carrils mullats de dalt a baix. L'aigua hi puja, costa amunt, com un fil, en lloc de baixar." },
         { id: "foguera", kind: "feature", name: "Foguera del campament", x: 28, y: 78, keywords: ["foguera", "foc", "campament", "tenda"], examine: "Una foguera petita i un parell de pastissos embolicats amb el drap de la fornera: en Jan s'ha menjat un, de pànic." },
         { id: "amunt", kind: "exit", name: "L'escala humida cap amunt", x: 88, y: 62, to: "orrery", keywords: ["escala", "orrery", "tornar", "pujar", "enrere"], examine: "L'escala mullada per on heu vingut, que torna a la sala del cel." },
       ],
